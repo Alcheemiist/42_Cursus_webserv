@@ -8,3 +8,5 @@ here the change on beta
 
 
 
+
+now we're tralking about trash merge 
