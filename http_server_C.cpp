@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 #include <string.h>
 
-#define PORT 8080
+#define PORT 8082
 
 int main(int argc, char const *argv[])
 {
@@ -15,8 +15,12 @@ int main(int argc, char const *argv[])
     int addrlen = sizeof(address);
 
     // response 
-    char hello[100];
-    strcpy(hello , "HTTP/1.1 200 OK\nDate: Mon, 27 Jul 2009 12:28:53 GMT\nAlchemist: is here\n\n<html> <body> <h1> Hello, World!</h1> </body></html>");
+    char hello[1000];
+    strcpy(hello , "HTTP/1.1 200 OK\nAlchemist: is here\n\n \
+        <div class=\"hilite-title text-center text-uppercase\"> \
+                ALCHEMIST \
+        </div> \
+     ");
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -42,11 +46,13 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
+    int request_num = 0;
     while(1)
     {
-        printf("\n+++++++ Waiting for new connection ++++++++\n\n");
+        request_num++;
+        printf("\n+++++++++++++++++ Waiting for new connection ++++++++++++++++++\n\n");
 
-      if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))< 0)
+        if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))< 0)
         {
             perror("In accept");
             exit(EXIT_FAILURE);
@@ -54,10 +60,13 @@ int main(int argc, char const *argv[])
 
         char buffer[30000] = {0};
         valread = read( new_socket , buffer, 30000);
+        
+        printf("\n+++++++ Request #%d ++++++++\n\n", request_num);
         printf("%s\n",buffer );
+
+        printf("------------------response message sent-------------------");
         write(new_socket , hello , strlen(hello));
         
-        printf("------------------Hello message sent-------------------");
         close(new_socket);
     }
        return 0;
