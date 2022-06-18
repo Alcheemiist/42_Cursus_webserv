@@ -6,7 +6,7 @@
 #include <netinet/in.h>
 #include <string.h>
 
-#define PORT 8082
+#define PORT 8080
 
 int main(int argc, char const *argv[])
 {
@@ -65,11 +65,14 @@ int main(int argc, char const *argv[])
         printf("%s\n",buffer );
 
         printf("------------------response message sent-------------------");
-        write(new_socket , hello , strlen(hello));
-        
+        // write(new_socket , hello , strlen(hello));
+        send(new_socket, hello, strlen(hello), MSG_OOB);
+
         close(new_socket);
     }
-       return 0;
+        close(server_fd);
+        system("leaks a.out");
+        return 0;
    }
 
    
