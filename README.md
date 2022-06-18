@@ -8,7 +8,8 @@
 # Road Map:
 ## 1- Parsing file 
 ## 2-  Initialize and launch the server
-## 3- Bind and wait for request > parse request
+## 3- Bind and wait for request >
+## 3-1 parse request
 ## 4- make a response and send it to client && goto 3
 
 
