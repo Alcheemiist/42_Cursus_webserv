@@ -1,12 +1,11 @@
 # webservo
 1337 cursus
 
+# Road Map:
 
-HEllo this is the first eddit 
-here the change on beta
+## 1 Parsing file 
+## 2  Initialize and launch the server
+## 3 Bind and wait for request > parse request
+## 4 make a response and send it goto 3
 
 
-
-
-
-now we're tralking about trash merge 
