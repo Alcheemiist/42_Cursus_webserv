@@ -10,6 +10,8 @@
 
 int main(int argc, char const *argv[])
 {
+    (void ) argc;
+    (void ) argv;
     int server_fd, new_socket; long valread;
     struct sockaddr_in address;
     int addrlen = sizeof(address);

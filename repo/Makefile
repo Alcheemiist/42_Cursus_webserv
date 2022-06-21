@@ -2,7 +2,7 @@ FLAGS = -Wall -Wextra -Werror -std=c++98
 
 NAME = webserve
 
-SRC =  	server.cpp\
+SRC =  	*.cpp\
 		
 OBJS = $(SRCS:%.c=%.o)
 
@@ -17,4 +17,7 @@ clean:
 fclean:	clean
 	@rm -f $(NAME)
 
-re:		fclean all
+re:	fclean all
+
+.PHONY: all clean fclean re
+
