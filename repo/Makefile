@@ -2,7 +2,7 @@ FLAGS = -Wall -Wextra -Werror -std=c++98
 
 NAME = webserve
 
-SRC =  	*.cpp\
+SRC =  ./ConfigFile/*.cpp ./networking/*.cpp *.cpp\
 		
 OBJS = $(SRCS:%.c=%.o)
 
