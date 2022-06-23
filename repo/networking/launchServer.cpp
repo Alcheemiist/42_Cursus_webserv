@@ -5,7 +5,7 @@
 long readRequest(int new_socket, Request *request)
 {
     request->setbytes(read(new_socket, request->getbuffer(), 30000));
-    printf("%s\n", request->getbuffer());
+    std::cout << "%s\n", request->getbuffer();
     return request->getbytes();
 }
 
@@ -19,28 +19,28 @@ void GETresponse(Request *request, Response *response)
 {
     (void)request;
 
-    printf("im doing get response\n");
-    printf("%s\n", response->getHello());
+    std::cout << "im doing get response\n";
+    std::cout << "%s\n", response->getHello();
 }
 
 void POSTresponse()
 {
-    printf("im doing post response\n");
+    std::cout << "im doing post response\n";
 }
 
 void PUTresponse()
 {
-    printf("im doing put response\n");
+    std::cout << "im doing put response\n";
 }
 
 void DELETEresponse()
 {
-    printf("im doing delete response\n");
+    std::cout << "im doing delete response\n";
 }
 
 void HEADresponse()
 {
-    printf("im doing head response\n");
+    std::cout << "im doing head response\n";
 }
 
 void response(int new_socket, Request request)
@@ -67,7 +67,7 @@ void init_socket(t_socket *_socket)
     _socket->address.sin_family = AF_INET;
     _socket->address.sin_addr.s_addr = INADDR_ANY;
     _socket->address.sin_port = htons(PORT);
-    memset(_socket->address.sin_zero, '\0', sizeof _socket->address.sin_zero);
+    memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
     _socket->addrlen = sizeof(_socket->address);
     // ------------------------------------
 }
@@ -112,15 +112,15 @@ void LaunchServer()
             perror("In accept");
             exit(EXIT_FAILURE);
         }
-        printf("----------- New connection accepted -------------\n");
+        std::cout << ("----------- New connection accepted -------------\n");
         if (_socket.new_socket > 0)
-            printf("++++++++++++++ Request  ++++++++++++++++\n");
+            std::cout << ("++++++++++++++ Request  ++++++++++++++++\n");
         _socket.valread = readRequest(_socket.new_socket, &request);
         checkRequest(&request);
-        printf("\n+++++++++++++ Response ++++++++++++++++++\n");
+        std::cout << ("\n+++++++++++++ Response ++++++++++++++++++\n");
         response(_socket.new_socket, request);
         close(_socket.new_socket);
-        printf("----------- End connection %d -------------\n ** \n", request.getRequestNum());
+        std::cout << "----------- End connection %d -------------\n ** \n", request.getRequestNum();
     }
     close(_socket.server_fd);
 }
