@@ -4,12 +4,12 @@ int main(int argc, char const *argv[])
 {
     if (argc != 2)
     {
-        printf("Usage: webserve <config file>\n");
+        std::cout << "Usage: webserve <config file>\n";
         exit(1);
     }
     if (ParseConfig(argv[1]))
     {
-        printf("Error parsing config file\n");
+        std::cout << "Error parsing config file\n";
         exit(1);
     }
     LaunchServer();
