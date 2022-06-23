@@ -13,7 +13,6 @@ int main(int argc, char const *argv[])
         exit(1);
     }
     LaunchServer();
-
     
     system("leaks a.out");
     return 0;
