@@ -7,10 +7,10 @@
   > https://www.tutorialspoint.com/http/http_responses.htm
   > 
 # Road Map:
-## 1- contribute to beta branch
+## 1- contribute from alpha
 ## 2-  ...
 ## 3- ...
-## 3- ...
-## 4- to_be_merge from beta
+## 3- to be merged from alpha
+## 4-  ....
 
 
