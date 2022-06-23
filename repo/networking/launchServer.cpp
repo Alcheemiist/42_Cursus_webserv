@@ -1,8 +1,64 @@
-#include "../webserve.hpp"
-#include "./socketo.hpp"
+#include "./elements.hpp"
 
-char hello[1000] = "HTTP/1.1 200 OK\nAlchemist: is here\n\n<div class=\"hilite-title text-center text-uppercase\">ALCHEMIST</div>";
+// REQUEST --------------------------------------------------
 
+long readRequest(int new_socket, Request *request)
+{
+    request->setbytes(read(new_socket, request->getbuffer(), 30000));
+    printf("%s\n", request->getbuffer());
+    return request->getbytes();
+}
+
+void checkRequest(Request *request)
+{
+    (void)request;
+}
+
+// RESPONSE --------------------------------------------------
+void GETresponse(Request *request, Response *response)
+{
+    (void)request;
+
+    printf("im doing get response\n");
+    printf("%s\n", response->getHello());
+}
+
+void POSTresponse()
+{
+    printf("im doing post response\n");
+}
+
+void PUTresponse()
+{
+    printf("im doing put response\n");
+}
+
+void DELETEresponse()
+{
+    printf("im doing delete response\n");
+}
+
+void HEADresponse()
+{
+    printf("im doing head response\n");
+}
+
+void response(int new_socket, Request request)
+{
+    Response response;
+
+    if (request.getType().compare("GET") == 1)
+        GETresponse(&request, &response);
+    else if (request.getType().compare("POST") == 0)
+        POSTresponse();
+    else if (request.getType().compare("DELETE") == 0)
+        DELETEresponse();
+    else
+        HEADresponse();
+    send(new_socket, response.getHello(), response.getSize(), MSG_OOB);
+}
+
+// NETWORKING --------------------------------------------------
 void init_socket(t_socket *_socket)
 {
     // init_socket -------------------------
@@ -31,24 +87,11 @@ void startServer(t_socket *_socket)
     }
 }
 
-long get_request(int new_socket)
-{
-    char buffer[30000] = {0};
-    long bytes = read(new_socket, buffer, 30000);
-    printf("%s\n", buffer);
-
-    return bytes;
-}
-
-void response(int new_socket)
-{
-    printf("%s\n", hello);
-    send(new_socket, hello, strlen(hello), MSG_OOB);
-}
 void LaunchServer()
 {
     t_socket _socket;
-    int request_num = 0;
+
+    Request request;
 
     init_socket(&_socket);
 
@@ -63,24 +106,21 @@ void LaunchServer()
 
     while (1)
     {
-        request_num++;
-        printf("----------- Waiting for new connection -------------\n");
-
+        ++request;
         if ((_socket.new_socket = accept(_socket.server_fd, (struct sockaddr *)&_socket.address, (socklen_t *)&_socket.addrlen)) < 0)
         {
             perror("In accept");
             exit(EXIT_FAILURE);
         }
-
+        printf("----------- New connection accepted -------------\n");
         if (_socket.new_socket > 0)
             printf("++++++++++++++ Request  ++++++++++++++++\n");
-        _socket.valread = get_request(_socket.new_socket);
-
+        _socket.valread = readRequest(_socket.new_socket, &request);
+        checkRequest(&request);
         printf("\n+++++++++++++ Response ++++++++++++++++++\n");
-        response(_socket.new_socket);
-
+        response(_socket.new_socket, request);
         close(_socket.new_socket);
-        printf("----------- End connection %d -------------\n ** \n", request_num);
+        printf("----------- End connection %d -------------\n ** \n", request.getRequestNum());
     }
     close(_socket.server_fd);
 }

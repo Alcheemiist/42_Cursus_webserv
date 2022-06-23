@@ -1,4 +1,4 @@
-# ifndef WEBSERVE_HPP
+#ifndef WEBSERVE_HPP
 #define WEBSERVE_HPP
 
 #include <stdio.h>
@@ -8,9 +8,11 @@
 #include <netinet/in.h>
 #include <string.h>
 
+#include <iostream>
+
 #define PORT 8080
 
 void LaunchServer();
-int  ParseConfig(const char *s);
+int ParseConfig(const std::string s);
 
 #endif
