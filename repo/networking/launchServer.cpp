@@ -76,66 +76,42 @@ void response(int new_socket, Request request)
     send(new_socket, response.getHello(), response.getSize(), MSG_OOB);
 }
 
-// NETWORKING --------------------------------------------------
-void init_socket(t_socket *_socket)
-{
-    // init_socket -------------------------
-    _socket->server_fd = 0;
-    _socket->new_socket = 0;
-    _socket->address.sin_family = AF_INET;
-    _socket->address.sin_addr.s_addr = INADDR_ANY;
-    _socket->address.sin_port = htons(PORT);
-    memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
-    _socket->addrlen = sizeof(_socket->address);
-    // ------------------------------------
-}
 
-void startServer(t_socket *_socket)
+
+
+// NETWORKING --------------------------------------------------
+void startServer(Socket *socket)
 {
     // startingServer -------------------------
-    if (bind(_socket->server_fd, (struct sockaddr *)&_socket->address, sizeof(_socket->address)) < 0)
+    if (bind(socket->getServer_fd(), (struct sockaddr *)&socket->getAddress(), sizeof(socket->getAddress())) < 0)
     {
         perror("In bind");
         exit(EXIT_FAILURE);
     }
-    if (listen(_socket->server_fd, 10) < 0)
+    if (listen(socket->getServer_fd(), 10) < 0)
     {
         perror("In listen");
         exit(EXIT_FAILURE);
     }
 }
 
-void LaunchServer()
+void LaunchServer(Config *c)
 {
-    t_socket _socket;
-
-    Request request;
-
-    init_socket(&_socket);
+    Socket      _socket;
+    Request     request;
+    (void )c;
 
     // Creating _socket file descriptor
-    if ((_socket.server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
-    {
-        perror("In socket");
-        exit(EXIT_FAILURE);
-    }
-
+    _socket.setServer_fd(socket(AF_INET, SOCK_STREAM, 0));
     startServer(&_socket);
-
     while (1)
     {
         ++request;
-        if ((_socket.new_socket = accept(_socket.server_fd, (struct sockaddr *)&_socket.address, (socklen_t *)&_socket.addrlen)) < 0)
-        {
-            perror("In accept");
-            exit(EXIT_FAILURE);
-        }
-
-        _socket.valread = readRequest(_socket.new_socket, &request);
+        _socket.setNew_socket(accept(_socket.getServer_fd(), (struct sockaddr *)&_socket.getAddress(), (socklen_t *)&_socket.getAddrlen()));
+        _socket.setValread(readRequest(_socket.getNew_socket(), &request));
         checkRequest(&request);
-
-        response(_socket.new_socket, request);
-        close(_socket.new_socket);
+        response(_socket.getNew_socket(), request);
+        close(_socket.getNew_socket());
     }
-    close(_socket.server_fd);
+    close(_socket.getServer_fd());
 }
