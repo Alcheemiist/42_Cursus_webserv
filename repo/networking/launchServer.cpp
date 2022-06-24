@@ -5,7 +5,7 @@
 long readRequest(int new_socket, Request *request)
 {
     request->setbytes(read(new_socket, request->getbuffer(), 30000));
-    std::cout << "%s\n", request->getbuffer();
+    std::cout << request->getbuffer() << std::endl;
     return request->getbytes();
 }
 
@@ -19,8 +19,13 @@ void GETresponse(Request *request, Response *response)
 {
     (void)request;
 
-    std::cout << "im doing get response\n";
-    std::cout << "%s\n", response->getHello();
+    std::cout << "Method " << request->getMethod() << std::endl;
+    std::cout << "path " << request->getPath() << std::endl;
+    std::cout << "Version " << request->getVersion() << std::endl;
+    std::cout << "Host " << request->getHost() << std::endl;
+    std::cout << "Connection " << request->getConnection() << std::endl;
+
+    std::cout << response->getHello() << std::endl;
 }
 
 void POSTresponse()
@@ -43,18 +48,31 @@ void HEADresponse()
     std::cout << "im doing head response\n";
 }
 
+void ERRORresponse(Request *request, Response *response)
+{
+    (void)request;
+    (void)response;
+    std::cout << "im doing error response\n";
+}
+
 void response(int new_socket, Request request)
 {
     Response response;
 
-    if (request.getType().compare("GET") == 1)
+    std::cout << "----> " << request.getMethod() << "\n ";
+
+    if (request.isGoodrequest())
+        ERRORresponse(&request, &response);
+
+    if (!(request.getMethod().compare("GET")))
         GETresponse(&request, &response);
-    else if (request.getType().compare("POST") == 0)
+    else if (request.getMethod().compare("POST") == 0)
         POSTresponse();
-    else if (request.getType().compare("DELETE") == 0)
+    else if (request.getMethod().compare("DELETE") == 0)
         DELETEresponse();
     else
         HEADresponse();
+
     send(new_socket, response.getHello(), response.getSize(), MSG_OOB);
 }
 
@@ -112,15 +130,12 @@ void LaunchServer()
             perror("In accept");
             exit(EXIT_FAILURE);
         }
-        std::cout << ("----------- New connection accepted -------------\n");
-        if (_socket.new_socket > 0)
-            std::cout << ("++++++++++++++ Request  ++++++++++++++++\n");
+
         _socket.valread = readRequest(_socket.new_socket, &request);
         checkRequest(&request);
-        std::cout << ("\n+++++++++++++ Response ++++++++++++++++++\n");
+
         response(_socket.new_socket, request);
         close(_socket.new_socket);
-        std::cout << "----------- End connection %d -------------\n ** \n", request.getRequestNum();
     }
     close(_socket.server_fd);
 }
