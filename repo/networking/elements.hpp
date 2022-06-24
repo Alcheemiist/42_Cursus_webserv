@@ -5,16 +5,6 @@
 
 char hello[1000] = "HTTP/1.1 200 OK\nAlchemist: is here\n\n<div class=\"hilite-title text-center text-uppercase\">ALCHEMIST</div>";
 
-typedef struct s_socket
-{
-    int server_fd;
-    int new_socket;
-    struct sockaddr_in address;
-    int addrlen;
-    long valread;
-
-} t_socket;
-
 class Request
 {
 private:
@@ -72,7 +62,6 @@ public:
     std::string getHost() const { return _host; };
     std::string getConnection() const { return _connection; };
 };
-
 class Response
 {
 private:
