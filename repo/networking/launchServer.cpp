@@ -4,8 +4,10 @@
 
 long readRequest(int new_socket, Request *request)
 {
-    request->setbytes(read(new_socket, request->getbuffer(), 30000));
-    std::cout << request->getbuffer() << std::endl;
+    char buffer[30000];
+    request->setbytes( recv(new_socket, buffer, 30000 , 0) );
+
+    std::cout << buffer << "*******************************************************************************************"<< std::endl;
     return request->getbytes();
 }
 
@@ -15,17 +17,51 @@ void checkRequest(Request *request)
 }
 
 // RESPONSE --------------------------------------------------
-void GETresponse(Request *request, Response *response)
+
+char *readFile(const char *fileName)
+{
+   FILE * pFile;
+   char     buffer [100];
+    char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
+
+   pFile = fopen (fileName , "r");
+
+   if (pFile == NULL) perror ("Error opening file");
+   else
+   {
+    int i  = 0;
+     while ( ! feof (pFile) )
+     {
+
+       if ( fgets (buffer , 100 , pFile) == NULL ) break;
+       strcpy(return_buffer + i, buffer);
+     }
+     fclose (pFile);
+   }
+
+   return return_buffer;
+}
+
+
+void GETresponse(Request *request, Response *response, Config *config)
 {
     (void)request;
+    (void )response;
+    (void )config;
 
-    std::cout << "Method " << request->getMethod() << std::endl;
-    std::cout << "path " << request->getPath() << std::endl;
-    std::cout << "Version " << request->getVersion() << std::endl;
-    std::cout << "Host " << request->getHost() << std::endl;
-    std::cout << "Connection " << request->getConnection() << std::endl;
+    // std::cout << " request file" << request->getPath() << std::endl;
 
-    std::cout << response->getHello() << std::endl;
+    // std::cout << " response file" << config->getDefaultpath() << std::endl;
+    
+    if (request->getPath() == "/index.html")
+    {
+        std::string s = ".";
+        s.append(config->getDefaultpath());
+        s.append(request->getPath());
+        response->setBody(readFile(s.c_str()));
+
+    }
+
 }
 
 void POSTresponse()
@@ -55,17 +91,17 @@ void ERRORresponse(Request *request, Response *response)
     std::cout << "im doing error response\n";
 }
 
-void response(int new_socket, Request request)
+void response(int new_socket, Request request, Config *config)
 {
     Response response;
-
-    std::cout << "----> " << request.getMethod() << "\n ";
 
     if (request.isGoodrequest())
         ERRORresponse(&request, &response);
 
     if (!(request.getMethod().compare("GET")))
-        GETresponse(&request, &response);
+        GETresponse(&request, &response, config);
+
+
     else if (request.getMethod().compare("POST") == 0)
         POSTresponse();
     else if (request.getMethod().compare("DELETE") == 0)
@@ -73,45 +109,75 @@ void response(int new_socket, Request request)
     else
         HEADresponse();
 
-    send(new_socket, response.getHello(), response.getSize(), MSG_OOB);
+
+
+
+
+
+
+
+
+    response.generateResponse();
+    send(new_socket, response.getResponse(), response.getSize(), MSG_OOB);
 }
 
-
-
-
 // NETWORKING --------------------------------------------------
-void startServer(Socket *socket)
+void init_socket(t_socket *_socket)
 {
-    // startingServer -------------------------
-    if (bind(socket->getServer_fd(), (struct sockaddr *)&socket->getAddress(), sizeof(socket->getAddress())) < 0)
+    // init_socket -------------------------
+    _socket->server_fd = 0;
+    _socket->new_socket = 0;
+    _socket->address.sin_family = AF_INET;
+    _socket->address.sin_addr.s_addr = INADDR_ANY;
+    _socket->address.sin_port = htons(PORT);
+    memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
+    _socket->addrlen = sizeof(_socket->address);
+    // ------------------------------------
+}
+
+void startServer(t_socket *socket)
+{
+    if (bind(socket->server_fd, (struct sockaddr *)&socket->address, sizeof(socket->address)) < 0)
     {
         perror("In bind");
         exit(EXIT_FAILURE);
     }
-    if (listen(socket->getServer_fd(), 10) < 0)
+    if (listen(socket->server_fd , 10) < 0)
     {
         perror("In listen");
         exit(EXIT_FAILURE);
     }
 }
 
-void LaunchServer(Config *c)
+void LaunchServer(Config *config)
 {
-    Socket      _socket;
     Request     request;
-    (void )c;
+    t_socket    _socket;
 
-    // Creating _socket file descriptor
-    _socket.setServer_fd(socket(AF_INET, SOCK_STREAM, 0));
+    init_socket(&_socket);
+    if ((_socket.server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    {
+        perror("In socket");
+        exit(EXIT_FAILURE);
+    }
     startServer(&_socket);
+
     while (1)
     {
         ++request;
-        _socket.setNew_socket(accept(_socket.getServer_fd(), (struct sockaddr *)&_socket.getAddress(), (socklen_t *)&_socket.getAddrlen()));
-        _socket.setValread(readRequest(_socket.getNew_socket(), &request));
+        if ((_socket.new_socket = accept(_socket.server_fd, (struct sockaddr *)&_socket.address, (socklen_t *)&_socket.addrlen)) < 0)
+        {
+            perror("In accept");
+            exit(EXIT_FAILURE);
+        }
+
+        _socket.valread = readRequest(_socket.new_socket, &request);
         checkRequest(&request);
-        response(_socket.getNew_socket(), request);
-        close(_socket.getNew_socket());
+
+        response(_socket.new_socket, request, config);
+
+        close(_socket.new_socket);
     }
-    close(_socket.getServer_fd());
+    close(_socket.server_fd);
+
 }

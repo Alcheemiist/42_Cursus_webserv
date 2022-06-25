@@ -32,7 +32,7 @@ public:
         bytes = 0;
         requestStatus = 0;
         _method = "GET";
-        _path = "/";
+        _path = "/index.html";
         _version = "HTTP/1.1";
         _host = "localhost";
         _connection = "keep-alive";
@@ -60,6 +60,7 @@ public:
     std::string getPath() const { return _path; };
     std::string getVersion() const { return _version; };
     std::string getHost() const { return _host; };
+    std::string getPort() const { return _port; };
     std::string getConnection() const { return _connection; };
 };
 class Response
@@ -70,12 +71,27 @@ private:
     // int responseStatus;
     std::string version;
     std::string status;
-    std::string body;
-
+    char *body;
+    char *response_buffer;
+    char *header;
 public:
-    Response() { strcpy(hello, "HTTP/1.1 200 OK\nAlchemist: is here\n\n<div>ALCHEMIST</div>"); };
+    Response() 
+    { 
+        strcpy(header, "HTTP/1.1 200 OK\n\n");
+    };
     const char *getHello() const { return hello; };
-    size_t getSize() const { return strlen(hello); };
+
+    void generateResponse()
+    {
+        strcpy(response_buffer, header);        
+        strcpy(response_buffer + 20, body);
+    }
+
+    size_t getSize() const { return strlen(response_buffer); };
+    char *getResponse() const { return response_buffer; };
+
+    void setBody(char *_body) { strcpy(body, _body); };
+    char *getBody() { return body; };
 };
 
 #endif
