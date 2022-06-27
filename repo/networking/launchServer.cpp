@@ -1,13 +1,19 @@
 #include "./elements.hpp"
 
-// REQUEST --------------------------------------------------
+Color::Modifier red(Color::FG_RED);
+Color::Modifier def(Color::FG_DEFAULT);
+Color::Modifier blue(Color::FG_BLUE);
+Color::Modifier green(Color::FG_GREEN);
+Color::Modifier B_red(Color::BG_RED);
 
+// REQUEST --------------------------------------------------
 long readRequest(int new_socket, Request *request)
 {
     char buffer[30000];
-    request->setbytes( recv(new_socket, buffer, 30000 , 0) );
-
-    std::cout << buffer << "*******************************************************************************************"<< std::endl;
+    request->setbytes( recv(new_socket, buffer, 3000000 , 0) );
+    std::cout << red << "\n----(Request*" << request->getRequestNum() << ")------- (N Bytes: " << request->getbytes() << ")------------ "<< def << std::endl;
+    std::cout << buffer << std::endl;
+    std::cout << red << "-------------------------------------------------" << def << std::endl;
     return request->getbytes();
 }
 
@@ -17,51 +23,44 @@ void checkRequest(Request *request)
 }
 
 // RESPONSE --------------------------------------------------
-
-char *readFile(const char *fileName)
+char *readFile(const char * fileName)
 {
-   FILE * pFile;
-   char     buffer [100];
+    FILE * pFile;
+    char     buffer [100];
     char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
 
-   pFile = fopen (fileName , "r");
-
-   if (pFile == NULL) perror ("Error opening file");
+    pFile = fopen (fileName , "r");
+   if (pFile == NULL)
+    {
+        perror ("Error opening file");
+        exit (1);
+    }
    else
    {
     int i  = 0;
      while ( ! feof (pFile) )
      {
-
        if ( fgets (buffer , 100 , pFile) == NULL ) break;
        strcpy(return_buffer + i, buffer);
+       i += strlen(buffer);
      }
      fclose (pFile);
    }
-
    return return_buffer;
 }
 
-
 void GETresponse(Request *request, Response *response, Config *config)
 {
-    (void)request;
-    (void )response;
     (void )config;
+    std::cout << blue << "********** Response Data ***********************" << def  << std::endl;
+    std::cout << "*- requeste file->" << request->getPath() << std::endl;
+    std::cout << "*- config D_file->" << config->getDefaultpath() << std::endl;
 
-    // std::cout << " request file" << request->getPath() << std::endl;
-
-    // std::cout << " response file" << config->getDefaultpath() << std::endl;
-    
-    if (request->getPath() == "/index.html")
+    if (request->getPath() == "./www/index.html")
     {
-        std::string s = ".";
-        s.append(config->getDefaultpath());
-        s.append(request->getPath());
-        response->setBody(readFile(s.c_str()));
-
+        response->generateResponse(request);
     }
-
+    std::cout << blue << "********** End  Response Data ******************" << def << std::endl;
 }
 
 void POSTresponse()
@@ -97,27 +96,14 @@ void response(int new_socket, Request request, Config *config)
 
     if (request.isGoodrequest())
         ERRORresponse(&request, &response);
-
     if (!(request.getMethod().compare("GET")))
         GETresponse(&request, &response, config);
-
-
     else if (request.getMethod().compare("POST") == 0)
         POSTresponse();
     else if (request.getMethod().compare("DELETE") == 0)
         DELETEresponse();
     else
         HEADresponse();
-
-
-
-
-
-
-
-
-
-    response.generateResponse();
     send(new_socket, response.getResponse(), response.getSize(), MSG_OOB);
 }
 
@@ -161,7 +147,6 @@ void LaunchServer(Config *config)
         exit(EXIT_FAILURE);
     }
     startServer(&_socket);
-
     while (1)
     {
         ++request;
@@ -170,12 +155,9 @@ void LaunchServer(Config *config)
             perror("In accept");
             exit(EXIT_FAILURE);
         }
-
         _socket.valread = readRequest(_socket.new_socket, &request);
         checkRequest(&request);
-
         response(_socket.new_socket, request, config);
-
         close(_socket.new_socket);
     }
     close(_socket.server_fd);
