@@ -3,7 +3,31 @@
 
 #include "../webserve.hpp"
 
-char hello[1000] = "HTTP/1.1 200 OK\nAlchemist: is here\n\n<div class=\"hilite-title text-center text-uppercase\">ALCHEMIST</div>";
+namespace Color {
+    enum Code {
+        FG_RED      = 31,
+        FG_GREEN    = 32,
+        FG_BLUE     = 34,
+        FG_DEFAULT  = 39,
+        BG_RED      = 41,
+        BG_GREEN    = 42,
+        BG_BLUE     = 44,
+        BG_DEFAULT  = 49
+    };
+    class Modifier {
+        Code code;
+    public:
+        Modifier(Code pCode) : code(pCode) {}
+        friend std::ostream&
+        operator<<(std::ostream& os, const Modifier& mod) {
+            return os << "\033[" << mod.code << "m";
+        }
+    };
+}
+
+
+
+char *readFile(const char * fileName);
 
 class Request
 {
@@ -32,7 +56,7 @@ public:
         bytes = 0;
         requestStatus = 0;
         _method = "GET";
-        _path = "/index.html";
+        _path = "./www/index.html";
         _version = "HTTP/1.1";
         _host = "localhost";
         _connection = "keep-alive";
@@ -73,23 +97,34 @@ private:
     std::string status;
     char *body;
     char *response_buffer;
-    char *header;
 public:
-    Response() 
-    { 
-        strcpy(header, "HTTP/1.1 200 OK\n\n");
+    Response(): version("HTTP/1.1"), status("200 OK")
+    {
+        // response_num = 0;
+        // responseStatus = 0;
+        body = NULL;
+        response_buffer = (char *)malloc(sizeof(char) * 30000000);
     };
+
     const char *getHello() const { return hello; };
 
-    void generateResponse()
+    void generateResponse(Request *request)
     {
-        strcpy(response_buffer, header);        
-        strcpy(response_buffer + 20, body);
-    }
+        char res[100000];
 
+        body = readFile(request->getPath().c_str());
+        
+        strcpy(res, version.c_str());
+        strcpy( res + strlen(version.c_str())  ,status.c_str());
+        strcpy( res + strlen(res)  ,readFile(request->getPath().c_str()));
+        strcpy(response_buffer, res);
+
+        // std::cout << "**************** Response *****************\n";
+        // std::cout << res << std::endl;
+        // std::cout << "**************** Response *****************\n";
+    }
     size_t getSize() const { return strlen(response_buffer); };
     char *getResponse() const { return response_buffer; };
-
     void setBody(char *_body) { strcpy(body, _body); };
     char *getBody() { return body; };
 };
