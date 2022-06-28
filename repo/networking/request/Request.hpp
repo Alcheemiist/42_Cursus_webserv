@@ -5,6 +5,7 @@
 #define REQUEST_HPP
 
 #include "../elements.hpp"
+#include <map>
 
 class Request
 {
@@ -14,6 +15,8 @@ private:
     long bytes;
     int request_num;
     int requestStatus;
+    size_t _content_length;
+    std::map<std::string, std::string> _headers;
     std::string _method;
     std::string _path;
     std::string _version;
@@ -24,6 +27,7 @@ private:
     std::string _accept_language;
     std::string _port;
     std::string _body;
+    bool        _is_complete;
 
 public:
     Request()
@@ -32,6 +36,7 @@ public:
         _type = "GET";
         bytes = 0;
         requestStatus = 0;
+        _content_length = 0;
         _method = "GET";
         _path = "./www/index.html";
         _version = "HTTP/1.1";
@@ -44,6 +49,9 @@ public:
         _body = "";
     };
 
+    Request(char *buffer, size_t bytes);
+    ~Request(){};
+    
     // OVERLOAD OPERATORS --------------------------------------------------
     Request &operator++() { ++request_num;  return *this; }
 
@@ -60,12 +68,14 @@ public:
     std::string getPath() const { return _path; };
     std::string getVersion() const { return _version; };
     std::string getHost() const { return _host; };
+    bool getIsComplete() const { return _is_complete; };
     std::string getPort() const { return _port; };
     std::string getConnection() const { return _connection; };
+    void        fill_body(char *buffer, size_t bytes);
 
     // METHODS --------------------------------------------------
     int isGoodrequest() { return (requestStatus); };
-
+    void parse(char *buffer);
 
 };
 
