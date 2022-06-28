@@ -29,7 +29,7 @@ char *readFile(const char * fileName)
 
 // NETWORKING --------------------------------------------------
 
-void init_socket(t_socket *_socket)
+void        init_socket(t_socket *_socket)
 {
     // init_socket -------------------------
     _socket->server_fd = 0;
@@ -40,9 +40,15 @@ void init_socket(t_socket *_socket)
     memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
     _socket->addrlen = sizeof(_socket->address);
     // ------------------------------------
+    // create socket -------------------------
+    if ((_socket->server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    {
+        perror("In socket");
+        exit(EXIT_FAILURE);
+    }
 }
 
-void startServer(t_socket *socket)
+void        startServer(t_socket *socket)
 {
     if (bind(socket->server_fd, (struct sockaddr *)&socket->address, sizeof(socket->address)) < 0)
     {
@@ -56,64 +62,81 @@ void startServer(t_socket *socket)
     }
 }
 
-void LaunchServer(Config *config)
+void        accepteConnection(t_socket *_socket)
 {
-    t_socket    _socket;
-    int        serv_response = 1;
-    bool        first = true;
-    std::map<int, Request> requests;
-
-    init_socket(&_socket);
-    if ((_socket.server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    std::cout << "Waiting for connection..." << std::endl;
+    if ((_socket->new_socket = accept(_socket->server_fd, (struct sockaddr *)&_socket->address, (socklen_t *)&_socket->addrlen)) < 0)
     {
-        perror("In socket");
+        perror("In accept");
         exit(EXIT_FAILURE);
     }
+}
 
+size_t      readSocketBuffer(t_socket *_socket, char *buffer)
+{
+    std::cout << "reading request" << std::endl;
+    return read(_socket->new_socket, buffer, BUFER_SIZE);
+}
+
+void        LaunchServer(Config *config)
+{
+    t_socket                _socket;
+    std::map<int, Request>  requests;
+
+    int        serv_response = 1;
+    bool        first = true;
+
+    init_socket(&_socket);
     startServer(&_socket);
-    
+
     while (1)
     {
         // ++request;
         if (serv_response == 1)
         {
-            std::cout << "Waiting for connection..." << std::endl;
-            if ((_socket.new_socket = accept(_socket.server_fd, (struct sockaddr *)&_socket.address, (socklen_t *)&_socket.addrlen)) < 0)
-            {
-                perror("In accept");
-                exit(EXIT_FAILURE);
-            }
+            accepteConnection(&_socket);
             serv_response = 2;
         }
         else if (serv_response == 2)
         {
-            std::cout << "reading request" << std::endl;
-            // _socket.valread = readRequest(_socket.new_socket, &request);
-
-
-            char *buffer = (char *)malloc(sizeof(char) * 30000);
-            size_t bytes = read(_socket.new_socket, buffer, 30000);
-            
+            char *buffer = (char *)malloc(sizeof(char) * BUFER_SIZE);
+            size_t bytes = readSocketBuffer(&_socket, buffer);
+            std::cout  << "     ScketBuffer was read     " << std::endl;
             if (first)
             {
                 std::cout << "first" << std::endl;
                 Request request(buffer, bytes);
-                requests.insert(std::pair<int, Request>(1, request));
+                requests.insert(std::pair<int, Request>(_socket.new_socket, request));
                 first = false;
             }
             else
-                requests[1].fill_body(buffer, bytes);
-            if (requests[1].getIsComplete())
+                requests[_socket.new_socket].fill_body(buffer, bytes);
+
+            if (requests[_socket.new_socket].getIsComplete())
+            {
+                std::cout << "request complete" <<  std::endl;
                 serv_response = 3;
+            }
         }
         else if (serv_response == 3)
         {
-            std::cout << "done" << std::endl;
-            response(_socket.new_socket, requests[1], config);
+            requests[_socket.new_socket].show();
+
+
+
+
+
+            response(_socket.new_socket, requests[_socket.new_socket], config);
+            
+            
+            
+            
             close(_socket.new_socket);
             serv_response = 1;
+            first = true;
         }
+
+        std::cout << "             served          " << serv_response << std::endl;
     }
     close(_socket.server_fd);
-
 }

@@ -7,6 +7,8 @@
 #include "./request/Request.hpp"
 #include "./response/Response.hpp"
 
+#define BUFER_SIZE 30000 //reading buffer size
+
 namespace Color {
     enum Code {
         FG_RED      = 31,
