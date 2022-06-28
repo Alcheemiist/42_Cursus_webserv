@@ -7,7 +7,8 @@
 #include <sys/stat.h>
 
 // split string by delimiter
-std::vector<std::string> split(const std::string &s, char delim) {
+std::vector<std::string> split(const std::string &s, char delim) 
+{
     std::vector<std::string> elems;
     std::stringstream ss(s);
     std::string item;
@@ -16,8 +17,6 @@ std::vector<std::string> split(const std::string &s, char delim) {
     }
     return elems;
 }
-
-// REQUEST --------------------------------------------------
 
 // calculate file size
 size_t getFileSize(const char *fileName)
@@ -29,7 +28,7 @@ size_t getFileSize(const char *fileName)
 
 void Request::fill_body(char *buffer, size_t bytes)
 {
-    std::cout << "content length: " << _content_length << std::endl;
+    std::cout << "contentSize: " << bytes << std::endl;
     int fd = open(this->_body.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
     write(fd, buffer, bytes);
     close(fd);
@@ -40,26 +39,56 @@ void Request::fill_body(char *buffer, size_t bytes)
     }
 }
 
+char* Request::readFile(const char * fileName)
+{
+    FILE * pFile;
+    char     buffer [100];
+    char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
+
+    pFile = fopen (fileName , "r");
+   if (pFile == NULL)
+    {
+        perror ("Error opening file");
+        exit (1);
+    }
+   else
+   {
+    int i  = 0;
+     while ( ! feof (pFile) )
+     {
+       if ( fgets (buffer , 100 , pFile) == NULL ) break;
+       strcpy(return_buffer + i, buffer);
+       i += strlen(buffer);
+     }
+     fclose (pFile);
+   }
+   return return_buffer;
+}
+
 Request::Request(char *buffer, size_t bytes)
 {
-    std::cout << "bytes" << bytes << std::endl;
     std::string request(buffer);
     std::stringstream ss(request);
     std::string line;
-    bool is_first = true;
     int offset = 0;
+    bool is_first = true;
+
     _content_length = 0;
     _method = "";
-    _port = "";
-    _body = "body.png";
+    _body = "bodyfile";
     _is_complete = false;
+
+    std::cout << "*> BytesToRead->{" << bytes << "} bufferSize->{"<< strlen(buffer) << "}" << std::endl;
 
     while (std::getline(ss, line))
     {
         offset += line.size() + 1;
+
         if (is_first)
         {
             std::vector<std::string> tmp = split(line, ' ');
+            if (tmp.size() != 3)
+                throw std::runtime_error("invalid request");
             this->_method = tmp[0];
             this->_path = tmp[1];
             this->_version = tmp[2];
@@ -70,8 +99,9 @@ Request::Request(char *buffer, size_t bytes)
             if (line == "\r")
                 break;
             std::vector<std::string> tmp = split(line, ':');
+            
             if (tmp[0] == "Host")
-                this->_host = tmp[1];
+                this->_host = std::make_pair(tmp[1], std::stoi(tmp[2]));
             else if (tmp[0] == "Connection")
                 this->_connection = tmp[1];
             else if (tmp[0] == "Accept")
@@ -80,10 +110,10 @@ Request::Request(char *buffer, size_t bytes)
                 this->_accept_encoding = tmp[1];
             else if (tmp[0] == "Accept-Language")
                 this->_accept_language = tmp[1];
-            else if (tmp[0] == "Port")
-                this->_port = tmp[1];
             else if (tmp[0] == "Content-Length")
                 this->_content_length = std::stoi(tmp[1]);
+            else if (tmp[0] == "Content-Type")
+                this->_content_type = tmp[1];
             else
                 this->_headers.insert(std::pair<std::string, std::string>(tmp[0], tmp[1]));
         }
@@ -94,37 +124,41 @@ Request::Request(char *buffer, size_t bytes)
         this->fill_body(buffer + offset, bytes - offset);
 }
 
-// long readRequest(int new_socket, Request *request)
-// {
-//     char *buffer = (char *)malloc(sizeof(char) * 30000000);
+void Request::show()
+{
+    Color::Modifier red(Color::FG_RED);
+    Color::Modifier def(Color::FG_DEFAULT);
+    Color::Modifier blue(Color::FG_BLUE);
+    Color::Modifier green(Color::FG_GREEN);
+    Color::Modifier B_red(Color::BG_RED);
 
-//     Color::Modifier red(Color::FG_RED);
-//     Color::Modifier def(Color::FG_DEFAULT);
-//     Color::Modifier blue(Color::FG_BLUE);
-//     Color::Modifier green(Color::FG_GREEN);
-//     Color::Modifier B_red(Color::BG_RED);
-
-//     // Read the request from the client
-//     request->setbytes( recv(new_socket, buffer, 3000000 , 0) );
-//     // int fd = open("request.txt", O_WRONLY | O_CREAT | O_APPEND, 0666);
-//     // write(fd, buffer, request->getbytes());
-//     // close(fd);
-//     // Print the request
-//     request->parse(buffer);
-
-//     std::cout << red << "\n----(Request*" << request->getRequestNum() << ")------- (N Bytes: " << request->getbytes() << ")------------ "<< def << std::endl;
-//     std::cout << buffer << std::endl;
-//     std::cout << red << "-------------------------------------------------" << def << std::endl;
+    std::cout << red << "--------------- Request ----------------- " << def << std::endl; 
+    std::cout << "method: " << this->_method << std::endl;
+    std::cout << "path: " << this->_path << std::endl;
+    std::cout << "version: " << this->_version << std::endl;
+    std::cout << "host: " << this->_host.first << ":" << this->_host.second << std::endl;
+    std::cout << "connection: " << this->_connection << std::endl;
+    std::cout << "accept: " << this->_accept << std::endl;
+    std::cout << "accept-encoding: " << this->_accept_encoding << std::endl;
+    std::cout << "accept-language: " << this->_accept_language << std::endl;
+    std::cout << "content-length: " << this->_content_length << std::endl;
+    std::cout << "content-type: " << this->_content_type << std::endl;
+    std::cout << "headers: " << std::endl;
     
-//     // Parse the request & fill the request object
+    std::cout << blue << "-----------------Others--------------------- " << def << std::endl;
+    for (auto it = this->_headers.begin(); it != this->_headers.end(); ++it)
+    {
+        std::cout << it->first << ": " << it->second << std::endl;
+    }
+    std::cout << green << "----------------- BODY=> " <<  getFileSize(this->_body.c_str())<< green << " ------------------------ "  << def  << std::endl;
+    std::cout << red << "--------------- End Request ----------------- " << def << std::endl; 
 
-//     // Print the request class attributes
 
-//     // Free local buffers
-//     free(buffer);
 
-//     return request->getbytes();
-// }
+
+
+}
+
 
 void checkRequest(Request *request)
 {

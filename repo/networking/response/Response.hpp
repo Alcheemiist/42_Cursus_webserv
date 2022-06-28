@@ -8,42 +8,47 @@
 class Response
 {
 private:
-    char hello[10000];
-    // int response_num;
-    // int responseStatus;
+
     std::string version;
     std::string status;
+
+    char *header;
     char *body;
-    char *response_buffer;
+    char *response;
+
+    char * responseStatus;
+    size_t body_length;
+
 public:
-    Response(): version("HTTP/1.1"), status("200 OK")
-    {
-        // response_num = 0;
-        // responseStatus = 0;
-        body = NULL;
-        response_buffer = (char *)malloc(sizeof(char) * 30000000);
+    
+    Response(): version(""),
+                status(""),
+                header(nullptr),
+                body(nullptr),
+                response(nullptr),
+                responseStatus(nullptr),
+                body_length(0) 
+    {};
+    
+
+    size_t size() const { return strlen(response); };
+    void setVersion(std::string version) { this->version = version; };
+    void setStatus(std::string status) { this->status = status; };
+
+    void setHeader(char *header) { this->header = header; };
+    void setBody(char *body) { this->body = body; };
+    void setResponseStatus( char * status) { this->responseStatus = status; };
+    void setResponseHeader() { this->header = (char *)this->version.c_str(); };
+
+
+    char *getResponse() const 
+    { 
+        strcpy(this->response, this->version.c_str());
+        strcpy(this->response + strlen(this->version.c_str()), this->responseStatus);
+        strcpy(this->response + strlen(this->version.c_str()) + strlen(this->responseStatus), this->body);
+        body_length = (const size_t)strlen((const char *)response);
+        return response;
     };
-
-    const char *getHello() const { return hello; };
-
-    void generateResponse(Request *request)
-    {
-        char res[100000];
-
-        body = readFile(request->getPath().c_str());
-        
-        strcpy(res, version.c_str());
-        strcpy( res + strlen(version.c_str())  ,status.c_str());
-        strcpy( res + strlen(res)  ,readFile(request->getPath().c_str()));
-        strcpy(response_buffer, res);
-
-        // std::cout << "**************** Response *****************\n";
-        // std::cout << res << std::endl;
-        // std::cout << "**************** Response *****************\n";
-    }
-    size_t getSize() const { return strlen(response_buffer); };
-    char *getResponse() const { return response_buffer; };
-    void setBody(char *_body) { strcpy(body, _body); };
     char *getBody() { return body; };
 };
 
