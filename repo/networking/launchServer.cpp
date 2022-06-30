@@ -90,7 +90,6 @@ void        LaunchServer(parse_config *config)
 
     while (1)
     {
-        // ++request;
         if (serv_response == 1)
         {
             accepteConnection(&_socket);
