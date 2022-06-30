@@ -6,9 +6,9 @@
 
 
 # TO_DO_LIST:
-## [Nobody] {Parsing Config_file + handling errors} + *CGI
+## [Nobody]         : {Parsing Config_file + handling errors} + *CGI
 
-## [Alchemist] Initializing servers + {Select/Poll  I/O} + Networking {Reading In/Request part ( parsing + handline erros )}
+## [Alchemist]      : Initializing servers + {Select/Poll  I/O} + Networking {Reading In/Request part ( parsing + handline erros )}
 - Problems:
 >
-## [illusionist] Networking {Out/Response part (Setting header & body + *CGI)}
+## [illusionist]    :  Networking {Out/Response part (Setting header & body + *CGI)}
