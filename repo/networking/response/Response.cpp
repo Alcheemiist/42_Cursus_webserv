@@ -24,9 +24,11 @@ void POSTresponse()
     std::cout << "im doing post response\n";
 }
 
-void GETresponse(Request *request, Response *response, Config *config)
+void GETresponse(Request *request, Response *response, parse_config *config)
 {
     (void )config;
+    (void )response;
+
     Color::Modifier red(Color::FG_RED);
     Color::Modifier def(Color::FG_DEFAULT);
     Color::Modifier blue(Color::FG_BLUE);
@@ -34,52 +36,41 @@ void GETresponse(Request *request, Response *response, Config *config)
     Color::Modifier B_red(Color::BG_RED);
     Color::Modifier B_green(Color::BG_GREEN);
     Color::Modifier B_blue(Color::BG_BLUE);
+    Color::Modifier B_def(Color::BG_DEFAULT);
 
-    std::cout << B_green << "IM DOING GET REQUEST" << def << std::endl;
+    std::cout << B_red << "IM DOING GET REQUEST"                                << B_def << std::endl;
+    std::cout << blue << "********** Response Data ***********************"     << def  << std::endl;
+    std::cout <<  B_green << "*- requeste file-> " << request->getPath()        << B_def << std::endl;
+    // std::cout <<  B_green << "*- config D_file-> " << config->  << B_def << std::endl;
 
 
-    std::cout << blue << "********** Response Data ***********************" << def  << std::endl;
-    
-    
-    
-    std::cout <<  B_green << "*- requeste file-> " << request->getPath() << def << std::endl;
-    std::cout <<  B_green << "*- config D_file-> " << config->getDefaultpath()  << def << std::endl;
 
     if (request->getPath() == "/")
     {
-        char *path = (char *)malloc(sizeof(char) * (strlen(config->getDefaultpath().c_str()) + 1) + strlen("/index.html"));
+        // char *path = (char *)malloc(sizeof(char) * (strlen(config->getDefaultpath().c_str()) + 1) + strlen("/index.html"));
         
-        strcpy(path, ".");
-        strcpy(path, config->getDefaultpath().c_str());
-        strcpy(path, "/index.html");
+        // strcpy(path, ".");
+        // strcpy(path, config->getDefaultpath().c_str());
+        // strcpy(path, "/index.html");
         
-        if (open(path, O_RDONLY) < 0)
-        {
-            response->setResponseStatus(" 404 OK\r\n");
-            response->setResponseHeader();
-            response->setBody("<h1>404 Not Found</h1>");
-        }
-        else
-        {
-            response->setResponseStatus(" 200 OK\r\n");
-            response->setResponseHeader();
-            response->setBody(readFile(path));
-        }
+        // if (open(path, O_RDONLY) < 0)
+        // {
+        //     response->setResponseStatus(" 404 OK\r\n");
+        //     response->setResponseHeader();
+        //     response->setBody("<h1>404 Not Found</h1>");
+        // }
+        // else
+        // {
+        //     response->setResponseStatus(" 200 OK\r\n");
+        //     response->setResponseHeader();
+        //     response->setBody(readFile(path));
+        // }
     }
 
-
-
-
-
     std::cout << blue << "********** End  Response Data ******************" << def << std::endl;
-
-
-
-
-
 }
 
-void response(int new_socket, Request request, Config *config)
+void response(int new_socket, Request request, parse_config *config)
 {
     Response response;
 
@@ -94,5 +85,5 @@ void response(int new_socket, Request request, Config *config)
     else
         ERRORresponse(&request, &response);
 
-    send(new_socket, response.getResponse(), response.size(), MSG_OOB);
+    send(new_socket, response.getResponse().c_str(), response.size(), MSG_OOB);
 }

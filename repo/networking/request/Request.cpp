@@ -22,7 +22,8 @@ std::vector<std::string> split(const std::string &s, char delim)
 size_t getFileSize(const char *fileName)
 {
     struct stat st;
-    stat(fileName, &st);
+    if (stat(fileName, &st) < 0)
+        return -1;
     return st.st_size;
 }
 
@@ -30,11 +31,14 @@ void Request::fill_body(char *buffer, size_t bytes)
 {
     std::cout << "contentSize: " << bytes << std::endl;
     int fd = open(this->_body.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
-    write(fd, buffer, bytes);
+    size_t writeBytes = write(fd, buffer, bytes);
     close(fd);
     if(this->_content_length <= getFileSize(this->_body.c_str()))
     {
-        // std::cout << "body size: " << getFileSize(this->_body.c_str()) << std::endl;
+
+        std::cout << "body size: " << getFileSize(this->_body.c_str()) << std::endl;
+        std::cout << "writeBytes: " << writeBytes << std::endl;
+        
         this->_is_complete = true;
     }
 }
@@ -67,9 +71,9 @@ char* Request::readFile(const char * fileName)
 
 Request::Request(char *buffer, size_t bytes)
 {
-    std::string request(buffer);
-    std::stringstream ss(request);
-    std::string line;
+    std::string         request(buffer);
+    std::stringstream   ss(request);
+    std::string         line;
     int offset = 0;
     bool is_first = true;
 
@@ -143,20 +147,15 @@ void Request::show()
     std::cout << "accept-language: " << this->_accept_language << std::endl;
     std::cout << "content-length: " << this->_content_length << std::endl;
     std::cout << "content-type: " << this->_content_type << std::endl;
-    std::cout << "headers: " << std::endl;
     
-    std::cout << blue << "-----------------Others--------------------- " << def << std::endl;
-    for (auto it = this->_headers.begin(); it != this->_headers.end(); ++it)
+    std::cout << blue << "-----------------Headers--------------------- " << def << std::endl;
+    for (std::map<std::string, std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); ++it)
     {
         std::cout << it->first << ": " << it->second << std::endl;
     }
-    std::cout << green << "----------------- BODY=> " <<  getFileSize(this->_body.c_str())<< green << " ------------------------ "  << def  << std::endl;
+    if (this->_content_length)
+        std::cout << green << "----------------- BODY=> " <<  getFileSize(this->_body.c_str())<< green << " ------------------------ "  << def  << std::endl;
     std::cout << red << "--------------- End Request ----------------- " << def << std::endl; 
-
-
-
-
-
 }
 
 

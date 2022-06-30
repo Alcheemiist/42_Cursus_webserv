@@ -6,6 +6,7 @@
 #include "../webserve.hpp"
 #include "./request/Request.hpp"
 #include "./response/Response.hpp"
+#include "../config/parse_confile.hpp"
 
 #define BUFER_SIZE 30000 //reading buffer size
 
