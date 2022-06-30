@@ -28,36 +28,41 @@ char        *readFile(const char * fileName)
 }
 
 // NETWORKING --------------------------------------------------
-void        init_socket(t_socket *_socket)
+void        init_socket(t_socket *_socket, parse_config *config)
 {
-    // init_socket -------------------------
-    _socket->server_fd = 0;
-    _socket->new_socket = 0;
-    _socket->address.sin_family = AF_INET;
-    _socket->address.sin_addr.s_addr = INADDR_ANY;
-    _socket->address.sin_port = htons(PORT);
-    memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
-    _socket->addrlen = sizeof(_socket->address);
-    // ------------------------------------
-    // create socket -------------------------
-    if ((_socket->server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    for (int i = 0; i < config->get_server_vect().size(); i++)
     {
-        perror("In socket");
-        exit(EXIT_FAILURE);
+        // init_socket -------------------------
+        _socket[i].server_fd = 0;
+        _socket[i].new_socket = 0;
+        _socket[i].address.sin_family = AF_INET;
+        _socket[i].address.sin_addr.s_addr = INADDR_ANY;
+        _socket[i].address.sin_port = htons(PORT);
+        memset(_socket[i].address.sin_zero, '\0', sizeof(_socket[i].address.sin_zero));
+        _socket[i].addrlen = sizeof(_socket[i].address);
+        // create socket -------------------------
+        if ((_socket[i].server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+        {
+            perror("In socket");
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
-void        startServer(t_socket *socket)
+void        startServer(t_socket *socket, parse_config *config)
 {
-    if (bind(socket->server_fd, (struct sockaddr *)&socket->address, sizeof(socket->address)) < 0)
+    for (int i = 0; i < config->get_server_vect().size() ; i++)
     {
-        perror("In bind");
-        exit(EXIT_FAILURE);
-    }
-    if (listen(socket->server_fd , 10) < 0)
-    {
-        perror("In listen");
-        exit(EXIT_FAILURE);
+        if (bind(socket[i].server_fd, (struct sockaddr *)&socket[i].address, sizeof(socket[i].address)) < 0)
+        {
+            perror("In bind");
+            exit(EXIT_FAILURE);
+        }
+        if (listen(socket[i].server_fd , 10) < 0)
+        {
+            perror("In listen");
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
@@ -79,22 +84,30 @@ size_t      readSocketBuffer(t_socket *_socket, char *buffer)
 
 void        LaunchServer(parse_config *config)
 {
-    t_socket                _socket;
+    t_socket                *_socket;
     std::map<int, Request>  requests;
 
     int        serv_response = 1;
     bool        first = true;
 
-    init_socket(&_socket);
-    startServer(&_socket);
+    init_socket(_socket, config);
+    startServer(_socket, config);
 
     while (1)
     {
         if (serv_response == 1)
         {
-            accepteConnection(&_socket);
+     
+            accepteConnection(_socket);
+     
+     
+     
+     
+     
             serv_response = 2;
         }
+
+        
         else if (serv_response == 2)
         {
             char *buffer = (char *)malloc(sizeof(char) * BUFER_SIZE);
