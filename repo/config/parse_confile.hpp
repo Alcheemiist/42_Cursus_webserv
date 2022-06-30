@@ -32,6 +32,7 @@ class parse_config
         std::vector<std::string> _lines;
         std::vector<std::string> _words;
         std::vector<server> _servers;
+        
     public:
         parse_config():_lines(), _words(), _servers(){};
         ~parse_config(){};
