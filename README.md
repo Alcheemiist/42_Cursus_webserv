@@ -1,3 +1,6 @@
 # INIT DIR DO NOT PUSH 
 # Problems:
 ## - not set the config file / the default config 
+    1- nobody : ....
+    2- illusionist: ....
+    3- alchemist: check
