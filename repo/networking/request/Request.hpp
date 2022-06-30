@@ -1,6 +1,5 @@
 #pragma once 
 
-
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
@@ -24,27 +23,15 @@ private:
     bool            _is_complete;
     std::string     _body;
     std::string     _accept_language;
-
     int             request_num;
     int             requestStatus;
 
 public:
-    Request() : _method(""),
-                _path("")  ,
-                _version("") ,
-                _host("", 0) ,
-                _connection("") ,
-                _accept("") ,
-                _accept_encoding("") ,
-                _content_type("") ,
-                _headers(std::map<std::string, std::string>()) ,
-                _content_length(0),
-                bytes(0) ,
-                _is_complete(false),
-                _body("") ,
-                _accept_language("") ,
-                request_num(0) ,
-                requestStatus(1)
+    Request() : _method(""), _path(""),  _version(""), _host("", 0),
+                _connection("") , _accept("") ,  _accept_encoding("") ,
+                _content_type("") , _headers(std::map<std::string, std::string>()) ,
+                _content_length(0),  bytes(0) ,  _is_complete(false),  _body("") ,
+                _accept_language("") , request_num(0) , requestStatus(1)
     {};
     Request(char *buffer, size_t bytes);
     ~Request(){};

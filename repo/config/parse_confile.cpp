@@ -1,6 +1,8 @@
 
 #include "parse_confile.hpp"
 #include "server.hpp"
+#include "../networking/elements.hpp"
+
 
 //--------methods--------
 
@@ -200,9 +202,18 @@ void    parse_config::read_server()
 {
     size_t i = 0;
 
+    Color::Modifier red(Color::FG_RED);
+    Color::Modifier def(Color::FG_DEFAULT);
+    Color::Modifier blue(Color::FG_BLUE);
+    Color::Modifier green(Color::FG_GREEN);
+    Color::Modifier B_red(Color::BG_RED);
+    Color::Modifier B_green(Color::BG_GREEN);
+    Color::Modifier B_blue(Color::BG_BLUE);
+    Color::Modifier B_def(Color::BG_DEFAULT);
+
     while (i < _servers.size())
     {
-        std::cout << "--------------SERVER" << i << "---------------" <<std::endl;
+        std::cout << red << "--------------SERVER" << i << "---------------" << def <<std::endl;
         unsigned int j = 0;
         std::cout << "server_names: ";
         while (j < this->_servers[i].get_name_size())
@@ -310,7 +321,7 @@ void    parse_config::read_server()
                 // }
             // }
             std::cout << std::endl;
-            std::cout << "***********************" << std::endl;
+            std::cout << green << "***********************" << def << std::endl;
             j++;
         }
         j = 0;
@@ -329,7 +340,7 @@ void    parse_config::read_server()
                 k++;
             }
             std::cout << std::endl;
-            std::cout << "***********************" << std::endl;
+            std::cout << green << "***********************" << def << std::endl;
             j++;
         }
         i++;

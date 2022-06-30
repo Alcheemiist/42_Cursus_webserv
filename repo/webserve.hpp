@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <iostream>
+#include "./config/parse_confile.hpp"
 
 #define PORT 8080
 
@@ -96,7 +97,7 @@ class Socket {
 
 };
 
-void LaunchServer(Config *c);
-int ParseConfig(const std::string s, Config *c);
+void LaunchServer(parse_config  *c);
+
 
 #endif

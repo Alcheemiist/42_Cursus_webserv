@@ -21,12 +21,13 @@
 #include <sstream>
 #include "location.hpp"
 #include "cgi.hpp"
+
 class cgi;
 class location;
 class server;
+
 class parse_config
 {
-    
     protected:
         std::vector<std::string> _lines;
         std::vector<std::string> _words;
@@ -51,5 +52,7 @@ class parse_config
         int                 basic_error(std::string , char const *, std::string);
         unsigned int        fill_index(std::vector<std::string>, unsigned int);
 };
+int parse_main(int argc, char **argv, parse_config *conf);
+
 
 #endif
