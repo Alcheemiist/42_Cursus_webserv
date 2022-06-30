@@ -17,6 +17,20 @@
 #include <iostream>
 class location;
 class cgi;
+
+
+class Socket;
+
+typedef struct s_socket
+{
+    int server_fd;
+    int new_socket;
+    struct sockaddr_in address;
+    int addrlen;
+    long valread;
+
+} t_socket;;
+
 class server
 {
     
@@ -34,6 +48,7 @@ protected:
     std::vector<cgi>                        _cgi;
     long long int                           _client_max_body_size;
     bool                                    _autoindex;
+    t_socket                                _socket;
 
 public:
     server();
