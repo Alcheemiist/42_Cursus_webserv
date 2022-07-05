@@ -1,47 +1,48 @@
 #include "./elements.hpp"
 
 // TOOLS --------------------------------------------------
-char        *readFile(const char * fileName)
+char *readFile(const char *fileName)
 {
-    FILE * pFile;
-    char     buffer [100];
+    FILE *pFile;
+    char buffer[100];
     char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
 
-    pFile = fopen (fileName , "r");
-   if (pFile == NULL)
+    pFile = fopen(fileName, "r");
+    if (pFile == NULL)
     {
-        perror ("Error opening file");
-        exit (1);
+        perror("Error opening file");
+        exit(1);
     }
-   else
-   {
-    int i  = 0;
-     while ( ! feof (pFile) )
-     {
-       if ( fgets (buffer , 100 , pFile) == NULL ) break;
-       strcpy(return_buffer + i, buffer);
-       i += strlen(buffer);
-     }
-     fclose (pFile);
-   }
-   return return_buffer;
+    else
+    {
+        int i = 0;
+        while (!feof(pFile))
+        {
+            if (fgets(buffer, 100, pFile) == NULL)
+                break;
+            strcpy(return_buffer + i, buffer);
+            i += strlen(buffer);
+        }
+        fclose(pFile);
+    }
+    return return_buffer;
 }
 
 // NETWORKING --------------------------------------------------
-void        init_socket(t_socket *_socket, parse_config *config)
+void init_socket(t_socket *_socket, parse_config *config)
 {
-    for (int i = 0; i < config->get_server_vect().size(); i++)
+    for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
     {
         // init_socket -------------------------
-        _socket[i].server_fd = 0;
-        _socket[i].new_socket = 0;
-        _socket[i].address.sin_family = AF_INET;
-        _socket[i].address.sin_addr.s_addr = INADDR_ANY;
-        _socket[i].address.sin_port = htons(PORT);
-        memset(_socket[i].address.sin_zero, '\0', sizeof(_socket[i].address.sin_zero));
-        _socket[i].addrlen = sizeof(_socket[i].address);
+        _socket->server_fd = 0;
+        _socket->new_socket = 0;
+        _socket->address.sin_family = AF_INET;
+        _socket->address.sin_addr.s_addr = INADDR_ANY;
+        _socket->address.sin_port = htons(PORT);
+        memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
+        _socket->addrlen = sizeof(_socket->address);
         // create socket -------------------------
-        if ((_socket[i].server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+        if ((_socket->server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
         {
             perror("In socket");
             exit(EXIT_FAILURE);
@@ -49,24 +50,23 @@ void        init_socket(t_socket *_socket, parse_config *config)
     }
 }
 
-void        startServer(t_socket *socket, parse_config *config)
+void startServer(t_socket *socket, parse_config *config)
 {
-    for (int i = 0; i < config->get_server_vect().size() ; i++)
+    (void)config;
+
+    if (bind(socket->server_fd, (struct sockaddr *)&socket->address, sizeof(socket->address)) < 0)
     {
-        if (bind(socket[i].server_fd, (struct sockaddr *)&socket[i].address, sizeof(socket[i].address)) < 0)
-        {
-            perror("In bind");
-            exit(EXIT_FAILURE);
-        }
-        if (listen(socket[i].server_fd , 10) < 0)
-        {
-            perror("In listen");
-            exit(EXIT_FAILURE);
-        }
+        perror("In bind");
+        exit(EXIT_FAILURE);
+    }
+    if (listen(socket->server_fd, 10) < 0)
+    {
+        perror("In listen");
+        exit(EXIT_FAILURE);
     }
 }
 
-void        accepteConnection(t_socket *_socket)
+void accepteConnection(t_socket *_socket)
 {
     std::cout << "Waiting for connection..." << std::endl;
     if ((_socket->new_socket = accept(_socket->server_fd, (struct sockaddr *)&_socket->address, (socklen_t *)&_socket->addrlen)) < 0)
@@ -76,43 +76,40 @@ void        accepteConnection(t_socket *_socket)
     }
 }
 
-size_t      readSocketBuffer(t_socket *_socket, char *buffer)
+size_t readSocketBuffer(t_socket *_socket, char *buffer)
 {
-    std::cout << "reading request" << std::endl;
+    // std::cout << "reading request" << std::endl;
     return read(_socket->new_socket, buffer, BUFER_SIZE);
 }
 
-void        LaunchServer(parse_config *config)
+void LaunchServer(parse_config *config)
 {
-    t_socket                *_socket;
-    std::map<int, Request>  requests;
+    t_socket _socket;
+    std::map<int, Request> requests;
 
-    int        serv_response = 1;
-    bool        first = true;
+    int serv_response = 1;
+    bool first = true;
+    // int index_sock = 0;
 
-    init_socket(_socket, config);
-    startServer(_socket, config);
+    init_socket(&_socket, config);
+    startServer(&_socket, config);
 
     while (1)
     {
         if (serv_response == 1)
         {
-     
-            accepteConnection(_socket);
-     
-     
-     
-     
-     
+
+            accepteConnection(&_socket);
+
             serv_response = 2;
         }
 
-        
         else if (serv_response == 2)
         {
+
             char *buffer = (char *)malloc(sizeof(char) * BUFER_SIZE);
             size_t bytes = readSocketBuffer(&_socket, buffer);
-            
+
             if (first)
             {
                 Request request(buffer, bytes);
@@ -130,12 +127,9 @@ void        LaunchServer(parse_config *config)
         else if (serv_response == 3)
         {
             requests[_socket.new_socket].show();
-           
-           
+
             response(_socket.new_socket, requests[_socket.new_socket], config);
-           
-           
-           
+
             close(_socket.new_socket);
             serv_response = 1;
             first = true;

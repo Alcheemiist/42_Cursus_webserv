@@ -7,12 +7,13 @@
 #include <sys/stat.h>
 
 // split string by delimiter
-std::vector<std::string> split(const std::string &s, char delim) 
+std::vector<std::string> split(const std::string &s, char delim)
 {
     std::vector<std::string> elems;
     std::stringstream ss(s);
     std::string item;
-    while (std::getline(ss, item, delim)) {
+    while (std::getline(ss, item, delim))
+    {
         elems.push_back(item);
     }
     return elems;
@@ -33,47 +34,51 @@ void Request::fill_body(char *buffer, size_t bytes)
     int fd = open(this->_body.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
     size_t writeBytes = write(fd, buffer, bytes);
     close(fd);
-    if(this->_content_length <= getFileSize(this->_body.c_str()))
+    if (this->_content_length <= getFileSize(this->_body.c_str()))
     {
 
         std::cout << "body size: " << getFileSize(this->_body.c_str()) << std::endl;
         std::cout << "writeBytes: " << writeBytes << std::endl;
-        
+
         this->_is_complete = true;
     }
 }
 
-char* Request::readFile(const char * fileName)
+char *Request::readFile(const char *fileName)
 {
-    FILE * pFile;
-    char     buffer [100];
+    FILE *pFile;
+    char buffer[100];
     char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
 
-    pFile = fopen (fileName , "r");
-   if (pFile == NULL)
+    pFile = fopen(fileName, "r");
+    if (pFile == NULL)
     {
-        perror ("Error opening file");
-        exit (1);
+        perror("Error opening file");
+        exit(1);
     }
-   else
-   {
-    int i  = 0;
-     while ( ! feof (pFile) )
-     {
-       if ( fgets (buffer , 100 , pFile) == NULL ) break;
-       strcpy(return_buffer + i, buffer);
-       i += strlen(buffer);
-     }
-     fclose (pFile);
-   }
-   return return_buffer;
+    else
+    {
+        int i = 0;
+        while (!feof(pFile))
+        {
+            if (fgets(buffer, 100, pFile) == NULL)
+                break;
+            strcpy(return_buffer + i, buffer);
+            i += strlen(buffer);
+        }
+        fclose(pFile);
+    }
+    return return_buffer;
 }
 
 Request::Request(char *buffer, size_t bytes)
 {
-    std::string         request(buffer);
-    std::stringstream   ss(request);
-    std::string         line;
+    Color::Modifier B_blue(Color::BG_BLUE);
+    Color::Modifier B_def(Color::BG_DEFAULT);
+
+    std::string request(buffer);
+    std::stringstream ss(request);
+    std::string line;
     int offset = 0;
     bool is_first = true;
 
@@ -82,7 +87,7 @@ Request::Request(char *buffer, size_t bytes)
     _body = "bodyfile";
     _is_complete = false;
 
-    std::cout << "*> BytesToRead->{" << bytes << "} bufferSize->{"<< strlen(buffer) << "}" << std::endl;
+    std::cout << B_blue << "> BytesToRead->{ " << bytes << " } bufferSize->{ " << strlen(buffer) << " }" << B_def << std::endl;
 
     while (std::getline(ss, line))
     {
@@ -103,7 +108,7 @@ Request::Request(char *buffer, size_t bytes)
             if (line == "\r")
                 break;
             std::vector<std::string> tmp = split(line, ':');
-            
+
             if (tmp[0] == "Host")
                 this->_host = std::make_pair(tmp[1], std::stoi(tmp[2]));
             else if (tmp[0] == "Connection")
@@ -136,7 +141,7 @@ void Request::show()
     Color::Modifier green(Color::FG_GREEN);
     Color::Modifier B_red(Color::BG_RED);
 
-    std::cout << red << "--------------- Request ----------------- " << def << std::endl; 
+    std::cout << red << "--------------- Request ----------------- " << def << std::endl;
     std::cout << "method: " << this->_method << std::endl;
     std::cout << "path: " << this->_path << std::endl;
     std::cout << "version: " << this->_version << std::endl;
@@ -147,17 +152,16 @@ void Request::show()
     std::cout << "accept-language: " << this->_accept_language << std::endl;
     std::cout << "content-length: " << this->_content_length << std::endl;
     std::cout << "content-type: " << this->_content_type << std::endl;
-    
+
     std::cout << blue << "-----------------Headers--------------------- " << def << std::endl;
     for (std::map<std::string, std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); ++it)
     {
         std::cout << it->first << ": " << it->second << std::endl;
     }
     if (this->_content_length)
-        std::cout << green << "----------------- BODY=> " <<  getFileSize(this->_body.c_str())<< green << " ------------------------ "  << def  << std::endl;
-    std::cout << red << "--------------- End Request ----------------- " << def << std::endl; 
+        std::cout << green << "----------------- BODY=> " << getFileSize(this->_body.c_str()) << green << " ------------------------ " << def << std::endl;
+    std::cout << red << "--------------- End Request ----------------- " << def << std::endl;
 }
-
 
 void checkRequest(Request *request)
 {

@@ -3,7 +3,6 @@
 #include "server.hpp"
 #include "../networking/elements.hpp"
 
-
 //--------methods--------
 
 size_t parse_config::get_lines_size() const
@@ -11,9 +10,7 @@ size_t parse_config::get_lines_size() const
     return (_lines.size());
 }
 
-
-
-void    parse_config::read_lines()
+void parse_config::read_lines()
 {
     for (std::vector<std::string>::iterator it = _lines.begin(); it != _lines.end(); ++it)
     {
@@ -21,7 +18,7 @@ void    parse_config::read_lines()
     }
 }
 
-void    parse_config::accolade_error()
+void parse_config::accolade_error()
 {
     size_t i = 0;
     int accolade = 0;
@@ -35,12 +32,12 @@ void    parse_config::accolade_error()
     }
     if (accolade != 0)
     {
-        std::cout <<"Error: File Not Well Formated(accolade error)" << std::endl;
-        exit(1); 
+        std::cout << "Error: File Not Well Formated(accolade error)" << std::endl;
+        exit(1);
     }
 }
 
-void       parse_config::split_by_space()
+void parse_config::split_by_space()
 {
     for (std::vector<std::string>::iterator it = _lines.begin(); it != _lines.end(); ++it)
     {
@@ -56,8 +53,7 @@ void       parse_config::split_by_space()
     }
 }
 
-
-unsigned int   parse_config::server_parsing(unsigned int &i)
+unsigned int parse_config::server_parsing(unsigned int &i)
 {
     server s;
     bool location_flag = false;
@@ -65,17 +61,17 @@ unsigned int   parse_config::server_parsing(unsigned int &i)
     while (1)
     {
         if (i >= _words.size() || (_words[i] == "}" && !location_flag && !cgi_flag))
-            break ;
+            break;
         if (_words[i] == "server_names")
             i = s.fill_name(_words, i);
         else if (_words[i] == "listen")
-            /*s.set_listen(_words[i + 1]);//*/i = s.fill_listen(_words, i);
+            /*s.set_listen(_words[i + 1]);//*/ i = s.fill_listen(_words, i);
         else if (_words[i] == "root")
             s.set_root(_words[i + 1]);
         else if (_words[i] == "allow_methods")
             i = s.fill_allowed_methods(_words, i);
         else if (_words[i] == "upload_path")
-            s.set_upload_path(_words[i + 1]); 
+            s.set_upload_path(_words[i + 1]);
         else if (_words[i] == "index")
             i = s.fill_index(_words, i);
         else if (_words[i] == "error_page")
@@ -89,7 +85,7 @@ unsigned int   parse_config::server_parsing(unsigned int &i)
         else if (_words[i] == "location")
             i = s.fill_location(_words, i, location_flag);
         else if (_words[i] == "cgi")
-           i = s.fill_cgi(_words, i, cgi_flag);
+            i = s.fill_cgi(_words, i, cgi_flag);
         i++;
     }
     s.set_to_default();
@@ -97,7 +93,7 @@ unsigned int   parse_config::server_parsing(unsigned int &i)
     return i;
 }
 
-void    parse_config::specified_words(std::string &tmp)
+void parse_config::specified_words(std::string &tmp)
 {
     std::string err;
     err = "Error: [";
@@ -105,17 +101,14 @@ void    parse_config::specified_words(std::string &tmp)
     err += "] is not a valid word";
     err += "undefined";
     if (tmp != "server_names" && tmp != "server" && tmp != "cgi_path" && tmp != "root" &&
-        tmp != "allow_methods" && tmp != "upload_path" && tmp != "index"
-        && tmp != "error_page" && tmp != "autoindex" && tmp != "redirection"
-        && tmp != "client_max_body_size" && tmp != "location" && tmp != "cgi"
-        && tmp != "{" && tmp != "}" && tmp != "listen")
-        {
-            std::cout << err << std::endl;
-            exit(1);    
-        }
+        tmp != "allow_methods" && tmp != "upload_path" && tmp != "index" && tmp != "error_page" && tmp != "autoindex" && tmp != "redirection" && tmp != "client_max_body_size" && tmp != "location" && tmp != "cgi" && tmp != "{" && tmp != "}" && tmp != "listen")
+    {
+        std::cout << err << std::endl;
+        exit(1);
+    }
 }
 
-void    parse_config::syntax_error()
+void parse_config::syntax_error()
 {
     for (std::vector<std::string>::iterator it = _lines.begin(); it != _lines.end(); ++it)
     {
@@ -135,7 +128,7 @@ void    parse_config::syntax_error()
     }
 }
 
-void    parse_config::check_host_server_names_error()
+void parse_config::check_host_server_names_error()
 {
     size_t i = 0;
     while (i < _servers.size())
@@ -152,8 +145,8 @@ void    parse_config::check_host_server_names_error()
                     while (y < _servers[k].get_name_size())
                     {
                         if (_servers[i].get_name(t).compare(_servers[k].get_name(y)) == 0)
-                        {    
-                            std::cout <<"Error: there is two server have same server_name and port" << std::endl;
+                        {
+                            std::cout << "Error: there is two server have same server_name and port" << std::endl;
                             exit(1);
                         }
                         y++;
@@ -167,38 +160,38 @@ void    parse_config::check_host_server_names_error()
     }
 }
 
-void    parse_config::start_parsing()
+void parse_config::start_parsing()
 {
-    std::cout << "Hello" << std::endl;
+    // std::cout << "Hello" << std::endl;
     split_by_space();
     if (_words.size() == 0)
     {
-        std::cout <<"Error: File Not Well Formated(no word)" << std::endl;
+        std::cout << "Error: File Not Well Formated(no word)" << std::endl;
         exit(1);
     }
-    std::cout << "BYE" << std::endl;
+    // std::cout << "BYE" << std::endl;
     accolade_error();
-    std::cout << "THREE" << std::endl;
+    // std::cout << "THREE" << std::endl;
     syntax_error();
-    std::cout << "FOUR" << std::endl;
+    // std::cout << "FOUR" << std::endl;
     for (unsigned int i = 0; i < _words.size(); i++)
     {
-		if (_words[i] == "server" && ((i + 1) < _words.size()))
+        if (_words[i] == "server" && ((i + 1) < _words.size()))
         {
-			i++;
-			if (_words[i] == "{")
-				i = parse_config::server_parsing(i);
-		}
-		else
+            i++;
+            if (_words[i] == "{")
+                i = parse_config::server_parsing(i);
+        }
+        else
         {
-            std::cout <<"Error: every server configuration must be startes by server" << std::endl;
+            std::cout << "Error: every server configuration must be startes by server" << std::endl;
             exit(1);
         }
-	}
+    }
     check_host_server_names_error();
 }
 
-void    parse_config::read_server()
+void parse_config::read_server()
 {
     size_t i = 0;
 
@@ -213,7 +206,7 @@ void    parse_config::read_server()
 
     while (i < _servers.size())
     {
-        std::cout << red << "--------------SERVER" << i << "---------------" << def <<std::endl;
+        std::cout << red << "--------------SERVER" << i << "---------------" << def << std::endl;
         unsigned int j = 0;
         std::cout << "server_names: ";
         while (j < this->_servers[i].get_name_size())
@@ -223,7 +216,7 @@ void    parse_config::read_server()
         }
         std::cout << std::endl;
         std::cout << "listen_host: " << this->_servers[i].get_listen_host() << std::endl;
-        std::cout << "listen_port: " <<this->_servers[i].get_listen_port() << std::endl;
+        std::cout << "listen_port: " << this->_servers[i].get_listen_port() << std::endl;
         std::cout << "root: " << this->_servers[i].get_root() << std::endl;
         j = 0;
         std::cout << "allowed_methods: ";
@@ -274,11 +267,11 @@ void    parse_config::read_server()
         while (j < _servers[i].get_location_size())
         {
             location t = this->_servers[i].get_location(j);
-            std::cout << "location_path: "<< t.get_locations_path() << std::endl;
+            std::cout << "location_path: " << t.get_locations_path() << std::endl;
             std::cout << "upload_path: " << t.get_upload_path() << std::endl;
-            std::cout << "max_body_size: "<< t.get_client_max_body_size() << std::endl;
+            std::cout << "max_body_size: " << t.get_client_max_body_size() << std::endl;
             unsigned int k = 0;
-            std::cout << "root: "<< t.get_root() << std::endl;
+            std::cout << "root: " << t.get_root() << std::endl;
             if (t.get_autoindex())
                 std::cout << "auto index: on" << std::endl;
             else
@@ -300,25 +293,25 @@ void    parse_config::read_server()
             // if (t.get_cgi_size() != 0)
             // {
             //     size_t m = 0;
-                // std::cout << std::endl;
-                // std::cout << "********CGI_LOCATION*********" << std::endl;
-                // while (m < t.get_cgi_size())
-                // {
-                //     cgi p = t.get_cgi(m);
-                //     std::cout << "cgi name:" << p.get_cgi_name() << std::endl;
-                //     std::cout << "cgi_path: "<< p.get_cgi_path() << std::endl;
-                //     unsigned int k = 0;
-                //     k = 0;
-                //     std::cout << "cgi_methods: ";
-                //     while (k < p.get_cgi_methods_size())
-                //     {
-                //         std::cout << p.get_cgi_methods(k) << " ";
-                //         k++;
-                //     }
-                //     std::cout << std::endl;
-                //     std::cout << "***********************" << std::endl;
-                //     m++;
-                // }
+            // std::cout << std::endl;
+            // std::cout << "********CGI_LOCATION*********" << std::endl;
+            // while (m < t.get_cgi_size())
+            // {
+            //     cgi p = t.get_cgi(m);
+            //     std::cout << "cgi name:" << p.get_cgi_name() << std::endl;
+            //     std::cout << "cgi_path: "<< p.get_cgi_path() << std::endl;
+            //     unsigned int k = 0;
+            //     k = 0;
+            //     std::cout << "cgi_methods: ";
+            //     while (k < p.get_cgi_methods_size())
+            //     {
+            //         std::cout << p.get_cgi_methods(k) << " ";
+            //         k++;
+            //     }
+            //     std::cout << std::endl;
+            //     std::cout << "***********************" << std::endl;
+            //     m++;
+            // }
             // }
             std::cout << std::endl;
             std::cout << green << "***********************" << def << std::endl;
@@ -330,7 +323,7 @@ void    parse_config::read_server()
         {
             cgi t = this->_servers[i].get_cgi(j);
             std::cout << "cgi name:" << t.get_cgi_name() << std::endl;
-            std::cout << "cgi_path: "<< t.get_cgi_path() << std::endl;
+            std::cout << "cgi_path: " << t.get_cgi_path() << std::endl;
             unsigned int k = 0;
             k = 0;
             std::cout << "cgi_methods: ";
@@ -354,7 +347,7 @@ int parse_config::basic_error(std::string error_message, char const *av, std::st
     else if (av && error_message != "")
         std::cout << error_message << av << std::endl;
     else if (error_message != "")
-        std::cout << error_message << std::endl;    
+        std::cout << error_message << std::endl;
     return (0);
 }
 
@@ -362,17 +355,17 @@ int parse_config::parsing_conf(int ac, char **av, std::vector<std::string> lines
 {
     (void)ac;
     (void)av;
-	set_lines(lines);
-	try
-	{
-		start_parsing();
-	}
-	catch (std::runtime_error &e)
-	{
-		std::cout << e.what() << std::endl;
-		return (0);
-	}
-	return (1);
+    set_lines(lines);
+    try
+    {
+        start_parsing();
+    }
+    catch (std::runtime_error &e)
+    {
+        std::cout << e.what() << std::endl;
+        return (0);
+    }
+    return (1);
 }
 
 //--------getters-------------
@@ -383,7 +376,7 @@ std::string parse_config::get_lines(int i) const
 }
 //--------setters-------------
 
-void   parse_config::set_lines(std::vector<std::string> lines)
+void parse_config::set_lines(std::vector<std::string> lines)
 {
     _lines = lines;
 }
