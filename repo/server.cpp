@@ -2,7 +2,7 @@
 #include "./config/parse_confile.hpp"
 #include <signal.h>
 
-void shutdown_properly(int code)
+void shutdown_properlyy(int code)
 {
     printf("Shutdown server properly.\n");
     exit(code);
@@ -13,12 +13,12 @@ void handle_signal_action(int sig_number)
     if (sig_number == SIGINT)
     {
         printf("SIGINT was catched!\n");
-        shutdown_properly(EXIT_SUCCESS);
+        shutdown_properlyy(EXIT_SUCCESS);
     }
     else if (sig_number == SIGPIPE)
     {
         printf("SIGPIPE was catched!\n");
-        shutdown_properly(EXIT_SUCCESS);
+        shutdown_properlyy(EXIT_SUCCESS);
     }
 }
 

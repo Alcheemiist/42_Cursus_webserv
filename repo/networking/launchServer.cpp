@@ -7,6 +7,8 @@
 t_socket *_socket = new t_socket;
 #define NO_SOCKET -1
 #define MAX_MESSAGES_BUFFER_SIZE 10
+int high_sock;
+#include <arpa/inet.h>
 
 // message --------------------------------------------------------------------
 typedef struct
@@ -96,14 +98,35 @@ char *readFile(const char *fileName)
 
 // NETWORKING --------------------------------------------------
 
-void accepteConnection(t_socket *_socket)
+int accepteConnection()
 {
-    std::cout << "Waiting for connection..." << std::endl;
     if ((_socket->new_socket = accept(_socket->server_fd, (struct sockaddr *)&_socket->address, (socklen_t *)&_socket->addrlen)) < 0)
     {
         perror("In accept");
         exit(EXIT_FAILURE);
     }
+
+    char client_ipv4_str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &_socket->address.sin_addr, client_ipv4_str, INET_ADDRSTRLEN);
+
+    printf("Incoming connection from %s:%d.\n", client_ipv4_str, _socket->address.sin_port);
+
+    int i;
+    for (i = 0; i < MAX_CLIENTS; ++i)
+    {
+        if (connection_list[i].socket == NO_SOCKET)
+        {
+            connection_list[i].socket = _socket->new_socket;
+            connection_list[i].addres = _socket->address;
+            connection_list[i].current_sending_byte = -1;
+            connection_list[i].current_receiving_byte = 0;
+            return 0;
+        }
+    }
+    printf("There is too much connections. Close new connection %s:%d.\n", client_ipv4_str, _socket->address.sin_port);
+    // close(new_client_sock);
+    return -1;
+    std::cout << "Waiting for connection..." << std::endl;
 }
 
 size_t readSocketBuffer(t_socket *_socket, char *buffer)
@@ -193,12 +216,60 @@ int build_fd_sets(fd_set *read_fds, fd_set *write_fds, fd_set *except_fds, int l
     return 0;
 }
 
+void shutdown_properly(int code)
+{
+    int i;
+
+    close(high_sock);
+
+    for (i = 0; i < MAX_CLIENTS; ++i)
+        if (connection_list[i].socket != NO_SOCKET)
+            close(connection_list[i].socket);
+
+    printf("Shutdown server properly.\n");
+    exit(code);
+}
+
+int build_fd_sets(fd_set *read_fds, fd_set *write_fds, fd_set *except_fds)
+{
+    int i;
+
+    for (i = 0; i < MAX_CLIENTS; ++i)
+    {
+        FD_ZERO(read_fds);
+        FD_SET((_socket + i)->server_fd, read_fds);
+        FD_SET((_socket + i)->new_socket, read_fds);
+        if (connection_list[i].socket != NO_SOCKET)
+            FD_SET(connection_list[i].socket, read_fds);
+    }
+
+    FD_ZERO(write_fds);
+    for (i = 0; i < MAX_CLIENTS; ++i)
+        if (connection_list[i].socket != NO_SOCKET && connection_list[i].send_buffer.current > 0)
+            FD_SET(connection_list[i].socket, write_fds);
+
+    FD_ZERO(except_fds);
+    FD_SET((_socket + i)->server_fd, except_fds);
+    FD_SET((_socket + i)->new_socket, except_fds);
+    for (i = 0; i < MAX_CLIENTS; ++i)
+        if (connection_list[i].socket != NO_SOCKET)
+            FD_SET(connection_list[i].socket, except_fds);
+
+    return 0;
+}
+
 void LaunchServer(parse_config *config)
 {
     std::map<int, Request> requests;
 
-    int serv_response = 1;
-    bool first = true;
+    int serv_response[config->get_server_vect().size()];
+    bool first[config->get_server_vect().size()];
+
+    for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
+        serv_response[i] = 1;
+
+    for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
+        first[i] = true;
 
     for (unsigned long index_socket = 0; index_socket < config->get_server_vect().size(); index_socket++)
     {
@@ -225,7 +296,7 @@ void LaunchServer(parse_config *config)
     fd_set write_fds;
     fd_set except_fds;
 
-    int high_sock = (_socket + (config->get_server_vect().size() - 1))->server_fd;
+    high_sock = (_socket + (config->get_server_vect().size() - 1))->server_fd;
     printf("Waiting for incoming connections.\n");
 
     while (1)
@@ -253,96 +324,107 @@ void LaunchServer(parse_config *config)
 
         default:
             /* All set fds should be checked. */
-            if (FD_ISSET(STDIN_FILENO, &read_fds))
-            {
-                if (handle_read_from_stdin() != 0)
+
+            for (unsigned long u = 0; u < config->get_server_vect().size(); u++)
+                if (FD_ISSET((_socket + u)->server_fd, &read_fds))
+                {
+                    if (serv_response[u] == 2)
+                    {
+
+                        char *buffer = (char *)malloc(sizeof(char) * BUFER_SIZE);
+                        size_t bytes = readSocketBuffer(_socket, buffer);
+
+                        if (first[u])
+                        {
+                            Request request(buffer, bytes);
+                            requests.insert(std::pair<int, Request>(_socket->new_socket, request));
+                            first[u] = false;
+                        }
+                        else
+                            requests[_socket->new_socket].fill_body(buffer, bytes);
+
+                        if (requests[_socket->new_socket].getIsComplete())
+                        {
+                            serv_response[u] = 3;
+                        }
+                    }
+
+                    if (serv_response[u] != 3 && serv_response[u] != 2)
+                        shutdown_properly(EXIT_FAILURE);
+                }
+
+            for (unsigned long u = 0; u < config->get_server_vect().size(); u++)
+                if (FD_ISSET((_socket + u)->new_socket, &read_fds))
+                {
+                    accepteConnection();
+                    serv_response[u] = 2;
+                }
+
+            for (unsigned long u = 0; u < config->get_server_vect().size(); u++)
+                if (FD_ISSET((_socket + u)->server_fd, &except_fds))
+                {
+                    printf("except_fds for stdin.\n");
                     shutdown_properly(EXIT_FAILURE);
-            }
-
-            if (FD_ISSET(listen_sock, &read_fds))
-            {
-                handle_new_connection();
-            }
-
-            if (FD_ISSET(STDIN_FILENO, &except_fds))
-            {
-                printf("except_fds for stdin.\n");
-                shutdown_properly(EXIT_FAILURE);
-            }
-
-            if (FD_ISSET(listen_sock, &except_fds))
-            {
-                printf("Exception listen socket fd.\n");
-                shutdown_properly(EXIT_FAILURE);
-            }
-
-            for (i = 0; i < MAX_CLIENTS; ++i)
-            {
-                if (connection_list[i].socket != NO_SOCKET && FD_ISSET(connection_list[i].socket, &read_fds))
-                {
-                    if (receive_from_peer(&connection_list[i], &handle_received_message) != 0)
-                    {
-                        close_client_connection(&connection_list[i]);
-                        continue;
-                    }
                 }
 
-                if (connection_list[i].socket != NO_SOCKET && FD_ISSET(connection_list[i].socket, &write_fds))
+            for (unsigned long u = 0; u < config->get_server_vect().size(); u++)
+                if (FD_ISSET((_socket + u)->new_socket, &except_fds))
                 {
-                    if (send_to_peer(&connection_list[i]) != 0)
-                    {
-                        close_client_connection(&connection_list[i]);
-                        continue;
-                    }
+                    printf("Exception listen socket fd.\n");
+                    shutdown_properly(EXIT_FAILURE);
                 }
 
-                if (connection_list[i].socket != NO_SOCKET && FD_ISSET(connection_list[i].socket, &except_fds))
+            for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
+            {
+                if (serv_response[i] == 3)
                 {
-                    printf("Exception client fd.\n");
-                    close_client_connection(&connection_list[i]);
-                    continue;
+                    requests[(_socket + i)->new_socket].show();
+                    response((_socket + i)->new_socket, &requests[(_socket + i)->new_socket], config);
+                    close((_socket + i)->new_socket);
+                    serv_response[i] = 1;
+                    first[i] = true;
                 }
+
+                // // if (connection_list[i].socket != NO_SOCKET && FD_ISSET(connection_list[i].socket, &read_fds))
+                // // {
+                // //     if (receive_from_peer(&connection_list[i], &handle_received_message) != 0)
+                // //     {
+                // //         close_client_connection(&connection_list[i]);
+                // //         continue;
+                // //     }
+                // // }
+
+                // // if (connection_list[i].socket != NO_SOCKET && FD_ISSET(connection_list[i].socket, &write_fds))
+                // // {
+                // //     if (send_to_peer(&connection_list[i]) != 0)
+                // //     {
+                // //         close_client_connection(&connection_list[i]);
+                // //         continue;
+                // //     }
+                // // }
+
+                // // if (connection_list[i].socket != NO_SOCKET && FD_ISSET(connection_list[i].socket, &except_fds))
+                // {
+                //     printf("Exception client fd.\n");
+                //     close_client_connection(&connection_list[i]);
+                //     continue;
+                // }
             }
         }
 
-        if (serv_response == 1)
-        {
-
-            accepteConnection(_socket);
-
-            serv_response = 2;
-        }
-        else if (serv_response == 2)
-        {
-
-            char *buffer = (char *)malloc(sizeof(char) * BUFER_SIZE);
-            size_t bytes = readSocketBuffer(_socket, buffer);
-
-            if (first)
-            {
-                Request request(buffer, bytes);
-                requests.insert(std::pair<int, Request>(_socket->new_socket, request));
-                first = false;
-            }
-            else
-                requests[_socket->new_socket].fill_body(buffer, bytes);
-
-            if (requests[_socket->new_socket].getIsComplete())
-            {
-                serv_response = 3;
-            }
-        }
-        else if (serv_response == 3)
-        {
-            requests[_socket->new_socket].show();
-
-            response(_socket->new_socket, &requests[_socket->new_socket], config);
-
-            close(_socket->new_socket);
-            serv_response = 1;
-            first = true;
-        }
+        // if (serv_response == 1)
+        // {
+        // }
+        // else if (serv_response == 2)
+        // {
+        // }
+        // else if (serv_response == 3)
+        // {
+        // }
     }
-
-    close(_socket->server_fd);
+    for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
+    {
+        close((_socket + i)->server_fd);
+        close((_socket + i)->new_socket);
+    }
 }
