@@ -11,7 +11,7 @@ void ERRORresponse(Request *request, Response *response)
 
     (void)request;
     (void)response;
-    std::cout << B_red << "im doing error response status= " << red <<  request->getRequestStatus() << def << std::endl;
+    std::cout << B_red << "im doing error response status= " << red << request->getRequestStatus() << def << std::endl;
 }
 
 void DELETEresponse()
@@ -26,8 +26,8 @@ void POSTresponse()
 
 void GETresponse(Request *request, Response *response, parse_config *config)
 {
-    (void )config;
-    (void )response;
+    (void)config;
+    (void)response;
 
     Color::Modifier red(Color::FG_RED);
     Color::Modifier def(Color::FG_DEFAULT);
@@ -38,21 +38,19 @@ void GETresponse(Request *request, Response *response, parse_config *config)
     Color::Modifier B_blue(Color::BG_BLUE);
     Color::Modifier B_def(Color::BG_DEFAULT);
 
-    std::cout << B_red << "IM DOING GET REQUEST"                                << B_def << std::endl;
-    std::cout << blue << "********** Response Data ***********************"     << def  << std::endl;
-    std::cout <<  B_green << "*- requeste file-> " << request->getPath()        << B_def << std::endl;
+    std::cout << B_red << "IM DOING GET REQUEST" << B_def << std::endl;
+    std::cout << blue << "********** Response Data ***********************" << def << std::endl;
+    std::cout << B_green << "*- requeste file-> " << request->getPath() << B_def << std::endl;
     // std::cout <<  B_green << "*- config D_file-> " << config->  << B_def << std::endl;
-
-
 
     if (request->getPath() == "/")
     {
         // char *path = (char *)malloc(sizeof(char) * (strlen(config->getDefaultpath().c_str()) + 1) + strlen("/index.html"));
-        
+
         // strcpy(path, ".");
         // strcpy(path, config->getDefaultpath().c_str());
         // strcpy(path, "/index.html");
-        
+
         // if (open(path, O_RDONLY) < 0)
         // {
         //     response->setResponseStatus(" 404 OK\r\n");
@@ -70,20 +68,20 @@ void GETresponse(Request *request, Response *response, parse_config *config)
     std::cout << blue << "********** End  Response Data ******************" << def << std::endl;
 }
 
-void response(int new_socket, Request request, parse_config *config)
+void response(int new_socket, Request *request, parse_config *config)
 {
     Response response;
 
-    if (!request.isGoodrequest())
-        ERRORresponse(&request, &response);
-    else if (!(request.getMethod().compare("GET")))
-        GETresponse(&request, &response, config);
-    else if (request.getMethod().compare("POST") == 0)
+    if (!request->isGoodrequest())
+        ERRORresponse(request, &response);
+    else if (!(request->getMethod().compare("GET")))
+        GETresponse(request, &response, config);
+    else if (request->getMethod().compare("POST") == 0)
         POSTresponse();
-    else if (request.getMethod().compare("DELETE") == 0)
+    else if (request->getMethod().compare("DELETE") == 0)
         DELETEresponse();
     else
-        ERRORresponse(&request, &response);
+        ERRORresponse(request, &response);
 
     send(new_socket, response.getResponse().c_str(), response.size(), MSG_OOB);
 }
