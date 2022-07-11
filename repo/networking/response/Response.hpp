@@ -17,7 +17,7 @@ private:
     size_t body_length;
 
 public:
-    Response() : version(""), status(""), header(""), body(""), response(""), responseStatus(""), body_length(0){};
+    Response() : version("HTTP/1.1 "), status("200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0){};
     void setVersion(std::string version) { this->version = version; };
     void setStatus(std::string status) { this->status = status; };
     void setHeader(char *header) { this->header = header; };
@@ -25,7 +25,15 @@ public:
     void setResponseStatus(char *status) { this->responseStatus = status; };
     void setResponseHeader() { this->header = (char *)this->version.c_str(); };
     size_t size() const { return body_length; };
-    std::string getResponse() const { return response; };
+    std::string getResponse() const
+    {
+        std::string res;
+        res.append(version);
+        res.append(status);
+        res.append("\r\n\r\n");
+        res.append(body);
+        return res;
+    };
     std::string getBody() { return body; };
 };
 
