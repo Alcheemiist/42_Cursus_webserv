@@ -84,7 +84,7 @@ Request::Request(char *buffer, size_t bytes)
 
     _content_length = 0;
     _method = "";
-    _body = "bodyfile";
+    _body = "";
     _is_complete = false;
 
     std::cout << B_blue << "> BytesToRead->{ " << bytes << " } bufferSize->{ " << strlen(buffer) << " }" << B_def << std::endl;
@@ -98,6 +98,7 @@ Request::Request(char *buffer, size_t bytes)
             std::vector<std::string> tmp = split(line, ' ');
             if (tmp.size() != 3)
                 throw std::runtime_error("invalid request");
+            std::cout << B_blue << "is_first " << tmp[0] << " " << tmp[1] << B_def << std::endl;
             this->_method = tmp[0];
             this->_path = tmp[1];
             this->_version = tmp[2];
