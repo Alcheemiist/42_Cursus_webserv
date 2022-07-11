@@ -128,6 +128,7 @@ void LaunchServer(parse_config *config)
     //         max_fd = sock;
     // }
     // int select_ret;
+    int index = 0;
 
     while (1)
     {
@@ -144,26 +145,27 @@ void LaunchServer(parse_config *config)
             if (first)
             {
                 Request request(buffer, bytes);
-                requests.insert(std::pair<int, Request>(0, request));
+                requests.insert(std::pair<int, Request>(index, request));
                 first = false;
             }
             else
-                requests[0].fill_body(buffer, bytes);
+                requests[index].fill_body(buffer, bytes);
 
-            if (requests[0].getIsComplete())
+            if (requests[index].getIsComplete())
             {
                 serv_response = 3;
             }
         }
         else if (serv_response == 3) // sending request
         {
-            requests[0].show();
+            requests[index].show();
 
-            response((__socket)->new_socket, &requests[0], config);
+            response((__socket)->new_socket, &requests[index], config);
 
             close((__socket)->new_socket);
             serv_response = 1;
             first = true;
+            index++;
         }
     }
 
