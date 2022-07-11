@@ -1,5 +1,6 @@
 #include "../elements.hpp"
 #include <fcntl.h>
+#include <sys/stat.h>
 
 void ERRORresponse(Request *request, Response *response)
 {
@@ -36,18 +37,33 @@ void GETresponse(Request *request, Response *response, parse_config *config)
     Color::Modifier B_def(Color::BG_DEFAULT);
 
     std::cout << B_red << "IM DOING GET REQUEST" << B_def << std::endl;
-
     std::cout << blue << "********** Response Data ***********************" << def << std::endl;
     std::cout << B_green << "*- requeste file-> " << request->getPath() << B_def << std::endl;
 
-    if (request->getPath() == "/")
+    if (!request->getPath().empty())
     {
         char *path = (char *)malloc(sizeof(char) * (strlen(config[0].get_server_vect()[0].get_root().c_str()) + 1) + strlen("/index.html"));
         strcpy(path, config[0].get_server_vect()[0].get_root().c_str());
-        strcpy(path + (strlen(path)), "index.html");
+
+        if (request->getPath() == "/")
+            strcpy(path + (strlen(path)), "index.html");
+        else
+            strcpy(path + (strlen(path) - 1), request->getPath().c_str());
+
         std::cout << B_blue << " body file path : " << path << B_def << std::endl;
 
-        if (open(path, O_RDONLY) < 0)
+        if (stat(path, NULL))
+        {
+
+            std::cout << green << " prepare 200 response" << def << std::endl;
+            char s2[20];
+            strcpy(s2, " 200 OK\r\n");
+            response->setResponseStatus(s2);
+            response->setResponseHeader();
+            response->setBody(readFile(path));
+            // std::cout << "reading file : " << readFile(path) << std::endl;
+        }
+        else
         {
             char s[20];
             strcpy(s, " 404 OK\r\n");
@@ -56,16 +72,6 @@ void GETresponse(Request *request, Response *response, parse_config *config)
             char s1[20];
             strcpy(s1, "<h1>404 Not Found</h1>");
             response->setBody(s1);
-        }
-        else
-        {
-            std::cout << green << " prepare 200 response" << def << std::endl;
-            char s2[20];
-            strcpy(s2, " 200 OK\r\n");
-            response->setResponseStatus(s2);
-            response->setResponseHeader();
-            response->setBody(readFile(path));
-            // std::cout << "reading file : " << readFile(path) << std::endl;
         }
     }
 
