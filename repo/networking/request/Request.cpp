@@ -51,6 +51,7 @@ char *Request::readFile(const char *fileName)
     char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
 
     pFile = fopen(fileName, "r");
+    std::cout << "FileName: " << fileName << std::endl;
     if (pFile == NULL)
     {
         perror("Error opening file");

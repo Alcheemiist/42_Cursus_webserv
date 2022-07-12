@@ -45,8 +45,13 @@ void GETresponse(Request *request, Response *response, parse_config *config)
         char *path = (char *)malloc(sizeof(char) * (strlen(config[0].get_server_vect()[0].get_root().c_str()) + 1) + strlen("/index.html"));
         strcpy(path, config[0].get_server_vect()[0].get_root().c_str());
 
+        // #TODO: check if file exists and is readable
+        // #FIXME: check if file exists and is readable
+
         if (request->getPath() == "/")
             strcpy(path + (strlen(path)), "index.html");
+        else if (request->getPath() == "/assets/fonts/fontawesome-webfont.woff2?v=4.6.3")
+            strcpy(path + (strlen(path) - 1), "/assets/fonts/fontawesome-webfont.woff2");
         else
             strcpy(path + (strlen(path) - 1), request->getPath().c_str());
 

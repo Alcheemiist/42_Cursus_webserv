@@ -1,28 +1,19 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   location.cpp                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: yhebbat <yhebbat@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/05/01 02:38:24 by yhebbat           #+#    #+#             */
-/*   Updated: 2022/05/01 02:38:25 by yhebbat          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+
 
 #include "location.hpp"
 
 location::location() : _locations_path(""),
-                        _allow_methods(std::vector<std::string>()),
-                        _root(""),
-                        _client_max_body_size(-1),  
-                        _index(std::vector<std::string>()),
-                        _autoindex(false),
-                        _upload_path("")
-                        {}
+                       _allow_methods(std::vector<std::string>()),
+                       _root(""),
+                       _client_max_body_size(-1),
+                       _index(std::vector<std::string>()),
+                       _autoindex(false),
+                       _upload_path("")
+{
+}
 location::~location() {}
 
-//copy constructor
+// copy constructor
 location::location(const location &obj)
 {
     if (this != &obj)
@@ -32,19 +23,19 @@ location::location(const location &obj)
 }
 
 /*
-* GETTERS
-*/
-std::string                 location::get_locations_path() const{ return this->_locations_path; }
-std::vector<std::string>    location::get_methods() const { return this->_allow_methods; }
-std::vector<std::string>    location::get_index() const { return this->_index; }
-std::string                 location::get_root() const { return this->_root; }
-bool                        location::get_autoindex() const { return this->_autoindex; }
-long long int               location::get_client_max_body_size() const { return this->_client_max_body_size; }
-std::string                 location::get_upload_path() const{return _upload_path; }
+ * GETTERS
+ */
+std::string location::get_locations_path() const { return this->_locations_path; }
+std::vector<std::string> location::get_methods() const { return this->_allow_methods; }
+std::vector<std::string> location::get_index() const { return this->_index; }
+std::string location::get_root() const { return this->_root; }
+bool location::get_autoindex() const { return this->_autoindex; }
+long long int location::get_client_max_body_size() const { return this->_client_max_body_size; }
+std::string location::get_upload_path() const { return _upload_path; }
 
 /*
-* SETTERS
-*/
+ * SETTERS
+ */
 void location::set_locations_path(std::string locations_path) { this->_locations_path = locations_path; }
 void location::set_methods(std::string methods)
 {
@@ -56,7 +47,8 @@ void location::set_methods(std::string methods)
         exit(1);
     }
 }
-void location::set_root(std::string root) {
+void location::set_root(std::string root)
+{
     if (not_predefined(root))
         this->_root = root;
     else
@@ -67,23 +59,23 @@ void location::set_root(std::string root) {
 }
 void location::set_autoindex(bool autoindex) { this->_autoindex = autoindex; }
 void location::set_index(std::string index) { this->_index.push_back(index); }
-bool location::is_number(const std::string& str)
+bool location::is_number(const std::string &str)
 {
-	for (size_t i = 0; i < str.length(); i++)
-	{
-		char current = str[i];
-		if (current >= '0' && current <= '9')
-			continue;
-		return false;
-	}
-	return true;
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        char current = str[i];
+        if (current >= '0' && current <= '9')
+            continue;
+        return false;
+    }
+    return true;
 }
 
-void    location::set_client_max_body_size(std::string client_max_body_size)
+void location::set_client_max_body_size(std::string client_max_body_size)
 {
-   // std::cout << "inside location " << client_max_body_size << std::endl;
+    // std::cout << "inside location " << client_max_body_size << std::endl;
     if (not_predefined(client_max_body_size) && is_number(client_max_body_size))
-       this->_client_max_body_size =std::stoi(client_max_body_size);
+        this->_client_max_body_size = std::stoi(client_max_body_size);
     else
     {
         std::cout << "Error: client max body size should be number" << std::endl;
@@ -91,21 +83,20 @@ void    location::set_client_max_body_size(std::string client_max_body_size)
     }
 }
 
-void    location::set_upload_path(std::string upload_path)
+void location::set_upload_path(std::string upload_path)
 {
     if (not_predefined(upload_path))
         _upload_path = upload_path;
     else
     {
-        std::cout << "Error: upload_path is empty" << std::endl; 
+        std::cout << "Error: upload_path is empty" << std::endl;
         exit(1);
     }
 }
 
 /*
-* methods
-*/
-
+ * methods
+ */
 
 unsigned int location::fill_allowed_methods(std::vector<std::string> words, unsigned int i)
 {
@@ -127,19 +118,14 @@ unsigned int location::fill_allowed_methods(std::vector<std::string> words, unsi
 unsigned int location::fill_index(std::vector<std::string> words, unsigned int i)
 {
     i++;
-    while (i < words.size() && words[i] != "}" && words[i] != "server" && words[i] != "{" && words[i] != "listen" 
-            && words[i] != "root" && words[i] != "allow_methods"
-            && words[i] != "upload_path" && words[i] != "index"
-            && words[i] != "error_page" && words[i] != "autoindex"
-            && words[i] != "redirection" && words[i] != "client_max_body_size"
-            && words[i] != "location" && words[i] != "cgi")
+    while (i < words.size() && words[i] != "}" && words[i] != "server" && words[i] != "{" && words[i] != "listen" && words[i] != "root" && words[i] != "allow_methods" && words[i] != "upload_path" && words[i] != "index" && words[i] != "error_page" && words[i] != "autoindex" && words[i] != "redirection" && words[i] != "client_max_body_size" && words[i] != "location" && words[i] != "cgi")
     {
         set_index(words[i]);
         i++;
     }
     if (get_index_size() == 0)
     {
-        std::cout << "Error: location index is empty" << std::endl; 
+        std::cout << "Error: location index is empty" << std::endl;
         exit(1);
     }
     i--;
@@ -160,10 +146,9 @@ unsigned int location::get_index_size() const
     return (_index.size());
 }
 
-
-std::string                 location::get_index(unsigned int i) const
+std::string location::get_index(unsigned int i) const
 {
-    return  (this->_index[i]);
+    return (this->_index[i]);
 }
 
 unsigned int location::get_methods_size() const
@@ -171,15 +156,14 @@ unsigned int location::get_methods_size() const
     return (_allow_methods.size());
 }
 
-
-std::string                 location::get_methods(unsigned int i) const
+std::string location::get_methods(unsigned int i) const
 {
-    return  (this->_allow_methods[i]);
+    return (this->_allow_methods[i]);
 }
 
-void    location::set_client_max_body_size(long long int client_max_body_size)
+void location::set_client_max_body_size(long long int client_max_body_size)
 {
-    //std::cout << "inside location 55" << client_max_body_size << std::endl;
+    // std::cout << "inside location 55" << client_max_body_size << std::endl;
     _client_max_body_size = client_max_body_size;
 }
 
@@ -187,7 +171,7 @@ void    location::set_client_max_body_size(long long int client_max_body_size)
     operator
 */
 
-location    &location::operator=(location const &rhs)
+location &location::operator=(location const &rhs)
 {
     this->_locations_path = rhs._locations_path;
     this->_allow_methods = rhs._allow_methods;
@@ -201,13 +185,7 @@ location    &location::operator=(location const &rhs)
 
 bool location::not_predefined(std::string &word) const
 {
-    if (word != "}" && word != "server" && word != "{" && word != "listen" 
-            && word != "root" && word != "allow_methods" && word != "server_names"
-            && word != "upload_path" && word != "index"
-            && word != "error_page" && word != "autoindex"
-            && word != "redirection" && word != "client_max_body_size"
-            && word != "location" && word != "cgi" && word != "cgi_path")
-            return (1);
+    if (word != "}" && word != "server" && word != "{" && word != "listen" && word != "root" && word != "allow_methods" && word != "server_names" && word != "upload_path" && word != "index" && word != "error_page" && word != "autoindex" && word != "redirection" && word != "client_max_body_size" && word != "location" && word != "cgi" && word != "cgi_path")
+        return (1);
     return (0);
 }
-
