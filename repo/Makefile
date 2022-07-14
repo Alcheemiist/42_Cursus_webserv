@@ -17,9 +17,10 @@ $(NAME) : $(SRC)
 clean:
 	@rm -rf $(NAME)
 	@rm -rf bodyfile
-
+	@rm -rf log.txt
+	
+	
 fclean:	clean
-	@rm -f $(NAME)
 
 re:	fclean all
 

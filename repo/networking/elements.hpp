@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #ifndef ELEMENTS_HPP
 #define ELEMENTS_HPP
@@ -8,30 +8,35 @@
 #include "./response/Response.hpp"
 #include "../config/parse_confile.hpp"
 
-#define BUFER_SIZE 30000 //reading buffer size
+#define BUFER_SIZE 3000 // reading buffer size
 
-namespace Color {
-    enum Code {
-        FG_RED      = 31,
-        FG_GREEN    = 32,
-        FG_BLUE     = 34,
-        FG_DEFAULT  = 39,
-        BG_RED      = 41,
-        BG_GREEN    = 42,
-        BG_BLUE     = 44,
-        BG_DEFAULT  = 49
+namespace Color
+{
+    enum Code
+    {
+        FG_RED = 31,
+        FG_GREEN = 32,
+        FG_BLUE = 34,
+        FG_DEFAULT = 39,
+        BG_RED = 41,
+        BG_GREEN = 42,
+        BG_BLUE = 44,
+        BG_DEFAULT = 49
     };
-    class Modifier {
+    class Modifier
+    {
         Code code;
+
     public:
         Modifier(Code pCode) : code(pCode) {}
-        friend std::ostream&
-        operator<<(std::ostream& os, const Modifier& mod) {
+        friend std::ostream &
+        operator<<(std::ostream &os, const Modifier &mod)
+        {
             return os << "\033[" << mod.code << "m";
         }
     };
 }
 
-char *readFile(const char * fileName);
+char *readFile(const char *fileName);
 
 #endif

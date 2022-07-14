@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
@@ -18,25 +18,28 @@ private:
     std::string _accept_encoding;
     std::string _content_type;
     std::map<std::string, std::string> _headers;
-    size_t          _content_length;
-    long            bytes;
-    bool            _is_complete;
-    std::string     _body;
-    std::string     _accept_language;
-    int             request_num;
-    int             requestStatus;
+    size_t _content_length;
+    long bytes;
+    bool _is_complete;
+    std::string _body;
+    std::string _accept_language;
+    int request_num;
+    int requestStatus;
 
 public:
-    Request() : _method(""), _path(""),  _version(""), _host("", 0),
-                _connection("") , _accept("") ,  _accept_encoding("") ,
-                _content_type("") , _headers(std::map<std::string, std::string>()) ,
-                _content_length(0),  bytes(0) ,  _is_complete(false),  _body("") ,
-                _accept_language("") , request_num(0) , requestStatus(1)
-    {};
+    Request() : _method(""), _path(""), _version(""), _host("", 0),
+                _connection(""), _accept(""), _accept_encoding(""),
+                _content_type(""), _headers(std::map<std::string, std::string>()),
+                _content_length(0), bytes(0), _is_complete(false), _body(""),
+                _accept_language(""), request_num(0), requestStatus(1){};
     Request(char *buffer, size_t bytes);
     ~Request(){};
     // OVERLOAD OPERATORS ---------------------------------------
-    Request &operator++() { ++request_num;  return *this; }
+    Request &operator++()
+    {
+        ++request_num;
+        return *this;
+    }
     // SETTERS --------------------------------------------------
     void setbytes(long bytes) { this->bytes = bytes; }
     // GETTERS --------------------------------------------------
@@ -50,15 +53,15 @@ public:
     int getRequestStatus() const { return requestStatus; };
 
     // METHODS --------------------------------------------------
-    int isGoodrequest() { return (requestStatus); };
+    bool isGoodrequest() { return (true); };
     void parse(char *buffer);
-    void        fill_body(char *buffer, size_t bytes);
-    char        *readFile(const char * fileName);
+    void fill_body(char *buffer, size_t bytes);
+    char *readFile(const char *fileName);
     void show();
 };
 
-char *readFile(const char * fileName);
+char *readFile(const char *fileName);
 long readRequest(int new_socket, Request *request);
 void checkRequest(Request *request);
 
-#endif 
+#endif
