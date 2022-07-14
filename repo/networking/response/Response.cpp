@@ -50,12 +50,12 @@ void GETresponse(Request *request, Response *response, parse_config *config)
 
         if (request->getPath() == "/")
             strcpy(path + (strlen(path)), "index.html");
-        else if (request->getPath() == "/assets/fonts/fontawesome-webfont.woff2?v=4.6.3")
+        else if (!request->getPath().compare("/assets/fonts/fontawesome-webfont.woff2?v=4.6.3"))
             strcpy(path + (strlen(path) - 1), "/assets/fonts/fontawesome-webfont.woff2");
         else
             strcpy(path + (strlen(path) - 1), request->getPath().c_str());
 
-        std::cout << B_blue << " body file path : " << path << B_def << std::endl;
+        std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
 
         if (stat(path, NULL))
         {
