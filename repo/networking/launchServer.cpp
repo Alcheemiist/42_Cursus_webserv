@@ -17,8 +17,23 @@ char *readFile(const char *fileName)
     char buffer[100];
     char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
 
-    pFile = fopen(fileName, "r");
-    std::cout << "FileName: " << fileName << std::endl;
+    // FIXME: check if file exists and handle argumsnt url
+    char file[100];
+    if (strcmp(fileName, "./.www/assets/fonts/fontawesome-webfont.woff?v=4.6.3") == 0)
+    {
+        strcpy(file, "./.www/assets/fonts/fontawesome-webfont.woff");
+        std::cout << "FIXED" << std::endl;
+    }
+    else if (strcmp(fileName, "./.www/assets/fonts/fontawesome-webfont.ttf?v=4.6.3") == 0)
+    {
+        strcpy(file, "./.www/assets/fonts/fontawesome-webfont.ttf");
+        std::cout << "FIXED2" << std::endl;
+    }
+    else
+        strcpy(file, fileName);
+
+    pFile = fopen(file, "r");
+    std::cout << "FileName: " << file << std::endl;
     if (pFile == NULL)
     {
         perror("Error opening file");
@@ -170,6 +185,6 @@ void LaunchServer(parse_config *config)
         }
     }
 
-    for (int i = 0; i < config->get_server_vect().size(); i++)
+    for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
         close((__socket + i)->server_fd);
 }
