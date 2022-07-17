@@ -77,8 +77,7 @@ Request::Request(char *buffer, size_t bytes)
     Color::Modifier B_blue(Color::BG_BLUE);
     Color::Modifier B_def(Color::BG_DEFAULT);
 
-    std::string request(buffer);
-    std::stringstream ss(request);
+    std::stringstream ss((std::string(buffer)));
     std::string line;
     int offset = 0;
     bool is_first = true;
@@ -96,7 +95,7 @@ Request::Request(char *buffer, size_t bytes)
 
         if (is_first)
         {
-            std::vector<std::string> tmp = split(line, ' ');
+            std::vector<std::string> tmp(split(line, ' '));
             if (tmp.size() != 3)
                 throw std::runtime_error("invalid request");
             std::cout << B_blue << "is_first " << tmp[0] << " " << tmp[1] << B_def << std::endl;

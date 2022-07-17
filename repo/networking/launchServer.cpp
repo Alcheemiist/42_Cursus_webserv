@@ -104,7 +104,7 @@ void init_socket(t_socket *_socket, parse_config *config)
     _socket->address.sin_family = AF_INET;
     _socket->address.sin_addr.s_addr = INADDR_ANY;
     _socket->address.sin_port = htons(PORT + i++);
-    memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
+    //memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
     _socket->addrlen = sizeof(_socket->address);
 
     if ((_socket->server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -122,10 +122,10 @@ void LaunchServer(parse_config *config)
     int serv_response = 1;
     bool first = true;
 
-    for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
+    for (unsigned long i = 0; i < 1; i++)
     {
-        init_socket(__socket + i, config);
-        startServer(__socket + i, config);
+        init_socket(__socket, config);
+        startServer(__socket, config);
     }
 
     // fd_set master_rd_set, working_rd_set; // reading fd sets
@@ -155,11 +155,12 @@ void LaunchServer(parse_config *config)
         }
         else if (serv_response == 2) // reading the request
         {
-            char *buffer = (char *)malloc(sizeof(char) * BUFER_SIZE);
+            char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE + 1);
             size_t bytes = readSocketBuffer(__socket, buffer);
 
             if (first)
             {
+                
                 Request request(buffer, bytes);
                 requests.insert(std::pair<int, Request>(index, request));
                 first = false;
@@ -185,6 +186,6 @@ void LaunchServer(parse_config *config)
         }
     }
 
-    for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
+    for (unsigned long i = 0; i < 1; i++)
         close((__socket + i)->server_fd);
 }
