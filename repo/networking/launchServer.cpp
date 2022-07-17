@@ -1,14 +1,12 @@
 #include "./elements.hpp"
-#define SENDER_MAXSIZE 128
-#define DATA_MAXSIZE 512
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #define MAX_CLIENTS 20
-// t_socket *_socket = new t_socket;
 #define NO_SOCKET -1
 #define MAX_MESSAGES_BUFFER_SIZE 10
-int high_sock;
-#include <arpa/inet.h>
+#define SENDER_MAXSIZE 128
+#define DATA_MAXSIZE 512
 
 // TOOLS --------------------------------------------------
 char *readFile(const char *fileName)
@@ -105,22 +103,15 @@ void LaunchServer(parse_config *config)
 
     int serv_response = 1;
     bool first = true;
-
     unsigned long nServers = 1;
-    for (unsigned long i = 0; i < nServers ; i++)
-    {
-        init_socket(&_socket[i], config);
-        startServer(&_socket[i], config);
-    }
+    int index_request = 0;
 
+    
     // fd_set master_rd_set, working_rd_set; // reading fd sets
     // fd_set master_wr_set, working_wr_set; // writing fd sets
-
     // int max_fd = 0;
-
     // FD_ZERO(&master_rd_set);
     // FD_ZERO(&master_wr_set);
-
     // for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
     // {
     //     int sock = (__socket + i)->server_fd;
@@ -130,52 +121,49 @@ void LaunchServer(parse_config *config)
     // }
     // int select_ret;
 
-
-    int index = 0;
+    for (unsigned long i = 0; i < nServers ; i++)
+        {
+            init_socket(&_socket[i], config);
+            startServer(&_socket[i], config);
+        }
 
     while (1)
-    {
         for (unsigned long i = 0; i < nServers; i++)
         {
-            if (serv_response == 1) // accepte connection
+            if (serv_response == 1)         // accepte connection
             {
                 accepteConnection(&_socket[i]);
                 serv_response = 2;
             }
-            else if (serv_response == 2) // reading the request
+            else if (serv_response == 2)    // reading the request by BUFFER_SIZE 
             {
                 char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE + 1);
                 size_t bytes = readSocketBuffer(&_socket[i], buffer);
-
                 if (first)
                 {
-                    
                     Request request(buffer, bytes);
-                    requests.insert(std::pair<int, Request>(index, request));
+                    requests.insert(std::pair<int, Request>(index_request, request));
                     first = false;
                 }
                 else
-                    requests[index].fill_body(buffer, bytes);
+                    requests[index_request].fill_body(buffer, bytes);
 
-                if (requests[index].getIsComplete())
-                {
+                if (requests[index_request].getIsComplete())
                     serv_response = 3;
-                }
             }
-            else if (serv_response == 3) // sending request
-        {
-            requests[index].show();
-
-            response((&_socket[i])->new_socket, &requests[index], config);
-
-            close((&_socket[i])->new_socket);
-            serv_response = 1;
-            first = true;
-            index++;
+            else if (serv_response == 3)        // sending request
+            {
+                requests[index_request].show();
+                response((&_socket[i])->new_socket, &requests[index_request], config);
+                close((&_socket[i])->new_socket);
+                serv_response = 1;
+                first = true;
+                index_request++;
+            }
         }
-        }
-    }
 
     for (unsigned long i = 0; i < nServers; i++)
         close((&_socket[i])->server_fd);
+    delete _socket;
+
 }
