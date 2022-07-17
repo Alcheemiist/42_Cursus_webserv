@@ -17,27 +17,11 @@ char *readFile(const char *fileName)
     char buffer[100];
     char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
 
-    // FIXME: check if file exists and handle argumsnt url
-    char file[100];
-    if (strcmp(fileName, "./.www/assets/fonts/fontawesome-webfont.woff?v=4.6.3") == 0)
-    {
-        strcpy(file, "./.www/assets/fonts/fontawesome-webfont.woff");
-        std::cout << "FIXED" << std::endl;
-    }
-    else if (strcmp(fileName, "./.www/assets/fonts/fontawesome-webfont.ttf?v=4.6.3") == 0)
-    {
-        strcpy(file, "./.www/assets/fonts/fontawesome-webfont.ttf");
-        std::cout << "FIXED2" << std::endl;
-    }
-    else
-        strcpy(file, fileName);
-
-    pFile = fopen(file, "r");
-    std::cout << "FileName: " << file << std::endl;
+    pFile = fopen(fileName, "r");
     if (pFile == NULL)
     {
         perror("Error opening file");
-        exit(1);
+        return NULL;
     }
     else
     {
@@ -116,16 +100,17 @@ void init_socket(t_socket *_socket, parse_config *config)
 
 void LaunchServer(parse_config *config)
 {
-    t_socket *__socket = new t_socket;
+    t_socket *_socket = new t_socket;
     std::map<int, Request> requests;
 
     int serv_response = 1;
     bool first = true;
 
-    for (unsigned long i = 0; i < 1; i++)
+    unsigned long nServers = 1;
+    for (unsigned long i = 0; i < nServers ; i++)
     {
-        init_socket(__socket, config);
-        startServer(__socket, config);
+        init_socket(&_socket[i], config);
+        startServer(&_socket[i], config);
     }
 
     // fd_set master_rd_set, working_rd_set; // reading fd sets
@@ -144,48 +129,53 @@ void LaunchServer(parse_config *config)
     //         max_fd = sock;
     // }
     // int select_ret;
+
+
     int index = 0;
 
     while (1)
     {
-        if (serv_response == 1) // accepte connection
+        for (unsigned long i = 0; i < nServers; i++)
         {
-            accepteConnection(__socket);
-            serv_response = 2;
-        }
-        else if (serv_response == 2) // reading the request
-        {
-            char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE + 1);
-            size_t bytes = readSocketBuffer(__socket, buffer);
-
-            if (first)
+            if (serv_response == 1) // accepte connection
             {
-                
-                Request request(buffer, bytes);
-                requests.insert(std::pair<int, Request>(index, request));
-                first = false;
+                accepteConnection(&_socket[i]);
+                serv_response = 2;
             }
-            else
-                requests[index].fill_body(buffer, bytes);
-
-            if (requests[index].getIsComplete())
+            else if (serv_response == 2) // reading the request
             {
-                serv_response = 3;
+                char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE + 1);
+                size_t bytes = readSocketBuffer(&_socket[i], buffer);
+
+                if (first)
+                {
+                    
+                    Request request(buffer, bytes);
+                    requests.insert(std::pair<int, Request>(index, request));
+                    first = false;
+                }
+                else
+                    requests[index].fill_body(buffer, bytes);
+
+                if (requests[index].getIsComplete())
+                {
+                    serv_response = 3;
+                }
             }
-        }
-        else if (serv_response == 3) // sending request
+            else if (serv_response == 3) // sending request
         {
             requests[index].show();
 
-            response((__socket)->new_socket, &requests[index], config);
+            response((&_socket[i])->new_socket, &requests[index], config);
 
-            close((__socket)->new_socket);
+            close((&_socket[i])->new_socket);
             serv_response = 1;
             first = true;
             index++;
         }
+        }
     }
 
-    for (unsigned long i = 0; i < 1; i++)
-        close((__socket + i)->server_fd);
+    for (unsigned long i = 0; i < nServers; i++)
+        close((&_socket[i])->server_fd);
 }
