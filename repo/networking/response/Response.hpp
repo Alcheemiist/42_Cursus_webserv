@@ -18,12 +18,32 @@ private:
 
 public:
     Response() : version("HTTP/1.1 "), status("200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0){};
-    void setVersion(std::string version) { this->version = version; };
-    void setStatus(std::string status) { this->status = status; };
-    void setHeader(char *header) { this->header = header; };
-    void setBody(char *body) { this->body = body; };
-    void setResponseStatus(char *status) { this->responseStatus = status; };
-    void setResponseHeader() { this->header = (char *)this->version.c_str(); };
+    void setVersion(std::string version) 
+    {
+         this->version = version; 
+        std::cout  <<   "- Set Version : " << this->version << std::endl;
+    };
+    void setStatus(std::string status) 
+    {
+         this->status = status; 
+        std::cout  <<   "- Set Status : " << this->status<< std::endl;
+    };
+    void setHeader(char *header) 
+    { 
+        this->header = header;
+        std::cout  <<   "- Set header : " << this->header<< std::endl;
+    };
+    void setBody(char *body)
+    {
+        this->body = body; 
+        std::cout  <<   "- Set body of size = " << this->body.size() << std::endl;
+    };
+    void setResponseStatus(char *status) {         
+        this->responseStatus = status; 
+        std::cout  <<   "- Set Status : " << this->responseStatus << std::endl;
+        };
+    
+    void setResponseHeader() { this->header = this->version.c_str();   std::cout  <<   "- Set Version : " << this->version << std::endl;};
     size_t size() const { return body_length; };
     std::string getResponse() const
     {
