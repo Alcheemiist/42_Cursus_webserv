@@ -76,16 +76,14 @@ void startServer(t_socket *socket, parse_config *config)
     }
 }
 
-void init_socket(t_socket *_socket, parse_config *config)
+void init_socket(t_socket *_socket, parse_config *config, int i)
 {
-    static int i;
-
     (void)config;
     _socket->server_fd = 0;
     _socket->new_socket = 0;
     _socket->address.sin_family = AF_INET;
     _socket->address.sin_addr.s_addr = INADDR_ANY;
-    _socket->address.sin_port = htons(PORT + i++);
+    _socket->address.sin_port = htons(PORT + i);
     //memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
     _socket->addrlen = sizeof(_socket->address);
 
@@ -98,72 +96,73 @@ void init_socket(t_socket *_socket, parse_config *config)
 
 void LaunchServer(parse_config *config)
 {
-    t_socket *_socket = new t_socket;
-    std::map<int, Request> requests;
+    t_socket *_socket = new t_socket[MAX_CLIENTS];
+    std::map<int, Request> *requests = new std::map<int, Request>[1000];
 
-    int serv_response = 1;
-    bool first = true;
     unsigned long nServers = 1;
+    int *serv_response = new int[nServers];
+    bool *first = new bool[nServers];
     int index_request = 0;
 
+    for (unsigned long i = 0; i < nServers ; i++)
+    {
+        serv_response[i] = 1;
+        first[i] = true;
+    }
+
     
-    // fd_set master_rd_set, working_rd_set; // reading fd sets
-    // fd_set master_wr_set, working_wr_set; // writing fd sets
-    // int max_fd = 0;
-    // FD_ZERO(&master_rd_set);
-    // FD_ZERO(&master_wr_set);
-    // for (unsigned long i = 0; i < config->get_server_vect().size(); i++)
-    // {
-    //     int sock = (__socket + i)->server_fd;
-    //     FD_SET(sock, &master_rd_set);
-    //     if (sock > max_fd)
-    //         max_fd = sock;
-    // }
-    // int select_ret;
+    //     int    i, len, rc, on = 1;
+    //    int    listen_sd, max_sd, new_sd;
+    //    int    desc_ready, end_server = 0;
+    //    int    close_conn;
+    //    char   buffer[80];
+    //    struct sockaddr_in6   addr;
+    //    struct timeval       timeout;
+    //    struct fd_set        master_set, working_set;
 
     for (unsigned long i = 0; i < nServers ; i++)
         {
-            init_socket(&_socket[i], config);
+            init_socket(&_socket[i], config, i);
             startServer(&_socket[i], config);
         }
 
-    while (1)
+    for (;;)
         for (unsigned long i = 0; i < nServers; i++)
         {
-            if (serv_response == 1)         // accepte connection
+            if (serv_response[i] == 1)         // accepte connection
             {
                 accepteConnection(&_socket[i]);
-                serv_response = 2;
+                serv_response[i] = 2;
             }
-            else if (serv_response == 2)    // reading the request by BUFFER_SIZE 
+            else if (serv_response[i] == 2)    // reading the request by BUFFER_SIZE 
             {
                 char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE + 1);
                 size_t bytes = readSocketBuffer(&_socket[i], buffer);
-                if (first)
+                if (first[i])
                 {
                     Request request(buffer, bytes);
-                    requests.insert(std::pair<int, Request>(index_request, request));
-                    first = false;
+                    requests[i].insert(std::pair<int, Request>(index_request, request));
+                    first[i] = false;
                 }
                 else
-                    requests[index_request].fill_body(buffer, bytes);
+                    requests[i][index_request].fill_body(buffer, bytes);
 
-                if (requests[index_request].getIsComplete())
-                    serv_response = 3;
+                if (requests[i][index_request].getIsComplete())
+                    serv_response[i] = 3;
             }
-            else if (serv_response == 3)        // sending request
+            else if (serv_response[i] == 3)        // sending request
             {
-                requests[index_request].show();
-                response((&_socket[i])->new_socket, &requests[index_request], config);
+                requests[i][index_request].show();
+                response((&_socket[i])->new_socket, &requests[i][index_request], config);
                 close((&_socket[i])->new_socket);
-                serv_response = 1;
-                first = true;
+                serv_response[i] = 1;
+                first[i] = true;
                 index_request++;
             }
         }
 
     for (unsigned long i = 0; i < nServers; i++)
         close((&_socket[i])->server_fd);
-    delete _socket;
+    delete [] _socket;
 
 }

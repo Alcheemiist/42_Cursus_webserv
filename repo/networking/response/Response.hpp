@@ -31,7 +31,7 @@ public:
     void setHeader(char *header) 
     { 
         this->header = header;
-        std::cout  <<   "- Set header : " << this->header<< std::endl;
+    std::cout  <<   "- Set header : " << this->header<< std::endl;
     };
     void setBody(char *body)
     {
