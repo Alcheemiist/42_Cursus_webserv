@@ -58,14 +58,6 @@ int accepteConnection(t_socket *_socket)
     return 0;
 }
 
-/*
-    parsing config file     /me
-    netwroking              /
-    request / upload /      /me
-    response                /
-    cgi                     /
-*/
-
 size_t readSocketBuffer(t_socket *_socket, char *buffer)
 {
     // std::cout << "reading request" << std::endl;
@@ -126,12 +118,13 @@ void LaunchServer(parse_config *config)
     int index_request = 0;
 
     /* ------------- Creating Sockets------------------------- */
-    /* Create an stream socket to receive incoming connections on */
+    /* Create a stream socket to receive incoming connections on */
     for (unsigned long i = 0; i < nServers; i++)
     {
         serv_response[i] = 1;
         first[i] = true;
     }
+    
     for (unsigned long i = 0; i < nServers; i++)
         init_socket(&_socket[i], config, i);
     /* ---------- end creating sockets ----------------------- */
@@ -173,31 +166,37 @@ void LaunchServer(parse_config *config)
     timeout.tv_sec = 3 * 60;
     timeout.tv_usec = 0;
 
-    while (1)
+    for (;;)
     {
         /**********************************************************/
         /* Copy the master fd_set over to the working fd_set.     */
         /**********************************************************/
+
         memcpy(&working_rd_set, &master_set, sizeof(master_set));
         memcpy(&working_wr_set, &master_set, sizeof(master_set));
         max_sd = _socket[0].server_fd;
-        printf("Waiting on select()...\n");
+
+        /**********************************************************/
+
+        std::cout <<"Waiting on select()...\n"   << std::endl;
         rc = select(max_sd + 1, &working_rd_set, &working_wr_set, NULL, &timeout);
 
         if (rc < 0)
         {
-            perror("  select() failed");
+            std::cout << "  select() failed" << std::endl;
             break;
         }
         else if (rc == 0)
         {
-            printf("  select() timed out.  End program.\n");
+            std::cout << "  select() timed out.\n" << std::endl;
             break;
         }
         else
         {
-            printf("  select() was successful %d.\n", rc);
-            nServers = 1;
+            // which socket is ready? is for read or write ?
+            std::cout <<"  select() was successful" << rc << std::endl;
+            break;
+            /*nServers = 1;
             for (unsigned long i = 0; i < nServers; i++)
             {
                 if (serv_response[i] == 1) // accepte connection
@@ -230,24 +229,20 @@ void LaunchServer(parse_config *config)
                     first[i] = true;
                     index_request++;
                 }
-            }
+            }*/
         }
-
-        for (unsigned long i = 0; i < nServers; i++)
-            close((&_socket[i])->server_fd);
-        delete[] _socket;
     }
 
-    /*
-
-
-
-
-
-
-
-        for (;;)
-
-
-    */
+    std::cout << "  Server Broken " << std::endl;
+    for (unsigned long i = 0; i < nServers; i++)
+        close((&_socket[i])->server_fd);
+    delete[] _socket;
 }
+
+/*
+    parsing config file     /me
+    netwroking              /
+    request / upload /      / 
+    response                /
+    cgi                     /
+*/

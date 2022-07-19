@@ -48,10 +48,8 @@ int main(int argc, char *argv[])
 
     // if (setup_signals() != 0)
     //     exit(EXIT_FAILURE);
-
+    
     parse_main(argc, argv, &Config);
-    // Config.read_server();
-
     LaunchServer(&Config);
     return 0;
 }
