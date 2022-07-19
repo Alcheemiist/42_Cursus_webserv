@@ -9,11 +9,11 @@
 class Request
 {
 private:
-    std::string _method;
-    std::string _path;
-    std::string _version;
+    std::string         _method;
+    std::string         _path;
+    std::string         _version;
     std::pair<std::string, int> _host;
-    std::string _connection;
+    std::string                 _connection;
     std::string _accept;
     std::string _accept_encoding;
     std::string _content_type;
