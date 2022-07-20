@@ -220,6 +220,8 @@ void LaunchServer(parse_config *config)
                     if (requests[i][index_request].getIsComplete())
                         serv_response[i] = 3;
                 }
+
+                
                 else if (serv_response[i] == 3) // sending request
                 {
                     requests[i][index_request].show();
