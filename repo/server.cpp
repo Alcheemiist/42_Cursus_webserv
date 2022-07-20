@@ -43,7 +43,6 @@ int setup_signals()
 int main(int argc, char *argv[])
 {
     parse_config Config;
-
     (void)argv;
 
     // if (setup_signals() != 0)
