@@ -100,87 +100,78 @@ void init_socket(t_socket *_socket, parse_config *config, int i)
 
 void LaunchServer(parse_config *config)
 {
-    t_socket *_socket = new t_socket[MAX_CLIENTS];
+    t_socket _socket[MAX_CLIENTS];
     std::map<int, Request> *requests = new std::map<int, Request>[1000];
 
-    int i, len, rc, on = 1;
-    int listen_sd, max_sd, new_sd;
-    int desc_ready, end_server = 0;
-    int close_conn;
+    unsigned long nServers = config->get_server_vect().size();
+
+
+    int i, len, rc, on = 1, listen_sd, max_sd;
     char buffer[800];
     struct sockaddr_in6 addr;
     struct timeval timeout;
-    struct fd_set master_set, working_rd_set, working_wr_set;
-
-    unsigned long nServers = 1;
-    int *serv_response = new int[nServers];
-    bool *first = new bool[nServers];
+    struct fd_set master_set, working_rd_set, working_wr_set, working_er_set;
+    int *serv_response = new int[MAX_CLIENTS];
+    bool *first = new bool[MAX_CLIENTS];
     int index_request = 0;
 
     /* ------------- Creating Sockets------------------------- */
     /* Create a stream socket to receive incoming connections on */
+    /* --------- Allow socket descriptor to be reuseable ------ */
+    /* ---------- Set up socket to be non-blocking ----------- */
+    /*  Set socket to be nonblocking. All of the sockets for  the incoming connections will also be     */
+    /*  nonblocking since they will inherit that state from the listening socket.                       */
+    /* -------- Bind the socket  & Set the listen back log ---- */
+    
+    // First step: intialize working_rd_set with server_socket
+    FD_ZERO(&master_set);
+    FD_ZERO(&working_rd_set);
+    FD_ZERO(&working_wr_set);
+    FD_ZERO(&working_er_set);
+
+
     for (unsigned long i = 0; i < nServers; i++)
     {
         serv_response[i] = 1;
         first[i] = true;
-    }
-    
-    for (unsigned long i = 0; i < nServers; i++)
         init_socket(&_socket[i], config, i);
-    /* ---------- end creating sockets ----------------------- */
-
-    /* --------- Allow socket descriptor to be reuseable ------ */
-    for (unsigned long i = 0; i < nServers; i++)
         if ((rc = setsockopt(_socket[i].server_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on))) < 0)
         {
             printf("setsockopt(%lu) failed", i);
             close(_socket[i].server_fd);
             exit(-1);
         }
-    /* ---------- end allow socket descriptor to be reuseable ------ */
-
-    /* ---------- Set up socket to be non-blocking ----------- */
-    /*  Set socket to be nonblocking. All of the sockets for  the incoming connections will also be     */
-    /*  nonblocking since they will inherit that state from the listening socket.                       */
-    for (unsigned long i = 0; i < nServers; i++)
-        if ((fcntl(_socket[i].server_fd, F_SETFL, O_NONBLOCK)) < 0)
+        if ((fcntl(_socket[i].server_fd, F_SETFL , O_NONBLOCK)) < 0)
         {
             printf("fcntl(%lu) failed", i);
             close(_socket[i].server_fd);
             exit(-1);
         }
-    /* ---------- end set socket to be nonblocking ----------- */
-
-    /* -------- Bind the socket  & Set the listen back log ---- */
-    for (unsigned long i = 0; i < nServers; i++)
         startServer(&_socket[i], config);
 
-    /*           Initialize the master fd_set                     */
-    for (unsigned long i = 0; i < nServers; i++)
-    {
-        FD_ZERO(&master_set);
-        max_sd = _socket[i].server_fd;
-        FD_SET(_socket[i].server_fd, &master_set);
+        //FD_SET(_socket[i].server_fd, &master_set);
+        //max_sd = _socket[i - 1].server_fd;
     }
 
+    /* ---------- end creating sockets ----------------------- */
     timeout.tv_sec = 3 * 60;
     timeout.tv_usec = 0;
-
+    int new_socket = 0;
+    int tmp_fd = _socket[nServers - 1].server_fd;
     for (;;)
-    {
-        /**********************************************************/
-        /* Copy the master fd_set over to the working fd_set.     */
-        /**********************************************************/
+    {   
+        /*for (int i = 0;_socket[i].new_socket; i++)
+        {
+            if (_socket[i].new_socket > tmp_fd)
+                tmp_fd = _socket[i].new_socket;
+                FD_SET(_socket[i].new_socket, &master_set);
+        }*/
+        //working_rd_set = master_set;
+        //max_sd = tmp_fd;
 
-        memcpy(&working_rd_set, &master_set, sizeof(master_set));
-        memcpy(&working_wr_set, &master_set, sizeof(master_set));
-        max_sd = _socket[0].server_fd;
-
-        /**********************************************************/
-
-        std::cout <<"Waiting on select()...\n"   << std::endl;
-        rc = select(max_sd + 1, &working_rd_set, &working_wr_set, NULL, &timeout);
-
+        std::cout <<"Waiting on select()...\n";
+        rc = select(max_sd + 1, &working_rd_set, &working_wr_set, &working_er_set, &timeout);
+       
         if (rc < 0)
         {
             std::cout << "  select() failed" << std::endl;
@@ -194,51 +185,74 @@ void LaunchServer(parse_config *config)
         else
         {
             // which socket is ready? is for read or write ?
-            std::cout <<"  select() was successful" << rc << std::endl;
-            break;
-            /*nServers = 1;
-            for (unsigned long i = 0; i < nServers; i++)
+            std::cout <<"  select() was successful rc =" << rc << std::endl;
+    
+            for (int i = 0; i < max_sd ; i++)
             {
-                if (serv_response[i] == 1) // accepte connection
-                {
-                    accepteConnection(&_socket[i]);
-                    serv_response[i] = 2;
-                }
-                else if (serv_response[i] == 2) // reading the request by BUFFER_SIZE
-                {
-                    char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE + 1);
-                    size_t bytes = readSocketBuffer(&_socket[i], buffer);
-                    if (first[i])
-                    {
-                        Request request(buffer, bytes);
-                        requests[i].insert(std::pair<int, Request>(index_request, request));
-                        first[i] = false;
-                    }
-                    else
-                        requests[i][index_request].fill_body(buffer, bytes);
-
-                    if (requests[i][index_request].getIsComplete())
-                        serv_response[i] = 3;
-                }
-
                 
-                else if (serv_response[i] == 3) // sending request
+                if (FD_ISSET(_socket[i].server_fd, &working_rd_set))
                 {
-                    requests[i][index_request].show();
-                    response((&_socket[i])->new_socket, &requests[i][index_request], config);
-                    close((&_socket[i])->new_socket);
-                    serv_response[i] = 1;
-                    first[i] = true;
-                    index_request++;
+                    std::cout <<"  select() read on : " << _socket[i].server_fd << std::endl;
+                    if (serv_response[i] == 1) // accepte connection
+                    {
+                        std::cout <<"  accepte connection : " << _socket[i].server_fd << std::endl;
+                        accepteConnection(&_socket[i]);
+                        serv_response[i] =  2;
+                        //FD_SET(_socket[i].new_socket, &master_set);
+                        //if (_socket[i].new_socket > tmp_fd)
+                        //{
+                        //    tmp_fd = _socket[i].new_socket;
+                        //}
+                    }
+                    else if (serv_response[i] == 2) // reading the request by BUFFER_SIZE
+                    {
+                        std::cout <<"  serve response 2 : " << _socket[i].server_fd << std::endl;
+                        char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE + 1);
+                        size_t bytes = readSocketBuffer(&_socket[i], buffer);
+                        if (first[i])
+                        {
+                            Request request(buffer, bytes);
+                            requests[i].insert(std::pair<int, Request>(index_request, request));
+                            first[i] = false;
+                        }
+                        else
+                            requests[i][index_request].fill_body(buffer, bytes);
+
+                        if (requests[i][index_request].getIsComplete())
+                        {
+                            serv_response[i] = 3;
+                            //FD_CLR(_socket[i].new_socket, &master_set);
+                            //FD_SET(_socket[i].new_socket, &working_wr_set);
+                        }
+                    }
                 }
-            }*/
+                if (FD_ISSET(_socket[i].server_fd, &working_wr_set))
+                {
+                    std::cout << "  Select() write on : " << i  << std::endl;
+                    if (serv_response[i] == 3) // sending request
+                    {
+                        requests[i][index_request].show();
+                        response((&_socket[i])->new_socket, &requests[i][index_request], config);
+                        close((&_socket[i])->new_socket);
+                        FD_CLR(_socket[i].new_socket, &working_wr_set);
+                        serv_response[i] = 1;
+                        first[i] = true;
+                        index_request++;
+                    }
+                }
+                if (FD_ISSET(_socket[i].server_fd, &working_er_set))
+                {
+                    std::cout << "  Select() err on  " << i << std::endl;
+                }
+
+            }
         }
     }
 
     std::cout << "  Server Broken " << std::endl;
     for (unsigned long i = 0; i < nServers; i++)
         close((&_socket[i])->server_fd);
-    delete[] _socket;
+   // delete[] _socket;
 }
 
 /*
