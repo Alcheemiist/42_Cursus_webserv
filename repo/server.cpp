@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
     //     exit(EXIT_FAILURE);
     
     parse_main(argc, argv, &Config);
+    
     LaunchServer(&Config);
     return 0;
 }
