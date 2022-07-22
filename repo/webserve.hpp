@@ -16,7 +16,6 @@ typedef struct s_socket
     struct sockaddr_in address;
     int addrlen;
     long valread;
-
 } t_socket;
 
 class Config
