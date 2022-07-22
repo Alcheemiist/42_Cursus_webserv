@@ -12,6 +12,8 @@
 #define FALSE 0
 #define TRUE 1
 
+#define BUFER_SIZE 10000 // reading buffer size
+
 // TOOLS --------------------------------------------------
 char *readFile(const char *fileName)
 {
@@ -42,7 +44,7 @@ char *readFile(const char *fileName)
 
 // NETWORKING --------------------------------------------------
 
-int  accepteConnection(t_socket *_socket)
+int accepteConnection(t_socket *_socket)
 {
     t_socket socket_client;
 
@@ -62,10 +64,10 @@ int  accepteConnection(t_socket *_socket)
     return _socket->new_socket;
 }
 
-size_t readSocketBuffer(int fd, char *buffer)
+size_t readSocketBuffer(int fd, char **buffer)
 {
-    // std::cout << "reading request" << std::endl;
-    return read(fd , buffer, BUFER_SIZE);
+    std::cout << "reading request" << std::endl;
+    return read(fd, &buffer, BUFER_SIZE);
 }
 
 void startServer(t_socket *socket, parse_config *config)
@@ -106,7 +108,7 @@ void LaunchServer(parse_config *config)
     t_socket _socket_client[1000];
     std::map<int, Request> requests;
     std::map<int, t_socket> sockets;
-    
+
     unsigned long nServers = config->get_server_vect().size();
     char buffer[1000];
     int *serv_response = new int[MAX_CLIENTS];
@@ -134,12 +136,11 @@ void LaunchServer(parse_config *config)
     int new_socket = 0;
     int index_request = 0;
 
-
     for (unsigned long i = 0; i < nServers; i++)
     {
         serv_response[i] = 1;
         first[i] = true;
-        
+
         init_socket(&_socket_server[i], PORT + i);
         if ((rc = setsockopt(_socket_server[i].server_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on))) < 0)
         {
@@ -147,7 +148,7 @@ void LaunchServer(parse_config *config)
             close(_socket_server[i].server_fd);
             exit(-1);
         }
-        if ((fcntl(_socket_server[i].server_fd, F_SETFL , O_NONBLOCK)) < 0)
+        if ((fcntl(_socket_server[i].server_fd, F_SETFL, O_NONBLOCK)) < 0)
         {
             printf("fcntl(%lu) failed", i);
             close(_socket_server[i].server_fd);
@@ -170,7 +171,7 @@ void LaunchServer(parse_config *config)
         serv_response[i] = 1;
         first[i] = true;
     }
-    
+
     for (int index_cycle = 0;;)
     {
         working_rd_set = backup_rd_set;
@@ -178,11 +179,11 @@ void LaunchServer(parse_config *config)
         working_er_set = backup_er_set;
 
         for (int i = 0; i < max_sd; i++)
-            std::cout << "available server["<< i<< "]  fd:" << requests.find(i)->first << std::endl;
+            std::cout << "available server[" << i << "]  fd:" << requests.find(i)->first << std::endl;
 
-        std::cout <<"Waiting on select()...\n";
+        std::cout << "Waiting on select()...\n";
         rc = select(max_sd + 1, &working_rd_set, &working_wr_set, &working_er_set, &timeout);
-       
+
         if (rc < 0)
         {
             std::cout << "  select() failed" << std::endl;
@@ -190,27 +191,28 @@ void LaunchServer(parse_config *config)
         }
         else if (rc == 0)
         {
-            std::cout << "  select() timed out.\n" << std::endl;
+            std::cout << "  select() timed out.\n"
+                      << std::endl;
             break;
         }
         else
         {
             // which socket is ready? is for read or write ?
-            std::cout <<"  select() catch a ready fds for R/W successfuly RC= " << rc << std::endl;
-            for (int i = 0; i < max_sd ; i++)
+            std::cout << "  select() catch a ready fds for R/W successfuly RC= " << rc << std::endl;
+            for (int i = 0; i <= max_sd; i++)
             {
                 if (FD_ISSET(i, &working_rd_set))
                 {
-                    std::cout <<"  FD " << _socket_server[i - 3].server_fd <<  " == " << i << "IS SET READING" <<std::endl;
+                    std::cout << "  FD " << _socket_server[i - 3].server_fd << " == " << i << "IS SET READING" << std::endl;
                     if (serv_response[i] == 1) // accepte connection
                     {
-                        std::cout <<"  accepte connection : " << _socket_server[i - 3].server_fd << std::endl;
+                        std::cout << "  accepte connection : " << _socket_server[i - 3].server_fd << std::endl;
                         int fd = accepteConnection(&_socket_server[i - 3]);
                         serv_response[fd] = 1;
                         first[fd] = true;
 
-                        std::cout <<"  client accepte connection : " << fd << std::endl;
-                    
+                        std::cout << "  client accepte connection : " << fd << std::endl;
+
                         FD_SET(fd, &working_rd_set);
                         FD_SET(fd, &backup_rd_set);
 
@@ -219,53 +221,53 @@ void LaunchServer(parse_config *config)
 
                         index_request++;
                         serv_response[fd]++;
-                        std::cout << " status : " << serv_response[i] << " fd_status : " << serv_response[fd] <<  std::endl;
+                        std::cout << " status : " << serv_response[i] << " fd_status : " << serv_response[fd] << std::endl;
                     }
                     if (serv_response[i] == 2) // reading the request by BUFFER_SIZE
                     {
-                        std::cout <<"  read response 2 (reading request) from fd : " << requests.find(i)->first << " == " << i << std::endl;
+                        // std::cout << "  read response 2 (reading request) from fd : " << requests.find(i)->first << " == " << i << std::endl;
 
-                        char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE + 1);
-                        size_t bytes = readSocketBuffer(requests.find(i)->first, buffer);
+                        char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE);
+                        //  size_t bytes =readSocketBuffer(requests.find(i)->first, &buffer);
+                        size_t bytes = read(i, buffer, BUFER_SIZE);
 
-                        if (first[i])
-                        {
-                            Request request(buffer, bytes);
-                            requests.insert(std::pair<int, Request>(index_request, request));
-                            first[i] = false;
-                        }
-                        else
-                            requests.find(i)->second.fill_body(buffer, bytes);
+                        std::cout << "{" << buffer << "}" << std::endl;
 
-                        if (requests.find(i)->second.getIsComplete())
-                        {
-                            serv_response[i] = 3;
-                            FD_CLR(requests.find(i)->first, &working_rd_set);
-                            FD_CLR(requests.find(i)->first, &backup_rd_set);
+                        //     if (first[i])
+                        //     {
+                        //         Request request(buffer, bytes);
+                        //         requests.insert(std::pair<int, Request>(index_request, request));
+                        //         first[i] = false;
+                        //     }
+                        //     else
+                        //         requests.find(i)->second.fill_body(buffer, bytes);
 
-                            FD_SET(requests.find(i)->first, &working_wr_set);
-                            FD_SET(requests.find(i)->first, &backup_wr_set);
-                            FD_SET(requests.find(i)->first, &working_er_set);
-                            std::cout <<"  reading response is done  " << requests.find(i)->first << " == " << i << std::endl;
-                        }
+                        //     if (requests.find(i)->second.getIsComplete())
+                        //     {
+                        //         serv_response[i] = 3;
+                        //         FD_CLR(requests.find(i)->first, &working_rd_set);
+                        //         FD_CLR(requests.find(i)->first, &backup_rd_set);
 
-                        std::cout << "bytes : " << bytes << std::endl;
-                        std::cout << "buffer : " << buffer << std::endl;
-
+                        //         FD_SET(requests.find(i)->first, &working_wr_set);
+                        //         FD_SET(requests.find(i)->first, &backup_wr_set);
+                        //         FD_SET(requests.find(i)->first, &working_er_set);
+                        //         std::cout << "  reading response is done  " << requests.find(i)->first << " == " << i << std::endl;
+                        //     }
+                        break;
                     }
                 }
 
                 if (FD_ISSET(i, &working_wr_set))
                 {
-                    std::cout <<"  FD " << requests.find(i)->first <<  " == " << i << "IS SET WRITING" <<std::endl;
+                    std::cout << "  FD " << requests.find(i)->first << " == " << i << "IS SET WRITING" << std::endl;
 
-                    std::cout << "Ready to write response on fd: " << requests.find(i)->first <<  " == " << i << std::endl;
+                    std::cout << "Ready to write response on fd: " << requests.find(i)->first << " == " << i << std::endl;
                     if (serv_response[i] == 3) // sending request
                     {
                         std::cout << "  send response 3 (sending request) to fd : " << requests.find(i)->first << " == " << i << std::endl;
                         requests[i].show();
-                        response(requests.find(i)->first , &requests[i] , config);
-                        
+                        response(requests.find(i)->first, &requests[i], config);
+
                         FD_CLR(requests.find(i)->first, &working_wr_set);
                         FD_CLR(requests.find(i)->first, &backup_wr_set);
                         requests.erase(requests.find(i)->first);
@@ -280,23 +282,18 @@ void LaunchServer(parse_config *config)
         }
         if (index_cycle++ > 50)
             break;
-   
     }
-
-    
-
-    
 
     std::cout << "  Server Broken " << std::endl;
     for (unsigned long i = 0; i < max_sd; i++)
         close((&_socket_server[i])->server_fd);
-   // delete[] _socket;
+    // delete[] _socket;
 }
 
 /*
     parsing config file     /me
     netwroking              /
-    request / upload /      / 
+    request / upload /      /
     response                /
     cgi                     /
 */

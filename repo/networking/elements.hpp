@@ -8,8 +8,6 @@
 #include "./response/Response.hpp"
 #include "../config/parse_confile.hpp"
 
-#define BUFER_SIZE 3000 // reading buffer size
-
 namespace Color
 {
     enum Code
