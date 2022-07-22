@@ -178,8 +178,8 @@ void LaunchServer(parse_config *config)
         working_wr_set = backup_wr_set;
         working_er_set = backup_er_set;
 
-        for (int i = 0; i < max_sd; i++)
-            std::cout << "available server[" << i << "]  fd:" << requests.find(i)->first << std::endl;
+        // for (int i = 0; i < max_sd; i++)
+        //     std::cout << "available server[" << i << "]  fd:" << requests.find(i)->first << std::endl;
 
         std::cout << "Waiting on select()...\n";
         rc = select(max_sd + 1, &working_rd_set, &working_wr_set, &working_er_set, &timeout);
@@ -225,35 +225,33 @@ void LaunchServer(parse_config *config)
                     }
                     if (serv_response[i] == 2) // reading the request by BUFFER_SIZE
                     {
-                        // std::cout << "  read response 2 (reading request) from fd : " << requests.find(i)->first << " == " << i << std::endl;
 
-                        char *buffer = (char *)malloc(sizeof(buffer) * BUFER_SIZE);
-                        //  size_t bytes =readSocketBuffer(requests.find(i)->first, &buffer);
+                        char buffer[BUFER_SIZE];
+                        // size_t bytes = readSocketBuffer(requests.find(i)->first, &buffer);
                         size_t bytes = read(i, buffer, BUFER_SIZE);
-
                         std::cout << "{" << buffer << "}" << std::endl;
+                        // if (first[i])
+                        // {
+                        //     Request request(buffer, bytes);
+                        //     requests.insert(std::pair<int, Request>(index_request, request));
+                        //     first[i] = false;
+                        //     std::cout << "  read response 2 (reading request) from fd : " << requests.find(i)->first << " == " << i << std::endl;
+                        // }
+                        // else
+                        //     requests.find(i)->second.fill_body(buffer, bytes);
 
-                        //     if (first[i])
-                        //     {
-                        //         Request request(buffer, bytes);
-                        //         requests.insert(std::pair<int, Request>(index_request, request));
-                        //         first[i] = false;
-                        //     }
-                        //     else
-                        //         requests.find(i)->second.fill_body(buffer, bytes);
+                        // if (requests.find(i)->second.getIsComplete())
+                        // {
+                        //     serv_response[i] = 3;
+                        //     FD_CLR(requests.find(i)->first, &working_rd_set);
+                        //     FD_CLR(requests.find(i)->first, &backup_rd_set);
 
-                        //     if (requests.find(i)->second.getIsComplete())
-                        //     {
-                        //         serv_response[i] = 3;
-                        //         FD_CLR(requests.find(i)->first, &working_rd_set);
-                        //         FD_CLR(requests.find(i)->first, &backup_rd_set);
-
-                        //         FD_SET(requests.find(i)->first, &working_wr_set);
-                        //         FD_SET(requests.find(i)->first, &backup_wr_set);
-                        //         FD_SET(requests.find(i)->first, &working_er_set);
-                        //         std::cout << "  reading response is done  " << requests.find(i)->first << " == " << i << std::endl;
-                        //     }
-                        break;
+                        //     FD_SET(requests.find(i)->first, &working_wr_set);
+                        //     FD_SET(requests.find(i)->first, &backup_wr_set);
+                        //     FD_SET(requests.find(i)->first, &working_er_set);
+                        //     std::cout << "  reading response is done  " << requests.find(i)->first << " == " << i << std::endl;
+                        // }
+                        // break;
                     }
                 }
 
