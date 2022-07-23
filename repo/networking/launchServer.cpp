@@ -12,7 +12,7 @@
 #define FALSE 0
 #define TRUE 1
 
-#define BUFER_SIZE 10024 // reading buffer size
+#define BUFER_SIZE 1024 // reading buffer size
 
 // TOOLS --------------------------------------------------
 char *readFile(const char *fileName)
@@ -105,7 +105,7 @@ void LaunchServer(parse_config *config)
     std::map<int, Request> requests;
     std::map<int, t_socket> clients;
 
-    unsigned long nServers = 2;
+    unsigned long nServers = 20;
     char buffer[1000];
     int *serv_response = new int[1000], rc, on = 1, max_sd, index_client = 0;
     bool *first = new bool[1000];
@@ -205,11 +205,14 @@ void LaunchServer(parse_config *config)
                 if (FD_ISSET(clients[i].server_fd, &working_rd_set) && serv_response[i] == 2)
                 {
                     std::cout << " ready to read from clients.server.fd " << clients[i].server_fd << " accepted from server.fd " << clients[i].new_socket << std::endl;
-                    char *buffer = (char *)malloc(sizeof(char *) * BUFER_SIZE + 1);
+                    char bu[BUFER_SIZE + 1];
                     int bytes = -1;
                     int fd = clients[i].server_fd;
-                    if ((bytes = read(fd, buffer, 10024)) < 0)
+                    if ((bytes = read(fd, bu, BUFER_SIZE)) < 0)
                         continue;
+                    bu[bytes] = '\0';
+                    char *buffer = (char *)malloc(sizeof(char) * (bytes + 1));
+                    strcpy(buffer, bu);
                     if (first[i])
                     {
                         Request request((buffer), bytes, clients[i].server_fd);
@@ -245,6 +248,7 @@ void LaunchServer(parse_config *config)
                     if (serv_response[i] == 3) // sending request
                     {
                         std::cout << "  send response 3 (sending request) to fd : " << requests.find(clients[i].server_fd)->first << " == " << clients[i].server_fd << std::endl;
+
                         response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config);
 
                         FD_CLR(requests.find(clients[i].server_fd)->first, &working_wr_set);

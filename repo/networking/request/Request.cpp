@@ -14,7 +14,8 @@ std::vector<std::string> split(const std::string &s, char delim)
     std::string item;
     while (std::getline(ss, item, delim))
     {
-        elems.push_back(item);
+        if (item.length() > 0)
+            elems.push_back(item);
     }
     return elems;
 }
@@ -31,14 +32,16 @@ size_t getFileSize(const char *fileName)
 void Request::fill_body(char *buffer, size_t bytes)
 {
     std::cout << "contentSize: " << bytes << std::endl;
-    std::string  name  = std::string(".tmp/") + std::to_string( this->client_fd) +  std::string("tmp");
+    // std::string name = std::string(".tmp/") + std::to_string(this->client_fd) + std::string("tmp");
+    std::string name = std::to_string(this->client_fd) + std::string("tmp.png");
+    this->bodyFileName = name;
 
-    int fd = open(name.c_str() , O_RDWR | O_CREAT | O_APPEND, 0666);
-    
+    int fd = open(name.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
+
     size_t writeBytes = write(fd, buffer, bytes);
-    
+
     close(fd);
-    
+
     if (this->_content_length <= getFileSize("tmp"))
     {
 
@@ -163,7 +166,7 @@ void Request::show()
         std::cout << it->first << ": " << it->second << std::endl;
     }
     if (this->_content_length)
-        std::cout << green << "----------------- BODY=> " << getFileSize("tmp") << green << " ------------------------ " << def << std::endl;
+        std::cout << green << "----------------- BODY=> " << getFileSize(this->bodyFileName.c_str()) << green << " ------------------------ " << def << std::endl;
     std::cout << red << "--------------- End Request ----------------- " << def << std::endl;
 }
 
