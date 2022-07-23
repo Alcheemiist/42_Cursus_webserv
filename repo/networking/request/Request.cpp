@@ -87,12 +87,16 @@ Request::Request(char *buffer, size_t bytes)
     _body = "";
     _is_complete = false;
 
-    std::cout << B_blue << "> BytesToRead->{ " << bytes << " } bufferSize->{ " << strlen(buffer) << " }" << B_def << std::endl;
+    if (!buffer)
+        std::cout << "buffer is null" << std::endl;
+    if (!bytes)
+        std::cout << "bytes is null" << std::endl;
+
+    std::cout << B_blue << buffer << B_def << std::endl;
 
     while (std::getline(ss, line))
     {
         offset += line.size() + 1;
-
         if (is_first)
         {
             std::vector<std::string> tmp(split(line, ' '));
