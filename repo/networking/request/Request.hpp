@@ -9,30 +9,31 @@
 class Request
 {
 private:
-    std::string         _method;
-    std::string         _path;
-    std::string         _version;
+    std::string                 _method;
+    std::string                 _path;
+    std::string                 _version;
     std::pair<std::string, int> _host;
     std::string                 _connection;
-    std::string _accept;
-    std::string _accept_encoding;
-    std::string _content_type;
+    std::string                 _accept;
+    std::string                 _accept_encoding;
+    std::string                 _content_type;
     std::map<std::string, std::string> _headers;
-    size_t _content_length;
-    long bytes;
-    bool _is_complete;
-    std::string _body;
-    std::string _accept_language;
-    int request_num;
-    int requestStatus;
+    size_t                      _content_length;
+    long                        bytes;
+    bool                        _is_complete;
+    std::string                 bodyFileName;
+    std::string                 _accept_language;
+    int                         request_num;
+    int                         requestStatus;
+    int                         client_fd;
 
 public:
     Request() : _method(""), _path(""), _version(""), _host("", 0),
                 _connection(""), _accept(""), _accept_encoding(""),
                 _content_type(""), _headers(std::map<std::string, std::string>()),
-                _content_length(0), bytes(0), _is_complete(false), _body("tmp"),
-                _accept_language(""), request_num(0), requestStatus(1){};
-    Request(char *buffer, size_t bytes);
+                _content_length(0), bytes(0), _is_complete(false), bodyFileName("tmp"),
+                _accept_language(""), request_num(0), requestStatus(1), client_fd(-1) {};
+    Request(char *buffer, size_t bytes, int fd);
     ~Request(){};
     // OVERLOAD OPERATORS ---------------------------------------
     Request &operator++()

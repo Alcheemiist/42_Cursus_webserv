@@ -31,13 +31,18 @@ size_t getFileSize(const char *fileName)
 void Request::fill_body(char *buffer, size_t bytes)
 {
     std::cout << "contentSize: " << bytes << std::endl;
-    int fd = open(this->_body.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
+    std::string  name  = std::string(".tmp/") + std::to_string( this->client_fd) +  std::string("tmp");
+
+    int fd = open(name.c_str() , O_RDWR | O_CREAT | O_APPEND, 0666);
+    
     size_t writeBytes = write(fd, buffer, bytes);
+    
     close(fd);
-    if (this->_content_length <= getFileSize(this->_body.c_str()))
+    
+    if (this->_content_length <= getFileSize("tmp"))
     {
 
-        std::cout << "body size: " << getFileSize(this->_body.c_str()) << std::endl;
+        std::cout << "body size: " << getFileSize("tmp") << std::endl;
         std::cout << "writeBytes: " << writeBytes << std::endl;
 
         this->_is_complete = true;
@@ -72,7 +77,7 @@ char *Request::readFile(const char *fileName)
     return return_buffer;
 }
 
-Request::Request(char *buffer, size_t bytes)
+Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
 {
     Color::Modifier B_blue(Color::BG_BLUE);
     Color::Modifier B_def(Color::BG_DEFAULT);
@@ -84,16 +89,10 @@ Request::Request(char *buffer, size_t bytes)
 
     _content_length = 0;
     _method = "";
-    _body = "";
+    bodyFileName = "";
     _is_complete = false;
 
-    if (!buffer)
-        std::cout << "buffer is null" << std::endl;
-    if (!bytes)
-        std::cout << "bytes is null" << std::endl;
-
     std::cout << B_blue << buffer << B_def << std::endl;
-
     while (std::getline(ss, line))
     {
         offset += line.size() + 1;
@@ -164,7 +163,7 @@ void Request::show()
         std::cout << it->first << ": " << it->second << std::endl;
     }
     if (this->_content_length)
-        std::cout << green << "----------------- BODY=> " << getFileSize(this->_body.c_str()) << green << " ------------------------ " << def << std::endl;
+        std::cout << green << "----------------- BODY=> " << getFileSize("tmp") << green << " ------------------------ " << def << std::endl;
     std::cout << red << "--------------- End Request ----------------- " << def << std::endl;
 }
 
