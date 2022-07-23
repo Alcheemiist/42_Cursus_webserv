@@ -12,7 +12,7 @@
 #define FALSE 0
 #define TRUE 1
 
-#define BUFER_SIZE 10000 // reading buffer size
+#define BUFER_SIZE 10024 // reading buffer size
 
 // TOOLS --------------------------------------------------
 char *readFile(const char *fileName)
@@ -177,7 +177,6 @@ void LaunchServer(parse_config *config)
 
             // only for servers to accepte new connections
             for (int i = 0; i < nServers; i++)
-            {
                 if (FD_ISSET(_socket_server[i].server_fd, &working_rd_set))
                 {
                     std::cout << "  accepte connection from server_socket : " << _socket_server[i].server_fd << std::endl;
@@ -199,7 +198,6 @@ void LaunchServer(parse_config *config)
                     std::cout << " status client : " << serv_response[index_client] << " max_sd : " << max_sd << std::endl;
                     index_client++;
                 }
-            }
 
             // only for clients
             for (int i = 0; i < index_client; i++)
@@ -207,16 +205,14 @@ void LaunchServer(parse_config *config)
                 if (FD_ISSET(clients[i].server_fd, &working_rd_set) && serv_response[i] == 2)
                 {
                     std::cout << " ready to read from clients.server.fd " << clients[i].server_fd << " accepted from server.fd " << clients[i].new_socket << std::endl;
-
-                    char buffer[100024];
-                    strcpy(buffer, "");
+                    char *buffer = (char *)malloc(sizeof(char *) * BUFER_SIZE + 1);
                     int bytes = -1;
                     int fd = clients[i].server_fd;
                     if ((bytes = read(fd, buffer, 10024)) < 0)
                         continue;
                     if (first[i])
                     {
-                        Request request(buffer, bytes);
+                        Request request((buffer), bytes, clients[i].server_fd);
                         requests.insert(std::pair<int, Request>(clients[i].server_fd, request));
                         first[i] = false;
 
@@ -239,6 +235,7 @@ void LaunchServer(parse_config *config)
 
                         requests.find(clients[i].server_fd)->second.show();
                     }
+                    free(buffer);
                 }
 
                 if (FD_ISSET(clients[i].server_fd, &working_wr_set))
@@ -267,4 +264,12 @@ void LaunchServer(parse_config *config)
     std::cout << "  Server Broken " << std::endl;
     for (unsigned long i = 0; i < max_sd; i++)
         close((&_socket_server[i])->server_fd);
+
+    for (int index_client = 0; index_client < clients.size(); index_client++)
+    {
+        if (clients[index_client].server_fd)
+            close(clients[index_client].server_fd);
+        if (clients[index_client].new_socket)
+            close(clients[index_client].new_socket);
+    }
 }
