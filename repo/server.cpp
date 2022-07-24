@@ -1,10 +1,8 @@
 #include "webserve.hpp"
-#include "./config/parse_confile.hpp"
-#include <signal.h>
 
 void shutdown_properlyy(int code)
 {
-    printf("Shutdown server properly.\n");
+    std::cout << green << "Shutdown server properly." << def << std::endl;
     exit(code);
 }
 
@@ -12,12 +10,12 @@ void handle_signal_action(int sig_number)
 {
     if (sig_number == SIGINT)
     {
-        printf("SIGINT was catched!\n");
+        std::cout << red << " { SIGINT was catched! }" << def << std::endl;
         shutdown_properlyy(EXIT_SUCCESS);
     }
     else if (sig_number == SIGPIPE)
     {
-        printf("SIGPIPE was catched!\n");
+        std::cout << red << " { SIGPIPE was catched! }" << def << std::endl;
         shutdown_properlyy(EXIT_SUCCESS);
     }
 }
@@ -36,7 +34,6 @@ int setup_signals()
         perror("sigaction()");
         return -1;
     }
-
     return 0;
 }
 
