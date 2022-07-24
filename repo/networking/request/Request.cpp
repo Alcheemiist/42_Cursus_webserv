@@ -82,9 +82,6 @@ char *Request::readFile(const char *fileName)
 
 Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
 {
-    Color::Modifier B_blue(Color::BG_BLUE);
-    Color::Modifier B_def(Color::BG_DEFAULT);
-
     std::stringstream ss((std::string(buffer)));
     std::string line;
     int offset = 0;
@@ -142,12 +139,6 @@ Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
 
 void Request::show()
 {
-    Color::Modifier red(Color::FG_RED);
-    Color::Modifier def(Color::FG_DEFAULT);
-    Color::Modifier blue(Color::FG_BLUE);
-    Color::Modifier green(Color::FG_GREEN);
-    Color::Modifier B_red(Color::BG_RED);
-
     std::cout << red << "--------------- Request ----------------- " << def << std::endl;
     std::cout << "method: " << this->_method << std::endl;
     std::cout << "path: " << this->_path << std::endl;

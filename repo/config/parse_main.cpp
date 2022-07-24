@@ -32,7 +32,7 @@ int basic_error(std::string error_message, char const *av, std::string error_mes
         std::cout << error_message << av << std::endl;
     else if (error_message != "")
         std::cout << error_message << std::endl;    
-    return (0);
+    return (-1);
 }
 
 int parse_main(int argc, char **argv, parse_config *conf)

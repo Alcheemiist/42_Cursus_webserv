@@ -1,22 +1,6 @@
 #include "./elements.hpp"
-#include <fcntl.h>
-#include <arpa/inet.h>
-#include <sys/ioctl.h>
 
-#define MAX_CLIENTS 20
-#define NO_SOCKET -1
-#define MAX_MESSAGES_BUFFER_SIZE 10
-#define SENDER_MAXSIZE 128
-#define DATA_MAXSIZE 512
-
-#define FALSE 0
-#define TRUE 1
-
-#define BUFER_SIZE 1024 // reading buffer size
-
-// TOOLS --------------------------------------------------
-char *readFile(const char *fileName)
-{
+char        *readFile(const char *fileName) {
     FILE *pFile;
     char buffer[100];
     char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
@@ -42,9 +26,21 @@ char *readFile(const char *fileName)
     return return_buffer;
 }
 
-// NETWORKING --------------------------------------------------
+void         close_fds(t_socket *_socket_server, int nServers, std::map<int, t_socket> clients)
+{
+    for (int i = 0; i < nServers; i++)
+        close(_socket_server[i].server_fd);
+    
+    for (size_t index_client = 0; index_client < clients.size(); index_client++)
+    {
+        if (clients[index_client].server_fd)
+            close(clients[index_client].server_fd);
+        if (clients[index_client].new_socket)
+            close(clients[index_client].new_socket);
+    }
+}
 
-t_socket accepteConnection(t_socket *_socket)
+t_socket    accepteConnection(t_socket *_socket)
 {
     t_socket __socket;
 
@@ -60,94 +56,84 @@ t_socket accepteConnection(t_socket *_socket)
     return __socket;
 }
 
-size_t readSocketBuffer(int fd, char **buffer)
+size_t      readSocketBuffer(int fd, char **buffer)
 {
     std::cout << "reading request" << std::endl;
     return read(fd, &buffer, BUFER_SIZE);
 }
 
-void startServer(t_socket *socket, parse_config *config)
+void        init_socket(t_socket *_socket)
 {
-    (void)config;
+    int on = 1, rc = 0;
 
-    if (bind(socket->server_fd, (struct sockaddr *)&socket->address, sizeof(socket->address)) < 0)
-    {
-        perror("In bind");
-        exit(EXIT_FAILURE);
-    }
-    if (listen(socket->server_fd, 32) < 0)
-    {
-        perror("In listen");
-        exit(EXIT_FAILURE);
-    }
-}
-
-void init_socket(t_socket *_socket, int port)
-{
     _socket->server_fd = 0;
     _socket->new_socket = -1;
     _socket->address.sin_family = AF_INET;
     _socket->address.sin_addr.s_addr = INADDR_ANY;
-    _socket->address.sin_port = htons(port);
-    // memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
+    _socket->address.sin_port = htons(_socket->port);
+    memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
     _socket->addrlen = sizeof(_socket->address);
     if ((_socket->server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
         perror("In socket");
         exit(EXIT_FAILURE);
     }
+    if ((rc = setsockopt(_socket->server_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on))) < 0)
+    {
+        std::cout << red << "setsockopt( ) failed" << def << std::endl;
+        close(_socket->server_fd);
+        exit(-1);
+    }
+    if ((fcntl(_socket->server_fd, F_SETFL, O_NONBLOCK)) < 0)
+    {
+        std::cout << red << "fcntl( ) failed" << def << std::endl;
+        close(_socket->server_fd);
+        exit(-1);
+    }
+    if (bind(_socket->server_fd, (struct sockaddr *)&_socket->address, sizeof(_socket->address)) < 0)
+    {
+        perror("In bind");
+        exit(EXIT_FAILURE);
+    }
+    if (listen(_socket->server_fd, 32) < 0)
+    {
+        perror("In listen");
+        exit(EXIT_FAILURE);
+    }
 }
 
-void LaunchServer(parse_config *config)
+void        LaunchServer(parse_config *config)
 {
-    t_socket _socket_server[MAX_CLIENTS];
-
     std::map<int, Request> requests;
     std::map<int, t_socket> clients;
-
-    unsigned long nServers = 20;
-    char buffer[1000];
-    int *serv_response = new int[1000], rc, on = 1, max_sd, index_client = 0;
-    bool *first = new bool[1000];
-
     struct timeval timeout;
+    int         nServers = config->get_server_vect().size();
+    t_socket    _socket_server[nServers];
+    int     *serv_response  = new int[MAX_CLIENTS];
+    bool    *first         = new bool[MAX_CLIENTS];
+    int     rc, max_sd, index_client;
     struct fd_set working_rd_set, working_wr_set, working_er_set;
     struct fd_set backup_rd_set, backup_wr_set, backup_er_set;
+    
+    rc = max_sd = index_client = 0;
+    timeout.tv_sec = 120;
+    timeout.tv_usec = 0;
 
     FD_ZERO(&working_rd_set);
     FD_ZERO(&working_wr_set);
     FD_ZERO(&working_er_set);
-
     FD_ZERO(&backup_rd_set);
     FD_ZERO(&backup_wr_set);
     FD_ZERO(&backup_er_set);
 
-    timeout.tv_sec = 2 * 60;
-    timeout.tv_usec = 0;
-
-    for (unsigned long i = 0; i < nServers; i++)
+    for (int  i = 0; i < nServers; i++)
     {
-        serv_response[i] = 1;
-        first[i] = true;
-
-        init_socket(&_socket_server[i], PORT + i);
-
-        if ((rc = setsockopt(_socket_server[i].server_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on))) < 0)
-        {
-            printf("setsockopt(%lu) failed", i);
-            close(_socket_server[i].server_fd);
-            exit(-1);
-        }
-        if ((fcntl(_socket_server[i].server_fd, F_SETFL, O_NONBLOCK)) < 0)
-        {
-            printf("fcntl(%lu) failed", i);
-            close(_socket_server[i].server_fd);
-            exit(-1);
-        }
-        startServer(&_socket_server[i], config);
-
+        std::cout << green << "init server "<< i << " on port ..." << config->get_server_vect()[i].get_listen_port() << def << std::endl;
+        serv_response[i]            = 1;
+        first[i]                    = true;
+        _socket_server[i].port      = config->get_server_vect()[i].get_listen_port();
+        init_socket(&_socket_server[i]);
         FD_SET(_socket_server[i].server_fd, &backup_rd_set);
-
         if (_socket_server[i].server_fd > max_sd)
             max_sd = _socket_server[i].server_fd;
     }
@@ -157,7 +143,7 @@ void LaunchServer(parse_config *config)
         memcpy(&working_rd_set, &backup_rd_set, sizeof(backup_rd_set));
         memcpy(&working_wr_set, &backup_wr_set, sizeof(backup_wr_set));
 
-        std::cout << "\nWaiting on select()...\n";
+        std::cout << "\nWaiting on select(" << index_cycle << ")...\n";
         rc = select(max_sd + 1, &working_rd_set, &working_wr_set, &working_er_set, &timeout);
 
         if (rc < 0)
@@ -167,8 +153,7 @@ void LaunchServer(parse_config *config)
         }
         else if (rc == 0)
         {
-            std::cout << "  select() timed out.\n"
-                      << std::endl;
+            std::cout << "  select() timed out.\n" << std::endl;
             break;
         }
         else
@@ -202,6 +187,7 @@ void LaunchServer(parse_config *config)
             // only for clients
             for (int i = 0; i < index_client; i++)
             {
+                // #FIXEME: here 
                 if (FD_ISSET(clients[i].server_fd, &working_rd_set) && serv_response[i] == 2)
                 {
                     std::cout << " ready to read from clients.server.fd " << clients[i].server_fd << " accepted from server.fd " << clients[i].new_socket << std::endl;
@@ -241,7 +227,9 @@ void LaunchServer(parse_config *config)
                     free(buffer);
                 }
 
-                if (FD_ISSET(clients[i].server_fd, &working_wr_set))
+
+
+                if (FD_ISSET(clients[i].server_fd, &working_wr_set) && serv_response[i] == 3)
                 {
                     std::cout << "  ready to responde the client  " << requests.find(clients[i].server_fd)->first << std::endl;
 
@@ -262,18 +250,10 @@ void LaunchServer(parse_config *config)
                     }
                 }
             }
+       
         }
     }
 
-    std::cout << "  Server Broken " << std::endl;
-    for (unsigned long i = 0; i < max_sd; i++)
-        close((&_socket_server[i])->server_fd);
-
-    for (int index_client = 0; index_client < clients.size(); index_client++)
-    {
-        if (clients[index_client].server_fd)
-            close(clients[index_client].server_fd);
-        if (clients[index_client].new_socket)
-            close(clients[index_client].new_socket);
-    }
+    close_fds(_socket_server, nServers, clients);
+    std::cout << green << "Shutdown Server Properly." << def << std::endl;
 }
