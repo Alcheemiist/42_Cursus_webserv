@@ -376,7 +376,7 @@ void validateCgiContextAttr(std::string attr, int index) {
 	}
 }
 
-void  portToParseConfigClass(Component &root, parse_config &config) {
+void   portToParseConfigClass(Component &root, parse_config &config) {
 	
 }
 

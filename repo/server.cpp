@@ -42,11 +42,12 @@ int main(int ac, char **av, char **ep)
 {
     parse_config Config;
 
-    // if (setup_signals() != 0)
-    //     exit(EXIT_FAILURE);
+    if (setup_signals() != 0)
+        exit(EXIT_FAILURE);
     
     parse_main(ac, av, Config);
     
-    // LaunchServer(&Config);
+    LaunchServer(&Config);
+    
     return 0;
 }
