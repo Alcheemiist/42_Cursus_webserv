@@ -31,23 +31,33 @@ size_t getFileSize(const char *fileName)
 
 void Request::fill_body(char *buffer, size_t bytes)
 {
-    std::cout << "contentSize: " << bytes << std::endl;
-    // std::string name = std::string(".tmp/") + std::to_string(this->client_fd) + std::string("tmp");
-    std::string name = std::to_string(this->client_fd) + std::string("tmp.png");
+    std::cout << "content_size to fill in body : " << bytes << std::endl;
+    
+    if (bytes <=  0)
+    {
+        this->_is_complete = true;
+        return;
+    }
+
+    std::string name = ".tmp/file_" + std::to_string(this->_content_length);
+    if (this->_content_type.compare("image/jpeg"))
+        name += ".jpeg";
+    else if (this->_content_type.compare("image/png"))
+        name += ".png";
+    else if (this->_content_type.compare("text/html"))
+        name += ".html";
+
     this->bodyFileName = name;
 
-    int fd = open(name.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
+    int fd = open(this->bodyFileName.c_str() , O_RDWR | O_CREAT | O_APPEND, 0666);
 
-    size_t writeBytes = write(fd, buffer, bytes);
-
+    write(fd, buffer, bytes);
     close(fd);
 
-    if (this->_content_length <= getFileSize("tmp"))
+    if (this->_content_length <= getFileSize(this->bodyFileName.c_str()))
     {
-
-        std::cout << "body size: " << getFileSize("tmp") << std::endl;
-        std::cout << "writeBytes: " << writeBytes << std::endl;
-
+        std::cout << B_green << "content type : " << this->_content_type << B_def << std::endl;
+        std::cout << B_blue << "body size of bodyFileName : " << getFileSize(this->bodyFileName.c_str()) << B_def << std::endl;
         this->_is_complete = true;
     }
 }
@@ -92,16 +102,16 @@ Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
     bodyFileName = "";
     _is_complete = false;
 
-    std::cout << B_blue << buffer << B_def << std::endl;
+
     while (std::getline(ss, line))
     {
+        std::cout << B_blue << line << B_def << std::endl;
         offset += line.size() + 1;
         if (is_first)
         {
             std::vector<std::string> tmp(split(line, ' '));
             if (tmp.size() != 3)
                 throw std::runtime_error("invalid request");
-            std::cout << B_blue << "is_first " << tmp[0] << " " << tmp[1] << B_def << std::endl;
             this->_method = tmp[0];
             this->_path = tmp[1];
             this->_version = tmp[2];
@@ -112,7 +122,6 @@ Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
             if (line == "\r")
                 break;
             std::vector<std::string> tmp = split(line, ':');
-
             if (tmp[0] == "Host")
                 this->_host = std::make_pair(tmp[1], std::stoi(tmp[2]));
             else if (tmp[0] == "Connection")
