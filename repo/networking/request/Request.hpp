@@ -56,7 +56,11 @@ public:
     int getRequestStatus() const { return requestStatus; };
 
     // METHODS --------------------------------------------------
-    bool isGoodrequest() { return (true); };
+    bool
+    isGoodrequest()
+    {
+        return (true);
+    };
     void parse(char *buffer);
     void fill_body(char *buffer, size_t bytes);
     char *readFile(const char *fileName);
