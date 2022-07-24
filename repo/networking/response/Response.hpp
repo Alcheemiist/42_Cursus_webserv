@@ -71,7 +71,7 @@ void PUTresponse();
 void DELETEresponse();
 void HEADresponse();
 void ERRORresponse(Request *request, Response *response);
-void response(int new_socket, Request *request, parse_config *config);
+void response(int new_socket, Request *request, parse_config *config, int fd_server);
 
 char *readFile(const char *fileName);
 
