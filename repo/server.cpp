@@ -40,16 +40,16 @@ int setup_signals()
     return 0;
 }
 
-int main(int argc, char *argv[])
+
+int main(int ac, char **av, char **ep)
 {
     parse_config Config;
-    (void)argv;
 
     // if (setup_signals() != 0)
     //     exit(EXIT_FAILURE);
     
-    parse_main(argc, argv, &Config);
+    parse_main(ac, av, Config);
     
-    LaunchServer(&Config);
+    // LaunchServer(&Config);
     return 0;
 }

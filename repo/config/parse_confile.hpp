@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse_confile.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nabboudi <nabboudi@student.42.fr>          +#+  +:+       +#+        */
+/*   By: isaadi <isaadi@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:27:53 by nabboudi          #+#    #+#             */
-/*   Updated: 2022/06/29 00:42:34 by nabboudi         ###   ########.fr       */
+/*   Updated: 2022/07/24 18:08:46 by isaadi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,8 @@ class parse_config
         void                specified_words(std::string&);
         unsigned int        server_parsing(unsigned int&);
         size_t              get_lines_size() const;
-        std::vector<server> get_server_vect() const { return _servers;};
+        const std::vector<server> &get_server_vect() const;
+        std::vector<server> set_server_vect(std::vector<server>);
         void                set_lines(std::vector<std::string> lines);
         void                read_lines();
         void                read_server();
@@ -53,7 +54,7 @@ class parse_config
         int                 basic_error(std::string , char const *, std::string);
         unsigned int        fill_index(std::vector<std::string>, unsigned int);
 };
-int parse_main(int argc, char **argv, parse_config *conf);
+int parse_main(int argc, char **argv, parse_config &conf);
 
 
 #endif
