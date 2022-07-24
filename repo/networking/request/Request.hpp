@@ -9,31 +9,31 @@
 class Request
 {
 private:
-    std::string                 _method;
-    std::string                 _path;
-    std::string                 _version;
+    std::string _method;
+    std::string _path;
+    std::string _version;
     std::pair<std::string, int> _host;
-    std::string                 _connection;
-    std::string                 _accept;
-    std::string                 _accept_encoding;
-    std::string                 _content_type;
+    std::string _connection;
+    std::string _accept;
+    std::string _accept_encoding;
+    std::string _content_type;
     std::map<std::string, std::string> _headers;
-    size_t                      _content_length;
-    long                        bytes;
-    bool                        _is_complete;
-    std::string                 bodyFileName;
-    std::string                 _accept_language;
-    int                         request_num;
-    int                         requestStatus;
-    int                         client_fd;
-    int                        _fdBodyFile;
+    size_t _content_length;
+    long bytes;
+    bool _is_complete;
+    std::string bodyFileName;
+    std::string _accept_language;
+    int request_num;
+    int requestStatus;
+    int client_fd;
+    int _fdBodyFile;
 
 public:
     Request() : _method(""), _path(""), _version(""), _host("", 0),
                 _connection(""), _accept(""), _accept_encoding(""),
                 _content_type(""), _headers(std::map<std::string, std::string>()),
-                _content_length(0), bytes(0), _is_complete(false), bodyFileName("tmp"),
-                _accept_language(""), request_num(0), requestStatus(1), client_fd(-1), _fdBodyFile(-1) {};
+                _content_length(0), bytes(0), _is_complete(false), bodyFileName(""),
+                _accept_language(""), request_num(0), requestStatus(1), client_fd(-1), _fdBodyFile(-1){};
     Request(char *buffer, size_t bytes, int fd);
     ~Request(){};
     // OVERLOAD OPERATORS ---------------------------------------
@@ -44,7 +44,7 @@ public:
     }
     // SETTERS --------------------------------------------------
     void setbytes(long bytes) { this->bytes = bytes; }
-    void set_request_num(int request_num) { this->request_num = request_num;}
+    void set_request_num(int request_num) { this->request_num = request_num; }
     // GETTERS --------------------------------------------------
     long getbytes() { return bytes; }
     int getRequestNum() const { return request_num; };
