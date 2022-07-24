@@ -19,14 +19,17 @@ void POSTresponse()
     std::cout << "im doing post response\n";
 }
 
-void GETresponse(Request *request, Response *response, parse_config *config)
+void GETresponse(Request *request, Response *response, parse_config *config, int index_server)
 {
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
+   
     if (!request->getPath().empty())
     {
         char *path = (char *)malloc(sizeof(char) * (1000));
-        strcpy(path, config[0].get_server_vect()[0].get_root().c_str());
-
+  
+        std::cout << B_red << " root path = {" << config[0].get_server_vect()[index_server].get_root().c_str()<<"}" << B_def<< std::endl;
+        
+        strcpy(path, config[0].get_server_vect()[index_server].get_root().c_str());
         // default path file in root directory
         if (request->getPath() == "/")
             strcpy(path + (strlen(path)), "index.html");
@@ -34,6 +37,9 @@ void GETresponse(Request *request, Response *response, parse_config *config)
             strcpy(path + (strlen(path) - 1), request->getPath().c_str());
 
         std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
+
+
+
         FILE *pFile;
         pFile = fopen(path, "r");
         if (pFile != NULL)
@@ -61,7 +67,7 @@ void GETresponse(Request *request, Response *response, parse_config *config)
     }
 }
 
-void response(int new_socket, Request *request, parse_config *config)
+void response(int new_socket, Request *request, parse_config *config, int index_server)
 {
     Response response;
 
@@ -70,7 +76,7 @@ void response(int new_socket, Request *request, parse_config *config)
     if (!request->isGoodrequest())
         ERRORresponse(request, &response);
     else if (!(request->getMethod().compare("GET")))
-        GETresponse(request, &response, config);
+        GETresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("POST") == 0)
         POSTresponse();
     else if (request->getMethod().compare("DELETE") == 0)

@@ -58,6 +58,7 @@ typedef struct s_socket
     int addrlen;
     long valread;
     int port;
+    int index_server;
 } t_socket;
 
 class Config

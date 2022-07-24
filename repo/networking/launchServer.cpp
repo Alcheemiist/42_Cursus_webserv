@@ -171,17 +171,15 @@ void LaunchServer(parse_config *config)
                     t_socket _server = accepteConnection(&_socket_server[i]);
                     clients[index_client] = _server;
                     clients[index_client].new_socket = _socket_server[i].server_fd;
-                    std::cout << "  client accepte connection : " << clients[index_client].server_fd << std::endl;
+                    clients[index_client].index_server = i;
 
+                    std::cout << "  client accepte connection : " << clients[index_client].server_fd << std::endl;
                     serv_response[index_client] = 1;
                     first[index_client] = true;
-
                     FD_SET(clients[index_client].server_fd, &working_rd_set);
                     FD_SET(clients[index_client].server_fd, &backup_rd_set);
-
                     if (clients[index_client].server_fd > max_sd)
                         max_sd = clients[index_client].server_fd;
-
                     serv_response[index_client] = 2;
                     std::cout << " status client : " << serv_response[index_client] << " max_sd : " << max_sd << std::endl;
                     index_client++;
@@ -190,7 +188,6 @@ void LaunchServer(parse_config *config)
             // only for clients
             for (int i = 0; i < index_client; i++)
             {
-                // #FIXEME: here
                 if (FD_ISSET(clients[i].server_fd, &working_rd_set) && serv_response[i] == 2)
                 {
                     std::cout << " ready to read from clients.server.fd " << clients[i].server_fd << " accepted from server.fd " << clients[i].new_socket << std::endl;
@@ -238,7 +235,7 @@ void LaunchServer(parse_config *config)
                     {
                         std::cout << "  send response 3 (sending request) to fd : " << requests.find(clients[i].server_fd)->first << " == " << clients[i].server_fd << std::endl;
 
-                        response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config);
+                        response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config, clients[i].index_server);
 
                         FD_CLR(requests.find(clients[i].server_fd)->first, &working_wr_set);
                         FD_CLR(requests.find(clients[i].server_fd)->first, &backup_wr_set);
