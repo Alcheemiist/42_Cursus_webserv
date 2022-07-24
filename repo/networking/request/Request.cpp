@@ -32,24 +32,8 @@ size_t getFileSize(const char *fileName)
 void Request::fill_body(char *buffer, size_t bytes)
 {
     std::cout << "content_size to fill in body : " << bytes << std::endl;
-    
-    if (bytes <=  0)
-    {
-        this->_is_complete = true;
-        return;
-    }
 
-    std::string name = ".tmp/file_" + std::to_string(this->_content_length);
-    if (this->_content_type.compare("image/jpeg"))
-        name += ".jpeg";
-    else if (this->_content_type.compare("image/png"))
-        name += ".png";
-    else if (this->_content_type.compare("text/html"))
-        name += ".html";
-
-    this->bodyFileName = name;
-
-    int fd = open(this->bodyFileName.c_str() , O_RDWR | O_CREAT | O_APPEND, 0666);
+    int fd = open(this->bodyFileName.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
 
     write(fd, buffer, bytes);
     close(fd);
@@ -102,7 +86,6 @@ Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
     bodyFileName = "";
     _is_complete = false;
 
-
     while (std::getline(ss, line))
     {
         std::cout << B_blue << line << B_def << std::endl;
@@ -143,7 +126,35 @@ Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
     if (_content_length == 0)
         _is_complete = true;
     else
+    {
+        bodyFileName = ".tmp/file_" + std::to_string(this->_content_length) + "_" + std::to_string(rand() % 100);
+
+        std::string s = this->_content_type;
+        std::string delimiter = "\r";
+        std::string token = s.substr(0, s.find(delimiter));
+        token = token.substr(0, token.find("\n"));
+        std::cout << B_red << " content_type :{" << token << "}" << std::endl;
+
+        this->_content_type = token;
+        if (this->_content_type == " image/jpeg")
+            this->bodyFileName += ".jpeg";
+        else if (this->_content_type == " image/png")
+            this->bodyFileName += ".png";
+        else if (this->_content_type == " text/html")
+            this->bodyFileName += ".html";
+        else if (this->_content_type == " text/css")
+            this->bodyFileName += ".css";
+        else if (this->_content_type == " text/javascript")
+            this->bodyFileName += ".js";
+        else if (this->_content_type == " text/plain")
+            this->bodyFileName += ".txt";
+        else if (this->_content_type == " video/mp4")
+            this->bodyFileName += ".mp4";
+        else
+            this->bodyFileName += ".unknown";
+
         this->fill_body(buffer + offset, bytes - offset);
+    }
 }
 
 void Request::show()
