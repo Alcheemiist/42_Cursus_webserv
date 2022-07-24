@@ -4,8 +4,6 @@
 
 void ERRORresponse(Request *request, Response *response)
 {
-    Color::Modifier B_def(Color::BG_DEFAULT);
-    Color::Modifier B_red(Color::BG_RED);
     (void)request;
     (void)response;
     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
@@ -23,10 +21,6 @@ void POSTresponse()
 
 void GETresponse(Request *request, Response *response, parse_config *config)
 {
-    Color::Modifier B_green(Color::BG_GREEN);
-    Color::Modifier B_blue(Color::BG_BLUE);
-    Color::Modifier B_def(Color::BG_DEFAULT);
-
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
     if (!request->getPath().empty())
     {
@@ -68,12 +62,6 @@ void GETresponse(Request *request, Response *response, parse_config *config)
 
 void response(int new_socket, Request *request, parse_config *config)
 {
-    Color::Modifier blue(Color::FG_BLUE);
-    Color::Modifier def(Color::FG_DEFAULT);
-    Color::Modifier B_red(Color::BG_RED);
-    Color::Modifier B_green(Color::BG_GREEN);
-    Color::Modifier B_def(Color::BG_DEFAULT);
-
     Response response;
 
     std::cout << blue << "********** Response Data ***********************" << def << std::endl;
