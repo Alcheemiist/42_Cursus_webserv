@@ -12,7 +12,7 @@ OBJS = $(SRCS:%.c=%.o)
 all:	$(NAME)
 
 $(NAME) : $(SRC)
-	@c++  -fsanitize=address -g $(SRC) -o $(NAME) 
+	c++  -fsanitize=address -g $(SRC) -o $(NAME) 
 
 clean:
 	@rm -rf $(NAME)

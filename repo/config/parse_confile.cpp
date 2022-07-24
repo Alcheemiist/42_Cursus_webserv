@@ -370,6 +370,8 @@ int parse_config::parsing_conf(int ac, char **av, std::vector<std::string> lines
 
 //--------getters-------------
 
+const std::vector<server> &parse_config::get_server_vect() const { return _servers; };
+
 std::string parse_config::get_lines(int i) const
 {
     return (_lines[i]);
