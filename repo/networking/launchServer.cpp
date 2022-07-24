@@ -128,7 +128,8 @@ void        LaunchServer(parse_config *config)
 
     for (int  i = 0; i < nServers; i++)
     {
-        std::cout << green << "init server "<< i << " on port ..." << config->get_server_vect()[i].get_listen_port() << def << std::endl;
+        std::cout << green << "init server "<< config->get_server_vect()[i].get_name(0) << " on port: " << config->get_server_vect()[i].get_listen_port() \
+        << " path root :" << config->get_server_vect()[i].get_root() << def << std::endl;
         serv_response[i]            = 1;
         first[i]                    = true;
         _socket_server[i].port      = config->get_server_vect()[i].get_listen_port();
@@ -202,6 +203,7 @@ void        LaunchServer(parse_config *config)
                     if (first[i])
                     {
                         Request request((buffer), bytes, clients[i].server_fd);
+                        request.set_request_num(index_cycle);
                         requests.insert(std::pair<int, Request>(clients[i].server_fd, request));
                         first[i] = false;
 
