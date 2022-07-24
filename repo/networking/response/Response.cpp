@@ -4,8 +4,6 @@
 
 void ERRORresponse(Request *request, Response *response)
 {
-    Color::Modifier B_def(Color::BG_DEFAULT);
-    Color::Modifier B_red(Color::BG_RED);
     (void)request;
     (void)response;
     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
@@ -21,34 +19,37 @@ void POSTresponse()
     std::cout << "im doing post response\n";
 }
 
-void GETresponse(Request *request, Response *response, parse_config *config)
+void GETresponse(Request *request, Response *response, parse_config *config, int index_server)
 {
-    Color::Modifier B_green(Color::BG_GREEN);
-    Color::Modifier B_blue(Color::BG_BLUE);
-    Color::Modifier B_def(Color::BG_DEFAULT);
-
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
+   
     if (!request->getPath().empty())
     {
         char *path = (char *)malloc(sizeof(char) * (1000));
-        strcpy(path, config[0].get_server_vect()[0].get_root().c_str());
-
+  
+        std::cout << B_red << " root path = {" << config[0].get_server_vect()[index_server].get_root().c_str()<<"}" << B_def<< std::endl;
+        
+        strcpy(path, config[0].get_server_vect()[index_server].get_root().c_str());
         // default path file in root directory
         if (request->getPath() == "/")
             strcpy(path + (strlen(path)), "index.html");
         else
             strcpy(path + (strlen(path) - 1), request->getPath().c_str());
-        
+
         std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
-        FILE *pFile;       
+
+
+
+        FILE *pFile;
         pFile = fopen(path, "r");
         if (pFile != NULL)
         {
-            /* making of response from path file existe */ 
+            /* making of response from path file existe */
             char s2[50];
             strcpy(s2, " 200 OK\r\n");
             response->setResponseStatus(s2);
             response->setResponseHeader();
+
             response->setBody(readFile(path));
         }
         else
@@ -66,14 +67,8 @@ void GETresponse(Request *request, Response *response, parse_config *config)
     }
 }
 
-void response(int new_socket, Request *request, parse_config *config)
+void response(int new_socket, Request *request, parse_config *config, int index_server)
 {
-    Color::Modifier blue(Color::FG_BLUE);
-    Color::Modifier def(Color::FG_DEFAULT);
-    Color::Modifier B_red(Color::BG_RED);
-    Color::Modifier B_green(Color::BG_GREEN);
-    Color::Modifier B_def(Color::BG_DEFAULT);
-
     Response response;
 
     std::cout << blue << "********** Response Data ***********************" << def << std::endl;
@@ -81,7 +76,7 @@ void response(int new_socket, Request *request, parse_config *config)
     if (!request->isGoodrequest())
         ERRORresponse(request, &response);
     else if (!(request->getMethod().compare("GET")))
-        GETresponse(request, &response, config);
+        GETresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("POST") == 0)
         POSTresponse();
     else if (request->getMethod().compare("DELETE") == 0)
@@ -92,9 +87,9 @@ void response(int new_socket, Request *request, parse_config *config)
     std::cout << blue << "********** End Response Data ******************" << def << std::endl;
 
     ssize_t size_send = send(new_socket, response.getResponse().c_str(), response.getResponse().length(), MSG_OOB);
-    
+
     if (size_send >= 0)
-        std::cout << B_green << "********** data size send : "<< size_send  << "******************" << B_def << std::endl;
+        std::cout << B_green << "********** data size send : " << size_send << "******************" << B_def << std::endl;
     else
-        std::cout << B_red << "********** data size send : "<< size_send  << "******************" << B_def << std::endl;
+        std::cout << B_red << "********** data size send : " << size_send << "******************" << B_def << std::endl;
 }

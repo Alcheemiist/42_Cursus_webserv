@@ -8,32 +8,15 @@
 #include "./response/Response.hpp"
 #include "../config/parse_confile.hpp"
 
-namespace Color
-{
-    enum Code
-    {
-        FG_RED = 31,
-        FG_GREEN = 32,
-        FG_BLUE = 34,
-        FG_DEFAULT = 39,
-        BG_RED = 41,
-        BG_GREEN = 42,
-        BG_BLUE = 44,
-        BG_DEFAULT = 49
-    };
-    class Modifier
-    {
-        Code code;
-
-    public:
-        Modifier(Code pCode) : code(pCode) {}
-        friend std::ostream &
-        operator<<(std::ostream &os, const Modifier &mod)
-        {
-            return os << "\033[" << mod.code << "m";
-        }
-    };
-}
+#define MAX_CLIENTS 10000
+#define NO_SOCKET -1
+#define MAX_MESSAGES_BUFFER_SIZE 10
+#define SENDER_MAXSIZE 128
+#define DATA_MAXSIZE 512
+#define FALSE 0
+#define TRUE 1
+#define BUFER_SIZE 4024 // reading buffer size
+#define PORT 8080
 
 char *readFile(const char *fileName);
 

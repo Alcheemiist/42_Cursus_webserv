@@ -195,14 +195,7 @@ void parse_config::read_server()
 {
     size_t i = 0;
 
-    Color::Modifier red(Color::FG_RED);
-    Color::Modifier def(Color::FG_DEFAULT);
-    Color::Modifier blue(Color::FG_BLUE);
-    Color::Modifier green(Color::FG_GREEN);
-    Color::Modifier B_red(Color::BG_RED);
-    Color::Modifier B_green(Color::BG_GREEN);
-    Color::Modifier B_blue(Color::BG_BLUE);
-    Color::Modifier B_def(Color::BG_DEFAULT);
+   
 
     while (i < _servers.size())
     {

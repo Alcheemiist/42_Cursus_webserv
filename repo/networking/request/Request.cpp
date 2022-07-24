@@ -31,23 +31,17 @@ size_t getFileSize(const char *fileName)
 
 void Request::fill_body(char *buffer, size_t bytes)
 {
-    std::cout << "contentSize: " << bytes << std::endl;
-    // std::string name = std::string(".tmp/") + std::to_string(this->client_fd) + std::string("tmp");
-    std::string name = std::to_string(this->client_fd) + std::string("tmp.png");
-    this->bodyFileName = name;
+    std::cout << "content_size to fill in body : " << bytes << std::endl;
 
-    int fd = open(name.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
+    int fd = open(this->bodyFileName.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
 
-    size_t writeBytes = write(fd, buffer, bytes);
-
+    write(fd, buffer, bytes);
     close(fd);
 
-    if (this->_content_length <= getFileSize("tmp"))
+    if (this->_content_length <= getFileSize(this->bodyFileName.c_str()))
     {
-
-        std::cout << "body size: " << getFileSize("tmp") << std::endl;
-        std::cout << "writeBytes: " << writeBytes << std::endl;
-
+        std::cout << B_green << "content type : " << this->_content_type << B_def << std::endl;
+        std::cout << B_blue << "body size of bodyFileName : " << getFileSize(this->bodyFileName.c_str()) << B_def << std::endl;
         this->_is_complete = true;
     }
 }
@@ -82,9 +76,6 @@ char *Request::readFile(const char *fileName)
 
 Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
 {
-    Color::Modifier B_blue(Color::BG_BLUE);
-    Color::Modifier B_def(Color::BG_DEFAULT);
-
     std::stringstream ss((std::string(buffer)));
     std::string line;
     int offset = 0;
@@ -95,16 +86,15 @@ Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
     bodyFileName = "";
     _is_complete = false;
 
-    std::cout << B_blue << buffer << B_def << std::endl;
     while (std::getline(ss, line))
     {
+        std::cout << B_blue << line << B_def << std::endl;
         offset += line.size() + 1;
         if (is_first)
         {
             std::vector<std::string> tmp(split(line, ' '));
             if (tmp.size() != 3)
                 throw std::runtime_error("invalid request");
-            std::cout << B_blue << "is_first " << tmp[0] << " " << tmp[1] << B_def << std::endl;
             this->_method = tmp[0];
             this->_path = tmp[1];
             this->_version = tmp[2];
@@ -115,7 +105,6 @@ Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
             if (line == "\r")
                 break;
             std::vector<std::string> tmp = split(line, ':');
-
             if (tmp[0] == "Host")
                 this->_host = std::make_pair(tmp[1], std::stoi(tmp[2]));
             else if (tmp[0] == "Connection")
@@ -137,17 +126,39 @@ Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
     if (_content_length == 0)
         _is_complete = true;
     else
+    {
+        bodyFileName = ".tmp/file_" + std::to_string(this->_content_length) + "_" + std::to_string(rand() % 100);
+
+        std::string s = this->_content_type;
+        std::string delimiter = "\r";
+        std::string token = s.substr(0, s.find(delimiter));
+        token = token.substr(0, token.find("\n"));
+        std::cout << B_red << " content_type :{" << token << "}" << std::endl;
+
+        this->_content_type = token;
+        if (this->_content_type == " image/jpeg")
+            this->bodyFileName += ".jpeg";
+        else if (this->_content_type == " image/png")
+            this->bodyFileName += ".png";
+        else if (this->_content_type == " text/html")
+            this->bodyFileName += ".html";
+        else if (this->_content_type == " text/css")
+            this->bodyFileName += ".css";
+        else if (this->_content_type == " text/javascript")
+            this->bodyFileName += ".js";
+        else if (this->_content_type == " text/plain")
+            this->bodyFileName += ".txt";
+        else if (this->_content_type == " video/mp4")
+            this->bodyFileName += ".mp4";
+        else
+            this->bodyFileName += ".unknown";
+
         this->fill_body(buffer + offset, bytes - offset);
+    }
 }
 
 void Request::show()
 {
-    Color::Modifier red(Color::FG_RED);
-    Color::Modifier def(Color::FG_DEFAULT);
-    Color::Modifier blue(Color::FG_BLUE);
-    Color::Modifier green(Color::FG_GREEN);
-    Color::Modifier B_red(Color::BG_RED);
-
     std::cout << red << "--------------- Request ----------------- " << def << std::endl;
     std::cout << "method: " << this->_method << std::endl;
     std::cout << "path: " << this->_path << std::endl;

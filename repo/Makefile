@@ -1,13 +1,9 @@
-FLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
+FLAGS = -Wall -Wextra -Werror -std=c++98
 
 NAME = webserve
 
 SRC =  ./networking/*.cpp  ./networking/request/*.cpp ./networking/response/*.cpp *.cpp\
 	   ./config/*.cpp\
-
-
-
-OBJS = $(SRCS:%.c=%.o)
 
 all:	$(NAME)
 
@@ -18,8 +14,7 @@ clean:
 	@rm -rf $(NAME)
 	@rm -rf bodyfile
 	@rm -rf log.txt
-	
-	
+		
 fclean:	clean
 
 re:	fclean all
