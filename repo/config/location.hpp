@@ -1,18 +1,17 @@
-
-
-
 #ifndef LOCATION_HPP
 #define LOCATION_HPP
 
 #include "server.hpp"
 #include <iostream>
 #include <vector>
+#include "cgi.hpp"
 
 class cgi;
 class location
 {
     
 protected:
+    std::vector<cgi>			_cgi;
     std::string                 _name;
     std::string                 _locations_path;
     std::vector<std::string>    _allow_methods;
@@ -25,6 +24,8 @@ public:
     location();
     ~location();
     location (const location &obj);
+	void						set_cgi(std::vector<cgi>);
+	std::vector<cgi>			&get_cgi();
     void                        set_upload_path(std::string upload_path);
     std::string                 get_upload_path() const;
     std::string                 get_locations_path() const;
