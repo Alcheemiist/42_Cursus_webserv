@@ -2,7 +2,8 @@
 
 #include "location.hpp"
 
-location::location() : _locations_path(""),
+location::location() : _cgi(),
+					   _locations_path(""),
                        _allow_methods(std::vector<std::string>()),
                        _root(""),
                        _client_max_body_size(-1),
@@ -32,10 +33,12 @@ std::string location::get_root() const { return this->_root; }
 bool location::get_autoindex() const { return this->_autoindex; }
 long long int location::get_client_max_body_size() const { return this->_client_max_body_size; }
 std::string location::get_upload_path() const { return _upload_path; }
+std::vector<cgi> &location::get_cgi() { return _cgi; }
 
 /*
  * SETTERS
  */
+void location::set_cgi(std::vector<cgi> cgi) { _cgi = cgi; }
 void location::set_locations_path(std::string locations_path) { this->_locations_path = locations_path; }
 void location::set_methods(std::string methods)
 {
