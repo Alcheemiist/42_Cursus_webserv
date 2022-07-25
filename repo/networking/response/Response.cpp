@@ -25,7 +25,7 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
     if (!request->getPath().empty())
     {
         char *path = (char *)malloc(sizeof(char) * (1000));
-        std::cout << B_red << "root path = {" << config->get_server_vect()[index_server].get_root().c_str()<<"}" << B_def<< std::endl;
+        std::cout << B_red << "root path = {" << config->get_server_vect()[index_server].get_root().c_str() << "}" << B_def << std::endl;
         strcpy(path, config->get_server_vect()[index_server].get_root().c_str());
         if (request->getPath() == "/")
             strcpy(path + (strlen(path)), "index.html");
@@ -41,13 +41,16 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
             strcpy(s2, " 200 OK\r\n");
             response->setResponseStatus(s2);
             response->setResponseHeader();
+            response->setContentType(path);
             response->setBody(readFile(path));
         }
         else
         {
+            char ss[100] = "./errorsPages/404/404.html";
             strcpy(s2, " 404 NOT FOUND\r\n");
             response->setResponseStatus(s2);
             response->setResponseHeader();
+            response->setContentType(ss);
             response->setBody(readFile("./errorsPages/404/404.html"));
         }
         fclose(pFile);
@@ -68,10 +71,14 @@ void response(int new_socket, Request *request, parse_config *config, int index_
         DELETEresponse();
     else
         ERRORresponse(request, &response);
-    std::cout << blue << "********** {End Response } ******************" << def << std::endl;
-    ssize_t size_send = send(new_socket, response.getResponse().c_str(), response.getResponse().length(), MSG_OOB);
+    std::cout << blue << "********** {End Response } ******************" << def << std::endl
+              << std::endl;
+
+    std::string str = response.getResponse();
+    size_t lenght = str.size();
+    ssize_t size_send = send(new_socket, str.c_str(), lenght, MSG_OOB);
     if (size_send > 0)
         std::cout << B_green << "********** data size send {" << size_send << "}******************" << B_def << std::endl;
     else
-        std::cout << B_red   << "********** no data t send {" << size_send << "}******************" << B_def << std::endl;
+        std::cout << B_red << "********** no data t send {" << size_send << "}******************" << B_def << std::endl;
 }

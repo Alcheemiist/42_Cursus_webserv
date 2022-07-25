@@ -57,14 +57,21 @@ public:
         res.append(version);
         res.append(status);
         res.append("Content-Type: ");
-
+        res.append(this->contentType);
+        res.append("\r\n");
+        res.append("server: alchemist\r\n");
+        res.append("location: wonderland");
         res.append("\r\n\r\n");
         res.append(body);
+        if (res.size() < 1000)
+            std::cout << green << "{" << res << "}" << def << std::endl;
+        else
+            std::cout << green << "BUFFER SEND SIZE " << res.size() << def << std::endl;
         return res;
     };
     std::string getBody() { return body; };
 
-    void setContentType(char *path) 
+    void setContentType(char *path)
     {
         std::string s(path);
         std::string s1 = s.substr(s.find_last_of(".") + 1);
@@ -99,8 +106,8 @@ public:
             this->contentType = "video/webm";
         else if (s1 == "txt")
             this->contentType = "text/plain";
-            
-        std::cout << red << "- Set Content-Type : " << s << green << " " << s1 << def  << std::endl;
+
+        std::cout << red << "- Set Content-Type : " << s << green << " " << s1 << def << std::endl;
     };
 };
 
