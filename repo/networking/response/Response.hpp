@@ -56,9 +56,8 @@ public:
         std::string res;
         res.append(version);
         res.append(status);
-        // res.append("Content-Type: ");
-        // res.append(contentType);
-        // res.append("\r\n");
+        res.append("Content-Type: ");
+
         res.append("\r\n\r\n");
         res.append(body);
         return res;
