@@ -45,6 +45,7 @@ class Component {
 		bool isContext() const;
 		bool isDirective() const;
 		void appendChild(const Component &comp);
+		void removeChild(std::vector<Component>::iterator it);
 		Component *findFirstChild(std::string __name);
 		Component *findFirstChildDirective(std::string __name);
 		Component *findFirstChildContext(std::string __name);

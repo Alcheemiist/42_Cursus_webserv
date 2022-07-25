@@ -527,6 +527,35 @@ void   portToParseConfigClass(Component &root, parse_config &config) {
 	config.set_server_vect(servers);
 }
 
+std::string postProcessConfigFile(Component &root, std::string cfgName, std::string pName) {
+	std::vector<Component> &children = root.children(0).children();
+	std::vector<int> ports;
+	std::string warning = "";
+	for (std::vector<Component>::iterator it = children.begin(); it != children.end(); it++) {
+		if (it->name() == SERVER_CONTEXT) {
+			Component *listenDirective = it->findFirstChild(LISTEN_DIRECTIVE);
+			std::string listen = listenDirective->attr(0);
+			int port;
+			if (listen.find(':') == (size_t)-1) {
+				port = to_int(listen);
+			}
+			else {
+				port = to_int(listen.substr(listen.find(':') + 1, listen.length()));
+			}
+			if (std::find(ports.begin(), ports.end(), port) != ports.end()) {
+				warning += BOLD + pName + ": " + BOLD_YELLOW + "warning: " + RESET + BOLD + cfgName + ":" + to_string(it->line()) + ":" + to_string(it->col()) + " port " + to_string(port) + " already in use, ignoring " SERVER_CONTEXT + '\n' + RESET;
+				std::vector<Component>::iterator tmp = it;
+				--it;
+				root.children(0).removeChild(tmp);
+			}
+			else {
+				ports.push_back(port);
+			}
+		}
+	}
+	return warning;
+}
+
 void validateConfigFile(Component &root, std::string cfgName, std::string pName) {
 	
 	std::map<std::string, AllowedComponent> allowedComponents;
@@ -757,8 +786,10 @@ int parse_main(int ac, char **av, parse_config &config) {
 	try {
 		parseConfigFile(configFileContents, configFileName, root, av[0]);
 		validateConfigFile(root, configFileName, av[0]);
+		std::string warnings = postProcessConfigFile(root, configFileName, av[0]);
 		portToParseConfigClass(root, config);
 		printComponentRecursively(root);
+		errorln(warnings);
 	}
 	catch (const std::exception &e) {
 		errorln(e.what());

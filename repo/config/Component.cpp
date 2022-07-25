@@ -73,6 +73,10 @@ void Component::appendAttr(const std::string &str) {
 	_attributes.push_back(str);
 }
 
+void Component::removeChild(std::vector<Component>::iterator it) {
+	_children.erase(it);
+}
+
 void Component::appendChild(const Component &comp) {
 	_isContext = true;
 	_children.push_back(comp);

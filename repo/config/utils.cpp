@@ -16,7 +16,7 @@ int to_int(std::string _s) {
 	int result = 0;
 	while (*s) {
 		if (*s < '0' || *s > '9')
-			throw std::invalid_argument("invalid input string");
+			throw std::invalid_argument("invalid input string " + _s);
 		result = result * 10 - (*s - '0'); // assume negative number
 		++s;
 	}
