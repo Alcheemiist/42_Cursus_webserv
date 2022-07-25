@@ -40,6 +40,7 @@ std::vector<cgi> &location::get_cgi() { return _cgi; }
  */
 void location::set_cgi(std::vector<cgi> cgi) { _cgi = cgi; }
 void location::set_locations_path(std::string locations_path) { this->_locations_path = locations_path; }
+void location::set_methods_vect(std::vector<std::string> methods) { _allow_methods = methods;}
 void location::set_methods(std::string methods)
 {
     if (methods == "POST" || methods == "GET" || methods == "DELETE")

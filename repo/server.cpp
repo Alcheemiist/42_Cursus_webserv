@@ -40,6 +40,7 @@ int setup_signals()
 
 int main(int ac, char **av, char **ep)
 {
+	(void)ep;
     parse_config Config;
 
     if (setup_signals() != 0)
