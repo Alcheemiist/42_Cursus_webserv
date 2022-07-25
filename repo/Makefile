@@ -8,10 +8,11 @@ SRC =  ./networking/*.cpp  ./networking/request/*.cpp ./networking/response/*.cp
 all:	$(NAME)
 
 $(NAME) : $(SRC)
-	c++  -fsanitize=address -g $(SRC) -o $(NAME) 
+	c++  -fsanitize=address -g $(SRC) -o $(NAME) $(FLAGS)
 
 clean:
 	@rm -rf $(NAME)
+	@rm -rf $(NAME).dSYM
 	@rm -rf bodyfile
 	@rm -rf log.txt
 		

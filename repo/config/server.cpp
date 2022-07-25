@@ -35,6 +35,14 @@ server::~server()
 
 //-------------seters------------------
 
+void	server::set_listen_port(int listenp) {
+	_listen_port = listenp;
+}
+
+void	server::set_name_vect(std::vector<std::string> names) {
+	_name = names;
+}
+
 void    server::set_name(std::string name)
 {
     _name.push_back(name);
@@ -166,6 +174,11 @@ void    server::set_listen(std::string listen)
     }
 }
 
+void    server::set_allowed_methods_vect(std::vector<std::string> allowed_methods)
+{
+	_allowed_methods = allowed_methods;
+}
+
 void    server::set_allowed_methods(std::string allowed_methods)
 {
     if (allowed_methods == "POST" || allowed_methods == "GET" || allowed_methods == "DELETE")
@@ -175,6 +188,11 @@ void    server::set_allowed_methods(std::string allowed_methods)
         std::cout << "Error: allowed methods not well defined" << std::endl;
         exit(1);
     }
+}
+
+void    server::set_index_vect(std::vector<std::string> index)
+{
+    _index = index;
 }
 
 void    server::set_index(std::string index)
@@ -258,9 +276,20 @@ void    server::set_autoindex(bool autoindex)
     _autoindex = autoindex;
 }
 
+
+void   server::set_location_vect(std::vector<location> location)
+{
+    _location = location;
+}
+
 void   server::set_location(location location)
 {
     _location.push_back(location);
+}
+
+void    server::set_cgi_vect(std::vector<cgi> cgi)
+{
+    _cgi = cgi;
 }
 
 void    server::set_cgi(cgi cgi)

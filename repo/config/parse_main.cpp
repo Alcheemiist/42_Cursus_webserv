@@ -377,7 +377,154 @@ void validateCgiContextAttr(std::string attr, int index) {
 }
 
 void   portToParseConfigClass(Component &root, parse_config &config) {
-	
+	std::vector<Component> serverComponents = root.children(0).findChildren(SERVER_CONTEXT);
+	std::vector<server> servers;
+	// std::vector<std::string> _name; 								done
+    // int _listen_port; 											done
+    // std::string _listen_host; 									done
+    // std::vector<std::string> _allowed_methods;					done
+    // std::vector<std::string> _index;								done
+    // std::string _upload_path;									done
+    // std::vector<std::vector<std::string> > _error_pages;			done
+    // std::vector<std::vector<std::string> > _redirections;		done
+    // std::string _root;											done
+    // long long int _client_max_body_size;							done
+    // bool _autoindex;												done
+    // std::vector<cgi> _cgi;										done
+    // std::vector<location> _location;								done
+	for (std::vector<Component>::iterator it = serverComponents.begin(); it != serverComponents.end(); it++) {
+		server currentServer;
+		Component *serverNamesDiretive = it->findFirstChild(SERVER_NAMES_DIRECTIVE);
+		if (serverNamesDiretive) {
+			currentServer.set_name_vect(serverNamesDiretive->attr());
+		}
+		Component *listenDirective = it->findFirstChild(LISTEN_DIRECTIVE);
+		if (listenDirective) {
+			currentServer.set_listen(listenDirective->attr(0));
+		}
+		Component *allowedMethodsDirective = it->findFirstChild(ALLOW_METHODS_DIRECTIVE);
+		if (allowedMethodsDirective) {
+			currentServer.set_allowed_methods_vect(allowedMethodsDirective->attr());
+		}
+		Component *indexDirective = it->findFirstChild(INDEX_DIRECTIVE);
+		if (indexDirective) {
+			currentServer.set_index_vect(indexDirective->attr());
+		}
+		Component *uploadPathDirective = it->findFirstChild(UPLOAD_PATH_DIRECTIVE);
+		if (uploadPathDirective) {
+			currentServer.set_upload_path(uploadPathDirective->attr(0));
+		}
+		Component *errorPageDirective = it->findFirstChild(ERROR_PAGE_DIRECTIVE);
+		if (errorPageDirective) {
+			currentServer.set_error_pages(errorPageDirective->attr(1), errorPageDirective->attr(0));
+		}
+		Component *redirectDirective = it->findFirstChild(REDIRECT_DIRECTIVE);
+		if (redirectDirective) {
+			currentServer.set_redirections(redirectDirective->attr(0), redirectDirective->attr(1));
+		}
+		Component *rootDirective = it->findFirstChild(ROOT_DIRECTIVE);
+		if (rootDirective) {
+			currentServer.set_root(rootDirective->attr(0));
+		}
+		Component *clientMaxBodySizeDirective = it->findFirstChild(CLIENT_MAX_BODY_SIZE_DIRECTIVE);
+		if (clientMaxBodySizeDirective) {
+			currentServer.set_client_max_body_size(to_int(clientMaxBodySizeDirective->attr(0)));
+		}
+		Component *autoIndexDirective = it->findFirstChild(AUTOINDEX_DIRECTIVE);
+		if (autoIndexDirective) {
+			currentServer.set_autoindex(autoIndexDirective->attr(0) == AUTOINDEX_ON);
+		}
+		/* *********************** */
+
+		// std::string           		_name; 						done
+		// std::string                 _cgi_path;					done
+		// std::vector<std::string>    _allow_methods;				done
+
+		std::vector<Component> serverCgiComponents = it->findChildren(CGI_CONTEXT);
+		std::vector<cgi> serverCgis;
+		for (std::vector<Component>::iterator scit = serverCgiComponents.begin(); scit != serverCgiComponents.end(); scit++) {
+			cgi currentServerCgi;
+
+			currentServerCgi.set_cgi_name(scit->attr(0));
+			Component *cgiPath = scit->findFirstChild(CGI_PATH_DIRECTIVE);
+			if (cgiPath) {
+				currentServerCgi.set_cgi_path(cgiPath->attr(0));
+			}
+			Component *servCgiAllowedMethodsDirective = scit->findFirstChild(ALLOW_METHODS_DIRECTIVE);
+			if (servCgiAllowedMethodsDirective) {
+				currentServerCgi.set_cgi_methods_vect(servCgiAllowedMethodsDirective->attr());
+			}
+			serverCgis.push_back(currentServerCgi);
+		}
+		currentServer.set_cgi_vect(serverCgis);
+
+		/* *********************** */
+
+		// std::string                 _name;						does not have a setter nor a getter, does nothing probably
+		// std::string                 _locations_path;				done
+		// std::vector<std::string>    _allow_methods;				done
+		// std::string                 _root;						done
+		// long long int               _client_max_body_size;		done
+		// std::vector<std::string>    _index;						done
+		// bool                        _autoindex;					done
+		// std::string                 _upload_path;				done
+		// std::vector<cgi>			_cgi;							done
+
+		std::vector<Component> locationComponents = it->findChildren(LOCATION_CONTEXT);
+		std::vector<location> locations;
+		for (std::vector<Component>::iterator lit = locationComponents.begin(); lit != locationComponents.end(); lit++) {
+			location currentLocation;
+			
+			currentLocation.set_locations_path(lit->attr(0));
+			Component *locationAllowedMethodsDirective = lit->findFirstChild(ALLOW_METHODS_DIRECTIVE);
+			if (locationAllowedMethodsDirective) {
+				currentLocation.set_methods_vect(locationAllowedMethodsDirective->attr());
+			}
+			Component *locationRootDirective = lit->findFirstChild(ROOT_DIRECTIVE);
+			if (locationRootDirective) {
+				currentLocation.set_root(locationRootDirective->attr(0));
+			}
+			Component *locationClientMaxBodySizeDirective = lit->findFirstChild(CLIENT_MAX_BODY_SIZE_DIRECTIVE);
+			if (locationClientMaxBodySizeDirective) {
+				currentLocation.set_client_max_body_size(locationClientMaxBodySizeDirective->attr(0));
+			}
+			Component *locationIndexDirective = lit->findFirstChild(INDEX_DIRECTIVE);
+			if (locationIndexDirective) {
+				currentLocation.set_locations_path(locationIndexDirective->attr(0));
+			}
+			Component *locationAutoIndexDirective = lit->findFirstChild(AUTOINDEX_DIRECTIVE);
+			if (locationAutoIndexDirective) {
+				currentLocation.set_autoindex(locationAutoIndexDirective->attr(0) == AUTOINDEX_ON);
+			}
+			Component *locationUploadPathDirective = lit->findFirstChild(UPLOAD_PATH_DIRECTIVE);
+			if (locationUploadPathDirective) {
+				currentLocation.set_upload_path(locationUploadPathDirective->attr(0));
+			}
+			std::vector<Component> locationCgiComponents = lit->findChildren(CGI_CONTEXT);
+			std::vector<cgi> locationCgis;
+			for (std::vector<Component>::iterator lcit = locationCgiComponents.begin(); lcit != locationCgiComponents.end(); lcit++) {
+				cgi currentLocationCgi;
+
+				currentLocationCgi.set_cgi_name(lcit->attr(0));
+				Component *locationCgiPath = lcit->findFirstChild(CGI_PATH_DIRECTIVE);
+				if (locationCgiPath) {
+					currentLocationCgi.set_cgi_path(locationCgiPath->attr(0));
+				}
+				Component *locCgiAllowedMethodsDirective = lcit->findFirstChild(ALLOW_METHODS_DIRECTIVE);
+				if (locCgiAllowedMethodsDirective) {
+					currentLocationCgi.set_cgi_methods_vect(locCgiAllowedMethodsDirective->attr());
+				}
+				locationCgis.push_back(currentLocationCgi);
+			}
+			currentLocation.set_cgi(locationCgis);
+			locations.push_back(currentLocation);
+		}
+
+		currentServer.set_location_vect(locations);
+
+		servers.push_back(currentServer);
+	}
+	config.set_server_vect(servers);
 }
 
 void validateConfigFile(Component &root, std::string cfgName, std::string pName) {
@@ -404,7 +551,7 @@ void validateConfigFile(Component &root, std::string cfgName, std::string pName)
 												list<std::string>(LOCATION_CONTEXT, SERVER_CONTEXT, HTTP_CONTEXT),
 												1, 1,
 												validateClientMaxBodySizeDirectiveAttr))); // checked
-	allowedComponents.insert(std::make_pair(ALLOW_METHODS_DIRECTIVE, AllowedComponent(ALLOW_METHODS_DIRECTIVE, DIRECTIVE, list<std::string>(SERVER_CONTEXT, LOCATION_CONTEXT), 1, 3, validateAllowMethodsDirectiveAttr))); // checked
+	allowedComponents.insert(std::make_pair(ALLOW_METHODS_DIRECTIVE, AllowedComponent(ALLOW_METHODS_DIRECTIVE, DIRECTIVE, list<std::string>(SERVER_CONTEXT, LOCATION_CONTEXT, CGI_CONTEXT), 1, 3, validateAllowMethodsDirectiveAttr))); // checked
 	allowedComponents.insert(std::make_pair(AUTOINDEX_DIRECTIVE, AllowedComponent(AUTOINDEX_DIRECTIVE, DIRECTIVE, list<std::string>(LOCATION_CONTEXT, SERVER_CONTEXT), 1, 1, validateAutoIndexDirectiveAttr))); // checked
 	allowedComponents.insert(std::make_pair(ERROR_PAGE_DIRECTIVE, AllowedComponent(ERROR_PAGE_DIRECTIVE, DIRECTIVE, list<std::string>(LOCATION_CONTEXT, SERVER_CONTEXT), 2, 2, validateErrorPageDirectiveAttr))); // checked
 	allowedComponents.insert(std::make_pair(REDIRECT_DIRECTIVE, AllowedComponent(REDIRECT_DIRECTIVE, DIRECTIVE, list<std::string>(LOCATION_CONTEXT, SERVER_CONTEXT), 3, 3, validateRedirectDirectiveAttr))); // checked

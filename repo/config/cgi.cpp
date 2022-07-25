@@ -22,6 +22,11 @@ void cgi::set_cgi_path(std::string cgi_path)
     
 }
 
+void cgi::set_cgi_methods_vect(std::vector<std::string> methods)
+{
+    _allow_methods = methods;
+}
+
 void cgi::set_cgi_methods(std::string methods)
 {
     // std::cout << methods << std::endl;

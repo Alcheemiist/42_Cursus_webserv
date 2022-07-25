@@ -6,7 +6,7 @@
 /*   By: isaadi <isaadi@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:27:53 by nabboudi          #+#    #+#             */
-/*   Updated: 2022/07/24 18:08:46 by isaadi           ###   ########.fr       */
+/*   Updated: 2022/07/25 19:30:04 by isaadi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class parse_config
         unsigned int        server_parsing(unsigned int&);
         size_t              get_lines_size() const;
         const std::vector<server> &get_server_vect() const;
-        std::vector<server> set_server_vect(std::vector<server>);
+        void				set_server_vect(std::vector<server>);
         void                set_lines(std::vector<std::string> lines);
         void                read_lines();
         void                read_server();
