@@ -56,13 +56,53 @@ public:
         std::string res;
         res.append(version);
         res.append(status);
-        res.append("Content-Type: ");
-        res.append(contentType);
+        // res.append("Content-Type: ");
+        // res.append(contentType);
+        // res.append("\r\n");
         res.append("\r\n\r\n");
         res.append(body);
         return res;
     };
     std::string getBody() { return body; };
+
+    void setContentType(char *path) 
+    {
+        std::string s(path);
+        std::string s1 = s.substr(s.find_last_of(".") + 1);
+
+        if (s1 == "html")
+            this->contentType = "text/html";
+        else if (s1 == "css")
+            this->contentType = "text/css";
+        else if (s1 == "js")
+            this->contentType = "application/javascript";
+        else if (s1 == "jpg")
+            this->contentType = "image/jpeg";
+        else if (s1 == "png")
+            this->contentType = "image/png";
+        else if (s1 == "gif")
+            this->contentType = "image/gif";
+        else if (s1 == "ico")
+            this->contentType = "image/x-icon";
+        else if (s1 == "svg")
+            this->contentType = "image/svg+xml";
+        else if (s1 == "mp3")
+            this->contentType = "audio/mpeg";
+        else if (s1 == "mp4")
+            this->contentType = "video/mp4";
+        else if (s1 == "ogg")
+            this->contentType = "audio/ogg";
+        else if (s1 == "ogv")
+            this->contentType = "video/ogg";
+        else if (s1 == "wav")
+            this->contentType = "audio/wav";
+        else if (s1 == "webm")
+            this->contentType = "video/webm";
+        else if (s1 == "txt")
+            this->contentType = "text/plain";
+            
+        std::cout << red << "- Set Content-Type : " << s << green << " " << s1 << def  << std::endl;
+    };
 };
 
 void GETresponse(Request *request, Response *response, Config *config);

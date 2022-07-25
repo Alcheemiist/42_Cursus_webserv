@@ -49,7 +49,8 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
             strcpy(s2, " 200 OK\r\n");
             response->setResponseStatus(s2);
             response->setResponseHeader();
-
+            response->setContentType(path);
+            
             response->setBody(readFile(path));
         }
         else

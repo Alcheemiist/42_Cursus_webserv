@@ -108,17 +108,13 @@ void LaunchServer(parse_config *config)
     std::map<int, Request> requests;
     std::map<int, t_socket> clients;
     struct timeval timeout;
-    int nServers = config->get_server_vect().size();
+    int nServers = config->get_server_vect().size(), rc, max_sd, index_client, *serv_response = new int[MAX_CLIENTS];
     t_socket _socket_server[nServers];
-    int *serv_response = new int[MAX_CLIENTS];
     bool *first = new bool[MAX_CLIENTS];
-    int rc, max_sd, index_client;
-    struct fd_set working_rd_set, working_wr_set, working_er_set;
-    struct fd_set backup_rd_set, backup_wr_set, backup_er_set;
+    struct fd_set working_rd_set, working_wr_set, working_er_set, backup_rd_set, backup_wr_set, backup_er_set;
 
-    rc = max_sd = index_client = 0;
     timeout.tv_sec = 120;
-    timeout.tv_usec = 0;
+    timeout.tv_usec = rc = max_sd = index_client = 0;
 
     FD_ZERO(&working_rd_set);
     FD_ZERO(&working_wr_set);
@@ -129,8 +125,7 @@ void LaunchServer(parse_config *config)
 
     for (int i = 0; i < nServers; i++)
     {
-        std::cout << green << "init server " << config->get_server_vect()[i].get_name(0) << " on port: " << config->get_server_vect()[i].get_listen_port()
-                  << " path root :" << config->get_server_vect()[i].get_root() << def << std::endl;
+        std::cout << green << "init server " << config->get_server_vect()[i].get_name(0) << " on port: " << config->get_server_vect()[i].get_listen_port()  << " path root :" << config->get_server_vect()[i].get_root() << def << std::endl;
         serv_response[i] = 1;
         first[i] = true;
         _socket_server[i].port = config->get_server_vect()[i].get_listen_port();

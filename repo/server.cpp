@@ -47,10 +47,14 @@ int main(int argc, char *argv[])
     {
         if (setup_signals() != 0)
             throw std::runtime_error("setup_signals() failed");
+        
+        
         if (parse_main(argc, argv, &Config) != 0)
             throw std::runtime_error("Error while parsing config file.");
 
         LaunchServer(&Config);
+
+
     }
     catch (std::exception &e)
     {
