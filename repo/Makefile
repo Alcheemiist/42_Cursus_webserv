@@ -9,7 +9,7 @@ SRC =  ./networking/*.cpp  ./networking/request/*.cpp ./networking/response/*.cp
 all:	$(NAME)
 
 $(NAME) : $(SRC)
-	c++  $(SRC) -o $(NAME) $(FLAGS) 
+	c++  $(SRC) -o $(NAME) $(FLAGS) $(FS) 
 
 clean:
 	@rm -rf $(NAME)

@@ -109,10 +109,10 @@ void init_socket(t_socket *_socket)
 
 void LaunchServer(parse_config *config)
 {
-	// std::vector<server> servs = config->get_server_vect();
-	// for (std::vector<server>::iterator it = servs.begin(); it != servs.end(); it++) {
-	// 	PRINT_LINE_VALUE(it->get_listen_port());
-	// }
+    // std::vector<server> servs = config->get_server_vect();
+    // for (std::vector<server>::iterator it = servs.begin(); it != servs.end(); it++) {
+    // 	PRINT_LINE_VALUE(it->get_listen_port());
+    // }
     std::map<int, Request> requests;
     std::map<int, t_socket> clients;
     struct timeval timeout;

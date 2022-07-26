@@ -42,6 +42,7 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
             response->setResponseStatus(s2);
             response->setResponseHeader();
             response->setContentType(path);
+            std::cout << B_blue << "readfile body size : " << getFileSize(path) << B_def << std::endl;
             response->setBody(readFile(path));
         }
         else
@@ -75,6 +76,7 @@ void response(int new_socket, Request *request, parse_config *config, int index_
               << std::endl;
 
     std::string str = response.getResponse();
+
     size_t lenght = str.size();
     ssize_t size_send = send(new_socket, str.c_str(), lenght, MSG_OOB);
     if (size_send > 0)

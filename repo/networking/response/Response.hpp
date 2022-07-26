@@ -18,7 +18,7 @@ private:
     std::string contentType;
 
 public:
-    Response() : version("HTTP/1.1 "), status("200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""){};
+    Response() : version("HTTP/1.1 "), status("501 DEFAULT \r\n"), header(""), body(""), response(""), responseStatus(""), body_length(-1), contentType(""){};
     void setVersion(std::string version)
     {
         this->version = version;
@@ -37,14 +37,13 @@ public:
     void setBody(char *body)
     {
         this->body = body;
-        std::cout << "- Set body of size = " << this->body.size() << std::endl;
+        std::cout << " body assigne size : " << this->body.size() << std::endl;
     };
-    void setResponseStatus(char *status)
+    void setResponseStatus(char *_status)
     {
-        this->responseStatus = status;
-        std::cout << "- Set Status : " << this->responseStatus << std::endl;
+        this->status = _status;
+        std::cout << "- Set Status : " << this->status << std::endl;
     };
-
     void setResponseHeader()
     {
         this->header = this->version.c_str();
@@ -70,7 +69,6 @@ public:
         return res;
     };
     std::string getBody() { return body; };
-
     void setContentType(char *path)
     {
         std::string s(path);
@@ -120,5 +118,6 @@ void ERRORresponse(Request *request, Response *response);
 void response(int new_socket, Request *request, parse_config *config, int fd_server);
 
 char *readFile(const char *fileName);
+size_t getFileSize(const char *fileName);
 
 #endif
