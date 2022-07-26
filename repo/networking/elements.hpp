@@ -3,6 +3,11 @@
 #ifndef ELEMENTS_HPP
 #define ELEMENTS_HPP
 
+#include <sstream>
+#include <fcntl.h>
+#include <vector>
+#include <sys/stat.h>
+
 #include "../webserve.hpp"
 #include "./request/Request.hpp"
 #include "./response/Response.hpp"
