@@ -2,27 +2,38 @@
 
 char *readFile(const char *fileName)
 {
-    FILE *pFile;
-    char buffer[100];
+    char buffer[1024];
     char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
 
-    pFile = fopen(fileName, "r");
-    if (pFile == NULL)
+    int i_size = getFileSize(fileName);
+    int fd = open(fileName, O_RDWR);
+    
+    if (fd < 0)
     {
         perror("Error opening file");
         return NULL;
     }
     else
     {
-        int i = 0;
-        while (!feof(pFile))
+        for (int i = 0; i < i_size; i += 1024)
         {
-            if (fgets(buffer, 100, pFile) == NULL)
-                break;
-            strcpy(return_buffer + i, buffer);
-            i += strlen(buffer);
+            
+            int n = read(fd, buffer, 1024);
+
+            for (int i = 0; i < n; i++)
+            {
+                printf("%c", buffer[i]);
+                return_buffer[i] = buffer[i];
+            }
+            return_buffer[n] = '\0';
+            printf("\n");
+            if (n < 0)
+            {
+                perror("Error reading file");
+                return NULL;
+            }
         }
-        fclose(pFile);
+        
     }
     return return_buffer;
 }
@@ -115,6 +126,8 @@ void LaunchServer(parse_config *config)
 	// }
     std::map<int, Request> requests;
     std::map<int, t_socket> clients;
+    std::map <int , Response> responses;
+
     struct timeval timeout;
     int nServers = config->get_server_vect().size();
     t_socket _socket_server[nServers];
@@ -148,6 +161,9 @@ void LaunchServer(parse_config *config)
         if (_socket_server[i].server_fd > max_sd)
             max_sd = _socket_server[i].server_fd;
     }
+    ssize_t size_send = 0;
+    ssize_t lenght = 0;
+    std::string str_to_send;
 
     for (int index_cycle = 0;;)
     {
@@ -236,25 +252,59 @@ void LaunchServer(parse_config *config)
                     // free(/buffer);
                 }
 
-                if (FD_ISSET(clients[i].server_fd, &working_wr_set) && serv_response[i] == 3)
+                if (FD_ISSET(clients[i].server_fd, &working_wr_set) && serv_response[i] >= 3)
                 {
                     std::cout << "  ready to responde the client  " << requests.find(clients[i].server_fd)->first << std::endl;
+                    
 
                     if (serv_response[i] == 3) // sending request
                     {
                         std::cout << "  send response 3 (sending request) to fd : " << requests.find(clients[i].server_fd)->first << " == " << clients[i].server_fd << std::endl;
+                        responses.insert(std::pair<int, Response>( i ,response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config, clients[i].index_server)));
+                        serv_response[i] = 4;
+                    }
+                    if (serv_response[i] == 4)
+                    {
+                        str_to_send = responses[i].getResponse();
+                        lenght = str_to_send.size();
+                        std::cout << B_red << " str.size to be send  : " << std::endl;
 
-                        response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config, clients[i].index_server);
-
-                        FD_CLR(requests.find(clients[i].server_fd)->first, &working_wr_set);
+                        size_send = write(requests.find(clients[i].server_fd)->first, str_to_send.c_str() , lenght);
+                        
+                        
+                        
+                        
+                        serv_response[i] = 5;
+                    }
+                    if (serv_response[i] == 5)
+                    {
+                         FD_CLR(requests.find(clients[i].server_fd)->first, &working_wr_set);
                         FD_CLR(requests.find(clients[i].server_fd)->first, &backup_wr_set);
-
                         close(requests.find(clients[i].server_fd)->first);
                         requests.erase(requests.find(clients[i].server_fd)->first);
-
                         serv_response[i] = 1;
                         first[i] = true;
+
+                        // int tmp = send(requests.find(clients[i].server_fd)->first, str_to_send.c_str() + size_send , 1024, MSG_OOB);
+                        // size_send += tmp;
+                        // if (size_send == lenght)
+                        // {
+                        //     FD_CLR(requests.find(clients[i].server_fd)->first, &working_wr_set);
+                        //     FD_CLR(requests.find(clients[i].server_fd)->first, &backup_wr_set);
+                        //     close(requests.find(clients[i].server_fd)->first);
+                        //     requests.erase(requests.find(clients[i].server_fd)->first);
+                        //     serv_response[i] = 1;
+                        //     first[i] = true;
+                        // }
+
+                        if (size_send > 1000)
+                            std::cout << B_green << "********** data size send {" << size_send << "}******************" << B_def << std::endl;
+                        else
+                            std::cout << B_red << "********** no data t send {" << size_send << "}******************" << B_def << std::endl;
+                        
+                        
                     }
+                
                 }
             }
         }

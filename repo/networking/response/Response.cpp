@@ -19,6 +19,27 @@ void POSTresponse()
     std::cout << "im doing post response\n";
 }
 
+std::vector<char> read_by_vector(char *path, Response *response)
+{
+    int fd = open(path, O_RDWR), n = -1;
+    char *_buffer = (char *)malloc(sizeof(char) * (response->getbody_file_size() + 1));
+    std::vector<char> buffer;
+
+    if (fd < 0)
+        perror("Error opening file");
+    else
+    {
+        for (int i = 0; i < response->getbody_file_size(); i += n)
+        {
+            if ((n = read(fd, _buffer + i, 1024)) < 0)
+                break;
+        } 
+        buffer.insert(buffer.begin() , _buffer, _buffer + response->getbody_file_size());
+    }
+    close(fd);
+    return buffer;
+}
+
 void GETresponse(Request *request, Response *response, parse_config *config, int index_server)
 {
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
@@ -27,22 +48,28 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
         char *path = (char *)malloc(sizeof(char) * (1000));
         std::cout << B_red << "root path = {" << config->get_server_vect()[index_server].get_root().c_str() << "}" << B_def << std::endl;
         strcpy(path, config->get_server_vect()[index_server].get_root().c_str());
+        
+        struct stat st;
+
         if (request->getPath() == "/")
             strcpy(path + (strlen(path)), "index.html");
         else
             strcpy(path + (strlen(path) - 1), request->getPath().c_str());
-        std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
 
-        FILE *pFile;
-        pFile = fopen(path, "r");
+        std::cout << B_blue << "get from file: {" << path << B_def << std::endl;
+        
+        stat(path, &st);
         char s2[50];
-        if (pFile != NULL)
+        if (st.st_size > 0) 
         {
             strcpy(s2, " 200 OK\r\n");
             response->setResponseStatus(s2);
             response->setResponseHeader();
             response->setContentType(path);
-            response->setBody(readFile(path));
+            response->setbody_file_size(getFileSize(path));
+            response->setBody(read_by_vector(path, response));
+            std::cout << B_blue << "getFileSize(path): " << getFileSize(path) << B_def << std::endl;
+
         }
         else
         {
@@ -53,12 +80,12 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
             response->setContentType(ss);
             response->setBody(readFile("./errorsPages/404/404.html"));
         }
-        fclose(pFile);
     }
 }
 
-void response(int new_socket, Request *request, parse_config *config, int index_server)
+Response  response(int new_socket, Request *request, parse_config *config, int index_server)
 {
+    (void )new_socket;
     Response response;
     std::cout << blue << "********** { Response } ***********************" << def << std::endl;
     if (!request->isGoodrequest())
@@ -71,14 +98,6 @@ void response(int new_socket, Request *request, parse_config *config, int index_
         DELETEresponse();
     else
         ERRORresponse(request, &response);
-    std::cout << blue << "********** {End Response } ******************" << def << std::endl
-              << std::endl;
-
-    std::string str = response.getResponse();
-    size_t lenght = str.size();
-    ssize_t size_send = send(new_socket, str.c_str(), lenght, MSG_OOB);
-    if (size_send > 0)
-        std::cout << B_green << "********** data size send {" << size_send << "}******************" << B_def << std::endl;
-    else
-        std::cout << B_red << "********** no data t send {" << size_send << "}******************" << B_def << std::endl;
+    std::cout << blue << "********** {End Response } ******************" << def << std::endl << std::endl;
+    return response;
 }
