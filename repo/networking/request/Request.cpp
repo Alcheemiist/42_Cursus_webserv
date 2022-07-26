@@ -1,12 +1,7 @@
 
 #include "../elements.hpp"
 #include "../../webserve.hpp"
-#include <sstream>
-#include <fcntl.h>
-#include <vector>
-#include <sys/stat.h>
 
-// split string by delimiter
 std::vector<std::string> split(const std::string &s, char delim)
 {
     std::vector<std::string> elems;
@@ -20,7 +15,6 @@ std::vector<std::string> split(const std::string &s, char delim)
     return elems;
 }
 
-// calculate file size
 size_t getFileSize(const char *fileName)
 {
     struct stat st;
@@ -31,19 +25,11 @@ size_t getFileSize(const char *fileName)
 
 void Request::fill_body(char *buffer, size_t bytes)
 {
-    std::cout << "content_size to fill in body : " << bytes << std::endl;
-
     int fd = open(this->bodyFileName.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
-
     write(fd, buffer, bytes);
     close(fd);
-
     if (this->_content_length <= getFileSize(this->bodyFileName.c_str()))
-    {
-        std::cout << B_green << "content type : " << this->_content_type << B_def << std::endl;
-        std::cout << B_blue << "body size of bodyFileName : " << getFileSize(this->bodyFileName.c_str()) << B_def << std::endl;
         this->_is_complete = true;
-    }
 }
 
 char *Request::readFile(const char *fileName)
@@ -53,12 +39,8 @@ char *Request::readFile(const char *fileName)
     char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
 
     pFile = fopen(fileName, "r");
-    std::cout << "FileName: " << fileName << std::endl;
     if (pFile == NULL)
-    {
-        perror("Error opening file");
-        exit(1);
-    }
+        throw std::runtime_error("File not found");
     else
     {
         int i = 0;
@@ -177,7 +159,7 @@ void Request::show()
         std::cout << it->first << ": " << it->second << std::endl;
     }
     if (this->_content_length)
-        std::cout << green << "----------------- BODY=> " << getFileSize(this->bodyFileName.c_str()) << green << " ------------------------ " << def << std::endl;
+        std::cout << green << "----------------- REQUEST BODY --- => " << getFileSize(this->bodyFileName.c_str()) << green << " ------------------------ " << def << std::endl;
     std::cout << red << "--------------- End Request ----------------- " << def << std::endl;
 }
 

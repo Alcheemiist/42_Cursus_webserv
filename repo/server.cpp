@@ -43,12 +43,29 @@ int main(int ac, char **av, char **ep)
 	(void)ep;
     parse_config Config;
 
-    if (setup_signals() != 0)
-        exit(EXIT_FAILURE);
-    
-    parse_main(ac, av, Config);
-    
-    LaunchServer(&Config);
-    
+    if (ac == 1)
+        std::cout << red << " Default Webserve Configuration  " << def << std::endl;
+    try 
+    {
+        if (setup_signals() != 0)
+            throw std::runtime_error("setup_signals() failed");
+        
+        
+        if (parse_main(ac, av, Config) != 0)
+            throw std::runtime_error("Error while parsing config file.");
+
+        LaunchServer(&Config);
+
+    }
+    catch (std::exception &e)
+    {
+        std::cout << red << " { " << e.what() << " }" << def << std::endl;
+        shutdown_properlyy(EXIT_FAILURE);
+    }
+    catch (...)
+    {
+        std::cout << red << " { Unknown error }" << def << std::endl;
+        shutdown_properlyy(EXIT_FAILURE);
+    }
     return 0;
 }

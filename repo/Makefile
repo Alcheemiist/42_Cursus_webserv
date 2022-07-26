@@ -1,4 +1,5 @@
 FLAGS = -Wall -Wextra -Werror -std=c++98
+FS = -fsanitize=address -g 
 
 NAME = webserve
 
@@ -8,7 +9,7 @@ SRC =  ./networking/*.cpp  ./networking/request/*.cpp ./networking/response/*.cp
 all:	$(NAME)
 
 $(NAME) : $(SRC)
-	c++  -fsanitize=address -g $(SRC) -o $(NAME) $(FLAGS)
+	c++  $(SRC) -o $(NAME) $(FLAGS) 
 
 clean:
 	@rm -rf $(NAME)
