@@ -62,9 +62,37 @@ public:
     void fill_body(char *buffer, size_t bytes);
     char *readFile(const char *fileName);
     void show();
-    //
+
+    // CHECKER METHODS
     void checkRequest();
     bool isGoodrequest() { return (true); };
+    void set_status_req(std::string status, int status_code, bool is_good) {  this->status_message = status; this->requestStatus = status_code; this->_isGoodRequest = is_good; };
+    std::string check_method(std::string method) 
+    {
+        if (method == "GET")
+            return "GET";
+        else if (method == "POST")
+            return "POST";
+        else if (method == "DELETE")
+            return "DELETE";
+        else
+        {
+            this->set_status_req("undefined method", 400, false);
+            return "UNKNOWN";
+        }
+    };
+    std::string check_version(std::string version)
+    {
+        if (version == "HTTP/1.1")
+            return "HTTP/1.1";
+        else if (version == "HTTP/1.0")
+            return "HTTP/1.0";
+        else
+        {
+            this->set_status_req("undefined version", 400, false);
+            return "UNKNOWN";
+        }
+    };
 };
 //
 char *readFile(const char *fileName);

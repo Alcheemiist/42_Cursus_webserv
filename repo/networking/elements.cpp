@@ -127,8 +127,8 @@ void LaunchServer(parse_config *config)
             max_sd = _socket_server[i].server_fd;
     }
     ssize_t size_send = 0;
-    // ssize_t lenght = 0;
     std::string str_to_send;
+    size_t   *_send_size = new size_t[MAX_CLIENTS];
 
     for (int index_cycle = 0;;)
     {
@@ -156,13 +156,14 @@ void LaunchServer(parse_config *config)
                     FD_SET(clients[index_client].server_fd, &backup_rd_set);
                     if (clients[index_client].server_fd > max_sd)
                         max_sd = clients[index_client].server_fd;
-                    serv_response[index_client] = 2;
+                    serv_response[index_client]++;
                     index_client++;
                 }
 
             // only for clients
             for (int i = 0; i < index_client; i++)
             {
+                // request
                 if (FD_ISSET(clients[i].server_fd, &working_rd_set) && serv_response[i] == 2)
                 {
                     int bytes = -1;
@@ -174,7 +175,6 @@ void LaunchServer(parse_config *config)
                     if (first[i])
                     {
                         Request request((buffer), bytes, clients[i].server_fd);
-                        // request.set_request_num(index_cycle);
                         requests.insert(std::pair<int, Request>(clients[i].server_fd, request));
                         first[i] = false;
                     }
@@ -183,7 +183,7 @@ void LaunchServer(parse_config *config)
 
                     if (requests.find(clients[i].server_fd)->second.getIsComplete())
                     {
-                        serv_response[i] = 3;
+                        serv_response[i]++;
                         FD_CLR(requests.find(clients[i].server_fd)->first, &working_rd_set);
                         FD_CLR(requests.find(clients[i].server_fd)->first, &backup_rd_set);
                         FD_SET(requests.find(clients[i].server_fd)->first, &working_wr_set);
@@ -192,57 +192,50 @@ void LaunchServer(parse_config *config)
                     }
                 }
 
+                // response
                 if (FD_ISSET(clients[i].server_fd, &working_wr_set) && serv_response[i] >= 3)
                 {
-                    std::cout << "  ready to responde the client  " << requests.find(clients[i].server_fd)->first << std::endl;
+                    // std::cout << "  ready to responde the client  " << requests.find(clients[i].server_fd)->first << std::endl;
                     if (serv_response[i] == 3) // make the header on buffer and send buffer if <= shunks 
                     {
-                        std::cout << "  send response 3 (sending request) to fd : " << requests.find(clients[i].server_fd)->first << " == " << clients[i].server_fd << std::endl;
+                        // std::cout << "create and send header " << std::endl;
                         responses.insert(std::pair<int, Response>(i,\
                         response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config, clients[i].index_server)));
                         std::string header = responses[i].getHeader();
                         size_send = write(requests.find(clients[i].server_fd)->first, header.c_str() , header.size());
-                        serv_response[i] = 4;
+                        _send_size[i] += size_send;
+                        serv_response[i]++;
                     }
                     if (serv_response[i] == 4) // if buffer > shunks send buffer{shunks} 
                     {
+                        // std::cout << "  read respo and send body by shunks " << std::endl;
                         if (responses[i].getpath().size() > 0 && !responses[i].get_finish())
                         {
-                            // char _buffer[BUFER_SIZE + 1];
                             std::vector<char> buffer = responses[i].get_buffer();
                             size_send = write(requests.find(clients[i].server_fd)->first, buffer.data(), buffer.size());
+                            _send_size[i] += size_send;
 
                             if (size_send < 0)
                                 throw std::runtime_error("  error sending buffer");
-                            std::cout << "response : " << size_send << " bytes sent | buffer size "<< buffer.size() << std::endl;
-
                         }
-
-                        // str_to_send = responses[i].getResponse();
-                        // lenght = str_to_send.size();
-                        // std::cout << B_blue << "-write str_to_send.size to be send  : " << lenght << B_def << std::endl;
-
-                        // char s[lenght + 1];
-                        // for (int i = 0; i < lenght; i++)
-                        //     s[i] = str_to_send[i];
-                        // s[lenght] = '\0';
-                        // size_send = write(requests.find(clients[i].server_fd)->first, str_to_send.c_str() , lenght);
-                        if (responses[i].get_finish())
-                            serv_response[i] = 5;
+                        else if (responses[i].get_finish())
+                            serv_response[i]++;
                     }
                     if (serv_response[i] == 5) // if the response isn't complete, send the rest by shunks
                     {
+                        // std::cout << " respo  send succes "<< std::endl;
                         FD_CLR(requests.find(clients[i].server_fd)->first, &working_wr_set);
                         FD_CLR(requests.find(clients[i].server_fd)->first, &backup_wr_set);
                         close(requests.find(clients[i].server_fd)->first);
                         requests.erase(requests.find(clients[i].server_fd)->first);
                         serv_response[i] = 1;
                         first[i] = true;
-                        if (size_send < 500)
-                            std::cout << B_green << "********** data size send {" << size_send << "}******************" << B_def << std::endl;
+                        if (responses[i].get_maxBufferLenght() < 1024)
+                            std::cout << B_green << "********** less data size send {" << _send_size[i] << "}******************" << B_def << std::endl;
                         else
-                            std::cout << B_red << "********** no data t send {" << size_send << "}******************" << B_def << std::endl;
+                            std::cout << B_red << "********** large data send {" << _send_size[i] << "}******************" << B_def << std::endl;
                     }
+                
                 }
             }
         }

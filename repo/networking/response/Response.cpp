@@ -2,6 +2,14 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+size_t _getFileSize(const char *fileName)
+{
+    struct stat st;
+    if (stat(fileName, &st) < 0)
+        return -1;
+    return st.st_size;
+}
+
 void ERRORresponse(Request *request, Response *response)
 {
     (void)request;
