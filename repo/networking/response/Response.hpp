@@ -5,6 +5,8 @@
 
 #include "../elements.hpp"
 
+size_t getFileSize(const char *fileName);
+
 class Response
 {
 private:
@@ -16,9 +18,13 @@ private:
     std::string responseStatus;
     size_t body_length;
     std::string contentType;
+    int body_file_size;
+    bool is_complete;
+    // int is_send;
 
 public:
-    Response() : version("HTTP/1.1 "), status("501 DEFAULT \r\n"), header(""), body(""), response(""), responseStatus(""), body_length(-1), contentType(""){};
+    Response() : version("HTTP/1.1 "), status("200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""){};
+
     void setVersion(std::string version)
     {
         this->version = version;
@@ -37,8 +43,18 @@ public:
     void setBody(char *body)
     {
         this->body = body;
-        std::cout << " body assigne size : " << this->body.size() << std::endl;
+        std::cout << blue << "- Set body size : " << strlen(this->body.c_str()) << def << std::endl;
     };
+    void setBody(std::vector<char> _body)
+    {
+        for (std::vector<char>::iterator it = _body.begin(); it != _body.end(); ++it)
+            this->body += *it;
+        // for (int i = 0; body[i]; i++)
+        //     std::cout << green  << body[i] ;
+        std::cout << blue << "- Set body size : " << _body.size() << std::endl;
+        std::cout << def << std::endl;
+    };
+
     void setResponseStatus(char *_status)
     {
         this->status = _status;
@@ -52,23 +68,47 @@ public:
     size_t size() const { return body_length; };
     std::string getResponse() const
     {
+        // status line
         std::string res;
         res.append(version);
         res.append(status);
-        // res.append("Content-Type: ");
-        // res.append(this->contentType);
-        // res.append("\r\n");
+
+        // headers
+        res.append("Content-Type: ");
+        res.append(this->contentType);
+        res.append("\r\n");
+
+        // if (body_file_size > 0)
+        // {
+        //     res.append("Content-Length: ");
+        //     res.append(std::to_string(body_file_size));
+        //     res.append("\r\n");
+        // }
+        // else
+        // {
+        //     res.append("Content-Length: ");
+        //     res.append(std::to_string(0));
+        //     res.append("\r\n");
+        // }
+
         res.append("server: alchemist\r\n");
         res.append("location: wonderland");
+
+        // body
         res.append("\r\n\r\n");
         res.append(body);
+
         if (res.size() < 1000)
-            std::cout << green << "{" << res << "}" << def << std::endl;
+            std::cout << green << "" << res << "}" << def << std::endl;
         else
             std::cout << green << "BUFFER SEND SIZE " << res.size() << def << std::endl;
         return res;
     };
     std::string getBody() { return body; };
+
+    void setbody_file_size(int size) { this->body_file_size = size; };
+    int getbody_file_size() { return this->body_file_size; };
+    void set_finish(bool i) { this->is_complete = i; };
     void setContentType(char *path)
     {
         std::string s(path);
@@ -105,7 +145,7 @@ public:
         else if (s1 == "txt")
             this->contentType = "text/plain";
 
-        std::cout << red << "- Set Content-Type : " << s << green << " " << s1 << def << std::endl;
+        std::cout << red << "- Set Content-Type : " << s << green << " " << s1 << " " << this->contentType << def << std::endl;
     };
 };
 
@@ -115,7 +155,7 @@ void PUTresponse();
 void DELETEresponse();
 void HEADresponse();
 void ERRORresponse(Request *request, Response *response);
-void response(int new_socket, Request *request, parse_config *config, int fd_server);
+Response response(int new_socket, Request *request, parse_config *config, int fd_server);
 
 char *readFile(const char *fileName);
 size_t getFileSize(const char *fileName);
