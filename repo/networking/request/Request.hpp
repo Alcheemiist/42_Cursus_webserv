@@ -6,9 +6,12 @@
 #include "../elements.hpp"
 #include <map>
 
+#define ERROR_VALUE -99
+
 class Request
 {
 private:
+    //
     std::string _method;
     std::string _path;
     std::string _version;
@@ -17,58 +20,82 @@ private:
     std::string _accept;
     std::string _accept_encoding;
     std::string _content_type;
-    std::map<std::string, std::string> _headers;
     size_t _content_length;
-    long bytes;
-    bool _is_complete;
-    std::string bodyFileName;
     std::string _accept_language;
-    int request_num;
-    int requestStatus;
+    //
+    std::map<std::string, std::string> _headers;
+    //
+    std::string bodyFileName;
     int client_fd;
     int _fdBodyFile;
+    long bytes;
+    //
+    bool _isGoodRequest;
+    bool _is_complete;
+    int requestStatus;
+    std::string status_message;
+    //
+    ssize_t bodyFileSize;
 
 public:
-    Request() : _method(""), _path(""), _version(""), _host("", 0),
-                _connection(""), _accept(""), _accept_encoding(""),
-                _content_type(""), _headers(std::map<std::string, std::string>()),
-                _content_length(0), bytes(0), _is_complete(false), bodyFileName(""),
-                _accept_language(""), request_num(0), requestStatus(1), client_fd(-1), _fdBodyFile(-1){};
+    Request() : _method("ALCHEMIST"), _path("ALCHEMIST"), _version("ALCHEMIST"), _host("ALCHEMIST", ERROR_VALUE),
+                _connection("ALCHEMIST"), _accept("ALCHEMIST"), _accept_encoding("ALCHEMIST"),
+                _content_type("ALCHEMIST"), _content_length(ERROR_VALUE), _headers(std::map<std::string, std::string>()),
+                //
+                bodyFileName(""), client_fd(ERROR_VALUE), _fdBodyFile(ERROR_VALUE), bytes(ERROR_VALUE),
+                _is_complete(false), requestStatus(ERROR_VALUE), status_message("ALCHEMIST"){};
+
     Request(char *buffer, size_t bytes, int fd);
     ~Request(){};
-    // OVERLOAD OPERATORS ---------------------------------------
-    Request &operator++()
-    {
-        ++request_num;
-        return *this;
-    }
-    // SETTERS --------------------------------------------------
+    //
     void setbytes(long bytes) { this->bytes = bytes; }
-    void set_request_num(int request_num) { this->request_num = request_num; }
-    // GETTERS --------------------------------------------------
+    //
     long getbytes() { return bytes; }
-    int getRequestNum() const { return request_num; };
     std::string getMethod() const { return _method; };
     std::string getPath() const { return _path; };
     std::string getVersion() const { return _version; };
     bool getIsComplete() const { return _is_complete; };
     std::string getConnection() const { return _connection; };
     int getRequestStatus() const { return requestStatus; };
-
-    // METHODS --------------------------------------------------
-    bool
-    isGoodrequest()
-    {
-        return (true);
-    };
+    //
     void parse(char *buffer);
     void fill_body(char *buffer, size_t bytes);
     char *readFile(const char *fileName);
     void show();
-};
 
+    // CHECKER METHODS
+    void checkRequest();
+    bool isGoodrequest() { return (true); };
+    void set_status_req(std::string status, int status_code, bool is_good) {  this->status_message = status; this->requestStatus = status_code; this->_isGoodRequest = is_good; };
+    std::string check_method(std::string method) 
+    {
+        if (method == "GET")
+            return "GET";
+        else if (method == "POST")
+            return "POST";
+        else if (method == "DELETE")
+            return "DELETE";
+        else
+        {
+            this->set_status_req("undefined method", 400, false);
+            return "UNKNOWN";
+        }
+    };
+    std::string check_version(std::string version)
+    {
+        if (version == "HTTP/1.1")
+            return "HTTP/1.1";
+        else if (version == "HTTP/1.0")
+            return "HTTP/1.0";
+        else
+        {
+            this->set_status_req("undefined version", 400, false);
+            return "UNKNOWN";
+        }
+    };
+};
+//
 char *readFile(const char *fileName);
 long readRequest(int new_socket, Request *request);
-void checkRequest(Request *request);
 
 #endif
