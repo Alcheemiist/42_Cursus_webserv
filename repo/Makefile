@@ -9,7 +9,7 @@ SRC =  ./networking/*.cpp  ./networking/request/*.cpp ./networking/response/*.cp
 all:	$(NAME)
 
 $(NAME) : $(SRC)
-	c++  $(SRC) -o $(NAME) $(FLAGS) 
+	c++  $(SRC) -o $(NAME) $(FLAGS)
 
 clean:
 	@rm -rf $(NAME)
@@ -20,6 +20,11 @@ clean:
 fclean:	clean
 
 re:	fclean all
+
+san:
+	c++  $(SRC) -o $(NAME) $(FLAGS) $(FS)
+
+sre: fclean san
 
 .PHONY: all clean fclean re
 

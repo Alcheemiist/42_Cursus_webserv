@@ -106,6 +106,9 @@ void recursivelyParseCfg(Component &currentContext,
 				if (reachedEnd(ch, end)) {
 					throw std::string(end ? "Unexpected end of scope" : "Unexpected end of file");
 				}
+				if (!std::iswspace(*ch) && *ch != ';' && *ch != '}' && *ch != '#') {
+					throw std::string("Context and directive names can only be in the regex format [a-zA-Z_-]+");
+				}
 				skipWhiteSpace(ch, end);
 				// PRINT_LINE_VALUE("here");
 				if (!reachedEnd(ch, end)) {
@@ -629,14 +632,23 @@ void validateConfigFile(Component &root, std::string cfgName, std::string pName)
 	if (httpContexts.size() != 1) {
 		throw LogicalError(std::string("there should be exactly one ") + HTTP_CONTEXT + " context at the root of the file, found " + to_string(httpContexts.size()), pName, cfgName, 0, 0, false);
 	}
-	Component *httpContext =root.findFirstChildContext(HTTP_CONTEXT);
-	if (!httpContext->findFirstChildContext(SERVER_CONTEXT)) {
+	if (!httpContexts[0].findFirstChildContext(SERVER_CONTEXT)) {
 		throw LogicalError(std::string("no ") + SERVER_CONTEXT + " context inside the " + HTTP_CONTEXT + " context", pName, cfgName, 0, 0, false);
 	}
-	std::vector<Component> serverContexts = httpContext->findChildrenContext(SERVER_CONTEXT);
+	std::vector<Component> serverContexts = httpContexts[0].findChildrenContext(SERVER_CONTEXT);
 	for (std::vector<Component>::iterator it = serverContexts.begin(); it != serverContexts.end(); it++) {
 		if (!it->findFirstChildDirective(LISTEN_DIRECTIVE)) {
 			throw LogicalError(std::string("no ") + LISTEN_DIRECTIVE + " directive inside the " + SERVER_CONTEXT + " context", pName, cfgName, it->line(), it->col(), false);
+		}
+		std::vector<Component> serverCgiContexts = it->findChildrenContext(CGI_CONTEXT);
+		for (std::vector<Component>::iterator cit = serverCgiContexts.begin(); cit != serverCgiContexts.end(); cit++) {
+			if (!cit->findFirstChildDirective(CGI_PATH_DIRECTIVE)) {
+				throw LogicalError(std::string("no ") + CGI_PATH_DIRECTIVE + " directive inside the " + CGI_CONTEXT + " context", pName, cfgName, cit->line(), cit->col(), false);
+			}
+			std::vector<Component> cgiPathDirectives = cit->findChildrenDirective(CGI_PATH_DIRECTIVE);
+			if (cgiPathDirectives.size() > 1) {
+				throw LogicalError(std::string("more than one ") + CGI_PATH_DIRECTIVE + " directive inside the " + CGI_CONTEXT + " context", pName, cfgName, cgiPathDirectives[1].line(), cgiPathDirectives[1].col(), false);
+			}
 		}
 		std::vector<Component> listenDirectives = it->findChildrenDirective(LISTEN_DIRECTIVE);
 		if (listenDirectives.size() > 1) {
@@ -645,6 +657,10 @@ void validateConfigFile(Component &root, std::string cfgName, std::string pName)
 		std::vector<Component> locationContexts = it->findChildrenContext(LOCATION_CONTEXT);
 		for (std::vector<Component>::iterator lit = locationContexts.begin(); lit != locationContexts.end(); lit++) {
 			std::vector<Component> cgiContexts = lit->findChildrenContext(CGI_CONTEXT);
+			std::vector<Component> locationRootDirectives = lit->findChildren(ROOT_DIRECTIVE);
+			if (locationRootDirectives.size() != 1) {
+				throw LogicalError(std::string("exactly one ") + ROOT_DIRECTIVE + " direcitve is required in the " LOCATION_CONTEXT " context, got " + to_string(locationRootDirectives.size()), pName, cfgName, lit->line(), lit->col(), false);
+			}
 			for (std::vector<Component>::iterator cit = cgiContexts.begin(); cit != cgiContexts.end(); cit++) {
 				if (!cit->findFirstChildDirective(CGI_PATH_DIRECTIVE)) {
 					throw LogicalError(std::string("no ") + CGI_PATH_DIRECTIVE + " directive inside the " + CGI_CONTEXT + " context", pName, cfgName, cit->line(), cit->col(), false);
@@ -658,7 +674,7 @@ void validateConfigFile(Component &root, std::string cfgName, std::string pName)
 	}
 }
 
-void startServer() {
+void startServer(int port) {
 	int sockfd = socket(PF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0) {
 		std::cerr << "could not create socket" << std::endl;
@@ -673,7 +689,7 @@ void startServer() {
 	struct sockaddr_in address;
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(80);
+	address.sin_port = htons(port);
 	if (bind(sockfd, (struct sockaddr *)&address, sizeof(address))) {
 		errorln("bind failed");
 		exit(1);
@@ -705,56 +721,59 @@ void startServer() {
 	}
 }
 
-void printComponentRecursively(Component &current, int tabs = 0) {
-	print(FAINT_GRAY);
+void printComponentRecursively(Component &current, std::string cfg, int tabs = 0) {
+	error(FAINT_GRAY);
 	for (int i = 0; i < tabs; i++) {
-		print("→   ");
+		error("→   ");
 	}
-	print(RESET);
+	error(RESET);
 	if (current.parentName() != PARENT_GLOBAL_CONTEXT) {
-		// print(current.line(), ":", current.col(), ' ', current.depth(), ' ');
-		print(current.isContext() ? BABY_PINK : BABY_BLUE);
-		print(current.name(), ' ');
-		print(RESET);
+		// error(current.line(), ":", current.col(), ' ', current.depth(), ' ');
+		error(current.isContext() ? BABY_PINK : BABY_BLUE);
+		error(current.name(), ' ');
+		error(RESET);
 	}
 	int len = current.attr().size();
-	print(current.isContext() ? CLASS_GREEN : CONST_BLUE);
+	error(current.isContext() ? CLASS_GREEN : CONST_BLUE);
 	for (int i = 0; i < len; i++) {
-		print(current.attr(i), current.isDirective() && i == len - 1 ? "" : " ");
+		error(current.attr(i), current.isDirective() && i == len - 1 ? "" : " ");
 	}
-	print(RESET);
+	error(RESET);
 	if (current.isContext()) {
 		if (current.parentName() != PARENT_GLOBAL_CONTEXT) {
-			current.children().size() ? println("{") : print("{");
+			error("{ ", cfg, ":", current.line(), ":", current.col(), " ");
+			if (current.children().size()) {
+				errorln("");
+			}
 			// if (current.children().size() == 0) {
-			// 	print(FAINT_GRAY);
+			// 	error(FAINT_GRAY);
 			// 	for (int i = 0; i < tabs; i++) {
-			// 		print("→   ");
+			// 		error("→   ");
 			// 	}
-			// 	print(RESET);
-			// 	print('\n');
+			// 	error(RESET);
+			// 	error('\n');
 			// }
 		}
 		int complen = current.children().size();
 		for (int i = 0; i < complen; i++) {
-			printComponentRecursively(current.children(i), tabs + 1
+			printComponentRecursively(current.children(i), cfg, tabs + 1
 			 * ((current.parentName() != PARENT_GLOBAL_CONTEXT))
 			);
 		}
 		if (current.parentName() != PARENT_GLOBAL_CONTEXT && current.children().size()) {
-			print(FAINT_GRAY);
+			error(FAINT_GRAY);
 			for (int i = 0; i < tabs; i++) {
-				print("→   ");
+				error("→   ");
 			}
-			print(RESET);
+			error(RESET);
 		}
 		if (current.parentName() != PARENT_GLOBAL_CONTEXT)
-			println("}");
+			errorln("}");
 	}
 	else {
-		print(BOLD);
-		println(';');
-		print(RESET);
+		error(BOLD);
+		errorln(';');
+		error(RESET);
 	}
 }
 
@@ -764,7 +783,7 @@ int parse_main(int ac, char **av, parse_config &config) {
 
 	std::string configFileName;
 	if (ac < 2) {
-		println(BOLD, getFileAndLine(av[0], __LINE__), " config file not provided, choosing default file", RESET);
+		println(BOLD, av[0], ": ", FILE_LINE, ": config file not provided, choosing default file", RESET);
 		configFileName = DEFAULT_CONFIG_PATH;
 	}
 	else {
@@ -788,7 +807,7 @@ int parse_main(int ac, char **av, parse_config &config) {
 		validateConfigFile(root, configFileName, av[0]);
 		std::string warnings = postProcessConfigFile(root, configFileName, av[0]);
 		portToParseConfigClass(root, config);
-		printComponentRecursively(root);
+		printComponentRecursively(root, configFileName);
 		errorln(warnings);
 	}
 	catch (const std::exception &e) {
