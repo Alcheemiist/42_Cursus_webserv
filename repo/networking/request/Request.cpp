@@ -1,6 +1,7 @@
 
 #include "../elements.hpp"
 
+// Tools 
 std::vector<std::string> split(const std::string &s, char delim)
 {
     std::vector<std::string> elems;
@@ -20,15 +21,6 @@ size_t getFileSize(const char *fileName)
     if (stat(fileName, &st) < 0)
         return -1;
     return st.st_size;
-}
-
-void Request::fill_body(char *buffer, size_t bytes)
-{
-    int fd = open(this->bodyFileName.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
-    write(fd, buffer, bytes);
-    close(fd);
-    if (this->_content_length <= getFileSize(this->bodyFileName.c_str()))
-        this->_is_complete = true;
 }
 
 char *Request::readFile(const char *fileName)
@@ -55,6 +47,7 @@ char *Request::readFile(const char *fileName)
     return return_buffer;
 }
 
+// 
 Request::Request(char *buffer, size_t bytes, int fd) : _method("ALCHEMIST"), _path("ALCHEMIST"), _version("ALCHEMIST"), _host("ALCHEMIST", ERROR_VALUE),
                                                        _connection("ALCHEMIST"), _accept("ALCHEMIST"), _accept_encoding("ALCHEMIST"),
                                                        _content_type("ALCHEMIST"), _content_length(ERROR_VALUE), _headers(std::map<std::string, std::string>()),
@@ -64,13 +57,8 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method("ALCHEMIST"), _pa
 {
     std::stringstream ss((std::string(buffer)));
     std::string line;
-    int offset = 0;
-    bool is_first = true;
-
-    _content_length = 0;
-    _method = "";
-    bodyFileName = "";
-    _is_complete = false;
+    int         offset = 0;
+    bool        is_first = true;
 
     while (std::getline(ss, line))
     {
@@ -80,10 +68,15 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method("ALCHEMIST"), _pa
         {
             std::vector<std::string> tmp(split(line, ' '));
             if (tmp.size() != 3)
+            {
+                this->set_status_req("undefined request", 400, false);
                 throw std::runtime_error("invalid request");
-            this->_method = tmp[0];
+            }
+            this->_method = check_method(tmp[0]);
             this->_path = tmp[1];
-            this->_version = tmp[2];
+            this->_version = check_version(tmp[2]);
+
+
             is_first = false;
         }
         else if (!is_first)
@@ -105,10 +98,13 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method("ALCHEMIST"), _pa
                 this->_content_length = std::stoi(tmp[1]);
             else if (tmp[0] == "Content-Type")
                 this->_content_type = tmp[1];
+            else if (tmp[0] == "referer")
+                this->_headers.insert(std::pair<std::string, std::string>(tmp[0], tmp[1] + tmp[2] ));
             else
                 this->_headers.insert(std::pair<std::string, std::string>(tmp[0], tmp[1]));
         }
     }
+
     if (_content_length == 0)
         _is_complete = true;
     else
@@ -143,6 +139,15 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method("ALCHEMIST"), _pa
     }
 }
 
+void Request::fill_body(char *buffer, size_t bytes)
+{
+    int fd = open(this->bodyFileName.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
+    write(fd, buffer, bytes);
+    close(fd);
+    if (this->_content_length <= getFileSize(this->bodyFileName.c_str()))
+        this->_is_complete = true;
+}
+
 void Request::show()
 {
     std::cout << red << "--------------- Request ----------------- " << def << std::endl;
@@ -169,4 +174,5 @@ void Request::show()
 
 void Request::checkRequest()
 {
+    // req checker 
 }

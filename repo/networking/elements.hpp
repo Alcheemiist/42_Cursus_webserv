@@ -22,4 +22,6 @@
 #define SENDER_BUFFER_SIZE 1024 // writing buffer size
 
 char *readFile(const char *fileName);
+size_t getFileSize(const char *fileName);
+
 #endif
