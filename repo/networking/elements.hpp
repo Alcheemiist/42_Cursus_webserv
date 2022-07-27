@@ -3,26 +3,25 @@
 #ifndef ELEMENTS_HPP
 #define ELEMENTS_HPP
 
-#include <sstream>
-#include <fcntl.h>
-#include <vector>
-#include <sys/stat.h>
-
 #include "../webserve.hpp"
 #include "./request/Request.hpp"
 #include "./response/Response.hpp"
 #include "../config/parse_confile.hpp"
 
+#include <sstream>
+#include <fcntl.h>
+#include <vector>
+#include <sys/stat.h>
+
 #define MAX_CLIENTS 10000
 #define NO_SOCKET -1
-#define MAX_MESSAGES_BUFFER_SIZE 10
-#define SENDER_MAXSIZE 128
-#define DATA_MAXSIZE 512
 #define FALSE 0
 #define TRUE 1
-#define BUFER_SIZE 4024 // reading buffer size
-#define PORT 8080
+#define BUFER_SIZE 1024         //
+#define DATA_BUFFER_SIZE 1024   // reading buffer size
+#define SENDER_BUFFER_SIZE 1024 // writing buffer size
 
 char *readFile(const char *fileName);
+size_t getFileSize(const char *fileName);
 
 #endif
