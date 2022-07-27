@@ -67,7 +67,7 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
             response->setResponseHeader();
             response->setContentType(path);
             response->setbody_file_size(getFileSize(path));
-            response->setBody(read_by_vector(path, response));
+            // response->setBody(read_by_vector(path, response));
             std::cout << B_blue << "getFileSize(path): " << getFileSize(path) << B_def << std::endl;
         }
         else
@@ -77,8 +77,11 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
             response->setResponseStatus(s2);
             response->setResponseHeader();
             response->setContentType(ss);
+            strcpy(path , "./errorsPages/404/404.html");
             response->setBody(readFile("./errorsPages/404/404.html"));
         }
+        response->setpath(path);
+        free(path);
     }
 }
 
