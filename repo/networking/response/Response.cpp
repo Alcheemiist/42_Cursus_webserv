@@ -2,6 +2,26 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+std::vector<std::string> init_status_code()
+{
+	std::vector<std::string> status_vector;
+    status_vector.push_back("200 OK");
+    status_vector.push_back("204 NO CONTENT");
+    status_vector.push_back("301 MOVED PERMANENTLY");
+    status_vector.push_back("400 BAD REQUEST");
+    status_vector.push_back("403 FORBIDDEN");
+    status_vector.push_back("404 NOT FOUND");
+    status_vector.push_back("405 METHOD NOT ALLOWED");
+    status_vector.push_back("413 REQUEST ENTITY TOO LARGE");
+    status_vector.push_back("414 URI TOO LONG");
+    status_vector.push_back("500 INTERNAL SERVER ERROR");
+    status_vector.push_back("501 NOT IMPLEMENTED");
+    status_vector.push_back("502 BAD GATEWAY");
+    status_vector.push_back("503 SERVICE UNAVAILABLE");
+    status_vector.push_back("504 GATEWAY TIMEOUT");
+    status_vector.push_back("505 HTTP VERSION NOT SUPPORTED");
+	return status_vector;
+}
 void ERRORresponse(Request *request, Response *response)
 {
     (void)request;
@@ -60,6 +80,8 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
 void response(int new_socket, Request *request, parse_config *config, int index_server)
 {
     Response response;
+	response.setStatus_vector(init_status_code());
+	response.setStatus(request, config);
     std::cout << blue << "********** { Response } ***********************" << def << std::endl;
     if (!request->isGoodrequest())
         ERRORresponse(request, &response);
@@ -73,7 +95,6 @@ void response(int new_socket, Request *request, parse_config *config, int index_
         ERRORresponse(request, &response);
     std::cout << blue << "********** {End Response } ******************" << def << std::endl
               << std::endl;
-
     std::string str = response.getResponse();
     size_t lenght = str.size();
     ssize_t size_send = send(new_socket, str.c_str(), lenght, MSG_OOB);

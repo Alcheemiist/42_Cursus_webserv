@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse_confile.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: isaadi <isaadi@student.1337.ma>            +#+  +:+       +#+        */
+/*   By: mochegri <mochegri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:27:53 by nabboudi          #+#    #+#             */
-/*   Updated: 2022/07/25 19:30:04 by isaadi           ###   ########.fr       */
+/*   Updated: 2022/07/27 04:43:32 by mochegri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class parse_config
         std::vector<std::string> _lines;
         std::vector<std::string> _words;
         std::vector<server> _servers;
+        
         
     public:
         parse_config():_lines(), _words(), _servers(){};
