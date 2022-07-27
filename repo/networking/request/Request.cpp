@@ -1,6 +1,5 @@
 
 #include "../elements.hpp"
-#include "../../webserve.hpp"
 
 std::vector<std::string> split(const std::string &s, char delim)
 {
@@ -56,7 +55,12 @@ char *Request::readFile(const char *fileName)
     return return_buffer;
 }
 
-Request::Request(char *buffer, size_t bytes, int fd) : client_fd(fd)
+Request::Request(char *buffer, size_t bytes, int fd) : _method("ALCHEMIST"), _path("ALCHEMIST"), _version("ALCHEMIST"), _host("ALCHEMIST", ERROR_VALUE),
+                                                       _connection("ALCHEMIST"), _accept("ALCHEMIST"), _accept_encoding("ALCHEMIST"),
+                                                       _content_type("ALCHEMIST"), _content_length(ERROR_VALUE), _headers(std::map<std::string, std::string>()),
+                                                       //
+                                                       bodyFileName(""), client_fd(fd), _fdBodyFile(ERROR_VALUE), bytes(ERROR_VALUE),
+                                                       _is_complete(false), requestStatus(ERROR_VALUE), status_message("ALCHEMIST")
 {
     std::stringstream ss((std::string(buffer)));
     std::string line;
@@ -163,7 +167,6 @@ void Request::show()
     std::cout << red << "--------------- End Request ----------------- " << def << std::endl;
 }
 
-void checkRequest(Request *request)
+void Request::checkRequest()
 {
-    (void)request;
 }
