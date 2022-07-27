@@ -127,7 +127,7 @@ void LaunchServer(parse_config *config)
             max_sd = _socket_server[i].server_fd;
     }
     ssize_t size_send = 0;
-    ssize_t lenght = 0;
+    // ssize_t lenght = 0;
     std::string str_to_send;
 
     for (int index_cycle = 0;;)
@@ -195,19 +195,40 @@ void LaunchServer(parse_config *config)
                 if (FD_ISSET(clients[i].server_fd, &working_wr_set) && serv_response[i] >= 3)
                 {
                     std::cout << "  ready to responde the client  " << requests.find(clients[i].server_fd)->first << std::endl;
-                    if (serv_response[i] == 3) // sending request
+                    if (serv_response[i] == 3) // make the header on buffer and send buffer if <= shunks 
                     {
                         std::cout << "  send response 3 (sending request) to fd : " << requests.find(clients[i].server_fd)->first << " == " << clients[i].server_fd << std::endl;
-                        responses.insert(std::pair<int, Response>(i, response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config, clients[i].index_server)));
+                        responses.insert(std::pair<int, Response>(i,\
+                        response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config, clients[i].index_server)));
+                        std::string header = responses[i].getHeader();
+                        size_send = write(requests.find(clients[i].server_fd)->first, header.c_str() , header.size());
                         serv_response[i] = 4;
                     }
-                    if (serv_response[i] == 4) // make the header and send it with readed size <= shunks = 1024
+                    if (serv_response[i] == 4) // if buffer > shunks send buffer{shunks} 
                     {
-                        str_to_send = responses[i].getResponse();
-                        lenght = str_to_send.size();
-                        std::cout << B_red << " str.size to be send  : " << std::endl;
-                        size_send = write(requests.find(clients[i].server_fd)->first, str_to_send.c_str(), lenght);
-                        serv_response[i] = 5;
+                        if (responses[i].getpath().size() > 0 && !responses[i].get_finish())
+                        {
+                            // char _buffer[BUFER_SIZE + 1];
+                            std::vector<char> buffer = responses[i].get_buffer();
+                            size_send = write(requests.find(clients[i].server_fd)->first, buffer.data(), buffer.size());
+
+                            if (size_send < 0)
+                                throw std::runtime_error("  error sending buffer");
+                            std::cout << "response : " << size_send << " bytes sent | buffer size "<< buffer.size() << std::endl;
+
+                        }
+
+                        // str_to_send = responses[i].getResponse();
+                        // lenght = str_to_send.size();
+                        // std::cout << B_blue << "-write str_to_send.size to be send  : " << lenght << B_def << std::endl;
+
+                        // char s[lenght + 1];
+                        // for (int i = 0; i < lenght; i++)
+                        //     s[i] = str_to_send[i];
+                        // s[lenght] = '\0';
+                        // size_send = write(requests.find(clients[i].server_fd)->first, str_to_send.c_str() , lenght);
+                        if (responses[i].get_finish())
+                            serv_response[i] = 5;
                     }
                     if (serv_response[i] == 5) // if the response isn't complete, send the rest by shunks
                     {
@@ -217,19 +238,6 @@ void LaunchServer(parse_config *config)
                         requests.erase(requests.find(clients[i].server_fd)->first);
                         serv_response[i] = 1;
                         first[i] = true;
-
-                        // int tmp = send(requests.find(clients[i].server_fd)->first, str_to_send.c_str() + size_send , 1024, MSG_OOB);
-                        // size_send += tmp;
-                        // if (size_send == lenght)
-                        // {
-                        //     FD_CLR(requests.find(clients[i].server_fd)->first, &working_wr_set);
-                        //     FD_CLR(requests.find(clients[i].server_fd)->first, &backup_wr_set);
-                        //     close(requests.find(clients[i].server_fd)->first);
-                        //     requests.erase(requests.find(clients[i].server_fd)->first);
-                        //     serv_response[i] = 1;
-                        //     first[i] = true;
-                        // }
-
                         if (size_send < 500)
                             std::cout << B_green << "********** data size send {" << size_send << "}******************" << B_def << std::endl;
                         else
