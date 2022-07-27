@@ -28,7 +28,16 @@ private:
     int client_fd;
     int _fdBodyFile;
 
+//
+    bool        is_formated;
+    std::string transfer_encoding;
+
+
 public:
+    int body_length(){
+        //
+        return 999999;
+    }
     Request() : _method(""), _path(""), _version(""), _host("", 0),
                 _connection(""), _accept(""), _accept_encoding(""),
                 _content_type(""), _headers(std::map<std::string, std::string>()),
@@ -47,6 +56,8 @@ public:
     void set_request_num(int request_num) { this->request_num = request_num; }
     // GETTERS --------------------------------------------------
     long getbytes() { return bytes; }
+    bool get_is_formated() { return is_formated; }
+    std::string get_transfer_encoding() { return transfer_encoding; }
     int getRequestNum() const { return request_num; };
     std::string getMethod() const { return _method; };
     std::string getPath() const { return _path; };
@@ -54,7 +65,8 @@ public:
     bool getIsComplete() const { return _is_complete; };
     std::string getConnection() const { return _connection; };
     int getRequestStatus() const { return requestStatus; };
-
+    int getcontent_length() const { return _content_length; };
+    std::string geturl() const { return _path; };
     // METHODS --------------------------------------------------
     bool
     isGoodrequest()

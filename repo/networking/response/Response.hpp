@@ -4,6 +4,8 @@
 #define RESPONSE_HPP
 
 #include "../elements.hpp"
+#include <vector>
+
 
 class Response
 {
@@ -14,26 +16,73 @@ private:
     std::string body;
     std::string response;
     std::string responseStatus;
-    size_t body_length;
+    size_t      body_length;
     std::string contentType;
+    std::vector<std::string> status_vector;
 
 public:
-    Response() : version("HTTP/1.1 "), status("200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""){};
+    Response() : version("HTTP/1.1 "), status("200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType("")
+    {
+
+    };
+
     void setVersion(std::string version)
     {
         this->version = version;
         std::cout << "- Set Version : " << this->version << std::endl;
     };
-    void setStatus(std::string status)
+
+	void setStatus_vector(std::vector<std::string> vect)
+	{
+		this->status_vector = vect;
+	}
+
+    void setStatus(Request *request, parse_config *config)
     {
-        this->status = status;
+		(void)request;
+		(void)config;
+        // this->status = status;
+		if (!request->get_is_formated())
+		{
+			if (request->get_transfer_encoding() != "chunked")
+				this->status = "501 NOT IMPLEMENTED";
+			else if (request->get_transfer_encoding() == "chunked" &&
+				request->getcontent_length() == -1)
+				this->status = "400 BAD REQUEST";
+			else if (url_parser(request->geturl()))
+				this->status = "400 BAD REQUEST";
+			else if (request->getcontent_length() > 2048)
+				this->status = "414 REQUEST-URI TOO LARGE";
+			else if (request->body_length() > request->getcontent_length())
+				this->status = "413 REQUEST ENTITY TOO LARGE";
+		}
+		// else
+		// {
+		// 	if (!url_macth())
+		// 		this->status = "400 BAD REQUEST";
+		// 	else if (url_have_redir())
+		// 		this->status = "301 MOVED PERMANENTLY";
+		// 	else if ((std::string request->get_method()))
+		// }
+
         std::cout << "- Set Status : " << this->status << std::endl;
-    };
+	}
+
+	bool url_parser(std::string url)
+	{
+		std::string allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=";
+		for(std::string::iterator it = url.begin(); it != url.end(); ++it)
+			if (allowed.find(*it) == std::string::npos)
+				return false;
+		return (true);
+	}
+
     void setHeader(char *header)
     {
         this->header = header;
         std::cout << "- Set header : " << this->header << std::endl;
     };
+
     void setBody(char *body)
     {
         this->body = body;
@@ -56,7 +105,7 @@ public:
         std::string res;
         res.append(version);
         res.append(status);
-        // res.append("Content-Type: ");
+        // res.https://en.wikipedia.org/wiki/Plotting_algorithms_for_the_Mandelbrot_set("Content-Type: ");
         // res.append(this->contentType);
         // res.append("\r\n");
         res.append("server: alchemist\r\n");
