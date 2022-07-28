@@ -56,16 +56,11 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
         char *path = (char *)malloc(sizeof(char) * (1000));
         std::cout << B_red << "root path = {" << config->get_server_vect()[index_server].get_root().c_str() << "}" << B_def << std::endl;
         strcpy(path, config->get_server_vect()[index_server].get_root().c_str());
-
         struct stat st;
-
         if (request->getPath() == "/")
             strcpy(path + (strlen(path)), "index.html");
         else
             strcpy(path + (strlen(path) - 1), request->getPath().c_str());
-
-        std::cout << B_blue << "get from file: {" << path << B_def << std::endl;
-
         stat(path, &st);
         char s2[50];
         if (st.st_size > 0)
@@ -86,7 +81,7 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
             response->setResponseHeader();
             response->setContentType(ss);
             strcpy(path , "./errorsPages/404/404.html");
-            response->setBody(readFile("./errorsPages/404/404.html"));
+            // response->setBody(/÷readFile("./errorsPages/404/404.html"));
         }
         response->setpath(path);
         free(path);
@@ -108,7 +103,6 @@ Response response(int new_socket, Request *request, parse_config *config, int in
         DELETEresponse();
     else
         ERRORresponse(request, &response);
-    std::cout << blue << "********** {End Response } ******************" << def << std::endl
-              << std::endl;
+    std::cout << blue << "********** {End Response } ******************" << def << std::endl ;
     return response;
 }
