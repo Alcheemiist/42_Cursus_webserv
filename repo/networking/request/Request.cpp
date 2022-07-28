@@ -1,5 +1,7 @@
 #include "../elements.hpp"
 
+
+
 Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _version(""), _host(""),  _connection(""), _accept(""), _accept_encoding(""),  _content_type(""), _content_length(0), _headers(std::map<std::string, std::string>()), bodyFileName(""), client_fd(fd), _fdBodyFile(-1),  _is_complete(false), requestStatus(-1), status_message("")
 {
     std::stringstream ss((std::string(buffer)));
@@ -9,7 +11,7 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
 
     while (std::getline(ss, line))
     {
-        //std::cout << B_blue << line << B_def << std::endl;
+        std::cout << B_blue << line << B_def << std::endl;
         offset += line.size() + 1;
         if (is_first)
         {
@@ -29,7 +31,7 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
             if (line == "\r")
                 break;
             std::vector<std::string> tmp = split(line, ':');
-            if (tmp[0] == "Host")
+            if (tmp[0] == "host")
                 this->_host = tmp[1];
             else if (tmp[0] == "Connection")
                 this->_connection = tmp[1];
@@ -43,10 +45,10 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
                 this->_content_length = std::stoi(tmp[1]);
             else if (tmp[0] == "Content-Type")
                 this->_content_type = tmp[1];
-            else if (tmp[0] == "referer")
-                this->_headers.insert(std::pair<std::string, std::string>(tmp[0], tmp[1] + tmp[2] ));
+            else if (tmp[0] == "Referer")
+                this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(tmp[0]) , tmp[1] + tmp[2] ));
             else
-                this->_headers.insert(std::pair<std::string, std::string>(tmp[0], tmp[1]));
+                this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(tmp[0]) , tmp[1]));
         }
     }
 

@@ -136,7 +136,10 @@ class Response
 
             int fd = open(this->body_file_path.c_str(), O_RDONLY);
             if (fd < 0)
+            {
+                
                 std::cout << "open file error";
+            }
             int size = lseek(fd, maxBufferLenght, SEEK_SET);
             if (size < 0)
                 std::cout << "lseek error";
