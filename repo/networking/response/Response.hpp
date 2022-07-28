@@ -31,31 +31,23 @@ class Response
         void setVersion(std::string version)
         {
             this->version = version;
-            std::cout << "- Set Version : " << this->version << std::endl;
         };
         void setStatus(std::string status)
         {
             this->status = status;
-            std::cout << "- Set Status : " << this->status << std::endl;
         };
         void setHeader(char *header)
         {
             this->header = header;
-            std::cout << "- Set header : " << this->header << std::endl;
         };
         void setBody(char *body)
         {
             this->body = body;
-            std::cout << blue << "- Set body size : " << strlen(this->body.c_str()) << def << std::endl;
         };
         void setBody(std::vector<char> _body)
         {
             for (std::vector<char>::iterator it = _body.begin(); it != _body.end(); ++it)
                 this->body += *it;
-            // for (int i = 0; body[i]; i++)
-            //     std::cout << green  << body[i] ;
-            std::cout << blue << "- Set body size : " << _body.size() << std::endl;
-            std::cout << def << std::endl;
         };
         void setpath (std::string path){ this->body_file_path = path; }
         std::string getpath (){ return this->body_file_path; }
@@ -168,7 +160,6 @@ class Response
         void set_maxBufferLenght(size_t size) { this->maxBufferLenght = size; };
         size_t get_maxBufferLenght() { return this->maxBufferLenght; };
 };
-
 
 void GETresponse(Request *request, Response *response, Config *config);
 void POSTresponse();
