@@ -10,5 +10,9 @@
 	<?php
 	echo "Hello World!";
 	?>
+	<!-- <?php
+		$entityBody = file_get_contents('php://input');
+		echo $entityBody;
+	?> -->
 </body>
 </html>

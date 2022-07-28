@@ -1,2 +1,5 @@
 webserve.dSYM/
 webserve
+.phpcgi
+.gitignore
+config/conf/conf.conf
