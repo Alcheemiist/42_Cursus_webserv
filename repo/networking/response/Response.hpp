@@ -161,7 +161,6 @@ class Response
         size_t get_maxBufferLenght() { return this->maxBufferLenght; };
 };
 
-
 void GETresponse(Request *request, Response *response, Config *config);
 void POSTresponse();
 void PUTresponse();
