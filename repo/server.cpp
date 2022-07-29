@@ -41,7 +41,7 @@ int setup_signals()
 int main(int ac, char **av, char **ep)
 {
 	(void)ep;
-    parse_config Config;
+    ParseConfig Config;
 
     if (ac == 1)
         std::cout << red << " Default Webserve Configuration  " << def << std::endl;

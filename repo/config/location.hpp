@@ -6,12 +6,12 @@
 #include <vector>
 #include "cgi.hpp"
 
-class cgi;
-class location
+class Cgi;
+class Location
 {
     
 protected:
-    std::vector<cgi>			_cgi;
+    std::vector<Cgi>			_cgi;
     std::string                 _name;
     std::string                 _locations_path;
     std::vector<std::string>    _allow_methods;
@@ -21,11 +21,11 @@ protected:
     bool                        _autoindex;
     std::string                 _upload_path;
 public:
-    location();
-    ~location();
-    location (const location &obj);
-	void						set_cgi(std::vector<cgi>);
-	std::vector<cgi>			&get_cgi();
+    Location();
+    ~Location();
+    Location (const Location &obj);
+	void						set_cgi(std::vector<Cgi>);
+	std::vector<Cgi>			&get_cgi();
     void                        set_upload_path(std::string upload_path);
     std::string                 get_upload_path() const;
     std::string                 get_locations_path() const;
@@ -59,7 +59,7 @@ public:
     unsigned int                 fill_autoindex(std::vector<std::string>, unsigned int);
     bool                         is_number(const std::string &str);
     bool                         not_predefined(std::string &) const;
-    location                    &operator=(location const & rhs);
+    Location                    &operator=(Location const & rhs);
 };
 
 #endif

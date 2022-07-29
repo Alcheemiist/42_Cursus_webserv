@@ -170,7 +170,7 @@ void PUTresponse();
 void DELETEresponse();
 void HEADresponse();
 void ERRORresponse(Request *request, Response *response);
-Response response(int new_socket, Request *request, parse_config *config, int fd_server);
+Response response(int new_socket, Request *request, ParseConfig *config, int fd_server);
 char *readFile(const char *fileName);
 
 #endif
