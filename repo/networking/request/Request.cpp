@@ -108,3 +108,6 @@ void Request::fill_body(char *buffer, size_t bytes)
     }
 }
 
+const std::map<std::string, std::string> &Request::getHeaders() const {
+	return _headers;
+}

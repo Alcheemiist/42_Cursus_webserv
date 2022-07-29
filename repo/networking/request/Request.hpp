@@ -40,6 +40,7 @@ public:
     bool        getIsComplete() const { return _is_complete; };
     std::string getConnection() const { return _connection; };
     int         getRequestStatus() const { return requestStatus; };
+    const std::map<std::string, std::string> &getHeaders() const;
     void fill_body(char *buffer, size_t bytes);
     char *readFile(const char *fileName);
     void show();
