@@ -3,3 +3,4 @@ webserve
 .phpcgi
 .gitignore
 config/conf/conf.conf
+upload/*
