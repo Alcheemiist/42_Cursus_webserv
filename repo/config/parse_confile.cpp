@@ -5,12 +5,12 @@
 
 //--------methods--------
 
-size_t parse_config::get_lines_size() const
+size_t ParseConfig::get_lines_size() const
 {
     return (_lines.size());
 }
 
-void parse_config::read_lines()
+void ParseConfig::read_lines()
 {
     for (std::vector<std::string>::iterator it = _lines.begin(); it != _lines.end(); ++it)
     {
@@ -18,7 +18,7 @@ void parse_config::read_lines()
     }
 }
 
-void parse_config::accolade_error()
+void ParseConfig::accolade_error()
 {
     size_t i = 0;
     int accolade = 0;
@@ -37,7 +37,7 @@ void parse_config::accolade_error()
     }
 }
 
-void parse_config::split_by_space()
+void ParseConfig::split_by_space()
 {
     for (std::vector<std::string>::iterator it = _lines.begin(); it != _lines.end(); ++it)
     {
@@ -53,9 +53,9 @@ void parse_config::split_by_space()
     }
 }
 
-unsigned int parse_config::server_parsing(unsigned int &i)
+unsigned int ParseConfig::server_parsing(unsigned int &i)
 {
-    server s;
+    Server s;
     bool location_flag = false;
     bool cgi_flag = false;
     while (1)
@@ -93,7 +93,7 @@ unsigned int parse_config::server_parsing(unsigned int &i)
     return i;
 }
 
-void parse_config::specified_words(std::string &tmp)
+void ParseConfig::specified_words(std::string &tmp)
 {
     std::string err;
     err = "Error: [";
@@ -108,7 +108,7 @@ void parse_config::specified_words(std::string &tmp)
     }
 }
 
-void parse_config::syntax_error()
+void ParseConfig::syntax_error()
 {
     for (std::vector<std::string>::iterator it = _lines.begin(); it != _lines.end(); ++it)
     {
@@ -128,7 +128,7 @@ void parse_config::syntax_error()
     }
 }
 
-void parse_config::check_host_server_names_error()
+void ParseConfig::check_host_server_names_error()
 {
     size_t i = 0;
     while (i < _servers.size())
@@ -160,7 +160,7 @@ void parse_config::check_host_server_names_error()
     }
 }
 
-void parse_config::start_parsing()
+void ParseConfig::start_parsing()
 {
     // std::cout << "Hello" << std::endl;
     split_by_space();
@@ -180,7 +180,7 @@ void parse_config::start_parsing()
         {
             i++;
             if (_words[i] == "{")
-                i = parse_config::server_parsing(i);
+                i = ParseConfig::server_parsing(i);
         }
         else
         {
@@ -191,7 +191,7 @@ void parse_config::start_parsing()
     check_host_server_names_error();
 }
 
-void parse_config::read_server()
+void ParseConfig::read_server()
 {
     size_t i = 0;
 
@@ -259,7 +259,7 @@ void parse_config::read_server()
         std::cout << "********location*********" << std::endl;
         while (j < _servers[i].get_location_size())
         {
-            location t = this->_servers[i].get_location(j);
+            Location t = this->_servers[i].get_location(j);
             std::cout << "location_path: " << t.get_locations_path() << std::endl;
             std::cout << "upload_path: " << t.get_upload_path() << std::endl;
             std::cout << "max_body_size: " << t.get_client_max_body_size() << std::endl;
@@ -314,7 +314,7 @@ void parse_config::read_server()
         std::cout << "********CGI*********" << std::endl;
         while (j < _servers[i].get_cgi_size())
         {
-            cgi t = this->_servers[i].get_cgi(j);
+            Cgi t = this->_servers[i].get_cgi(j);
             std::cout << "cgi name:" << t.get_cgi_name() << std::endl;
             std::cout << "cgi_path: " << t.get_cgi_path() << std::endl;
             unsigned int k = 0;
@@ -333,7 +333,7 @@ void parse_config::read_server()
     }
 }
 
-int parse_config::basic_error(std::string error_message, char const *av, std::string error_message2)
+int ParseConfig::basic_error(std::string error_message, char const *av, std::string error_message2)
 {
     if (av && error_message2 != "" && error_message != "")
         std::cout << error_message << av << error_message2 << std::endl;
@@ -344,7 +344,7 @@ int parse_config::basic_error(std::string error_message, char const *av, std::st
     return (0);
 }
 
-int parse_config::parsing_conf(int ac, char **av, std::vector<std::string> lines)
+int ParseConfig::parsing_conf(int ac, char **av, std::vector<std::string> lines)
 {
     (void)ac;
     (void)av;
@@ -363,20 +363,20 @@ int parse_config::parsing_conf(int ac, char **av, std::vector<std::string> lines
 
 //--------getters-------------
 
-const std::vector<server> &parse_config::get_server_vect() const { return _servers; };
+const std::vector<Server> &ParseConfig::get_server_vect() const { return _servers; };
 
-std::string parse_config::get_lines(int i) const
+std::string ParseConfig::get_lines(int i) const
 {
     return (_lines[i]);
 }
 
 //--------setters-------------
 
-void parse_config::set_server_vect(std::vector<server> servers) {
+void ParseConfig::set_server_vect(std::vector<Server> servers) {
 	_servers = servers;
 }
 
-void parse_config::set_lines(std::vector<std::string> lines)
+void ParseConfig::set_lines(std::vector<std::string> lines)
 {
     _lines = lines;
 }

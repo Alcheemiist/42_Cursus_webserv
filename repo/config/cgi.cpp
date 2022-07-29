@@ -1,16 +1,16 @@
 
 #include "cgi.hpp"
 
-cgi::cgi() : _name(""), _cgi_path(""), _allow_methods(std::vector<std::string>())
+Cgi::Cgi() : _name(""), _cgi_path(""), _allow_methods(std::vector<std::string>())
 {
 }
 
-cgi::~cgi()
+Cgi::~Cgi()
 {
 }
 
 
-void cgi::set_cgi_path(std::string cgi_path)
+void Cgi::set_cgi_path(std::string cgi_path)
 {
     if (not_predefined(cgi_path))
        this->_cgi_path = cgi_path;
@@ -22,12 +22,12 @@ void cgi::set_cgi_path(std::string cgi_path)
     
 }
 
-void cgi::set_cgi_methods_vect(std::vector<std::string> methods)
+void Cgi::set_cgi_methods_vect(std::vector<std::string> methods)
 {
     _allow_methods = methods;
 }
 
-void cgi::set_cgi_methods(std::string methods)
+void Cgi::set_cgi_methods(std::string methods)
 {
     // std::cout << methods << std::endl;
     if (methods == "POST" || methods == "GET" || methods == "DELETE")
@@ -39,7 +39,7 @@ void cgi::set_cgi_methods(std::string methods)
     } 
 }
 
-void    cgi::set_cgi_name(std::string name)
+void    Cgi::set_cgi_name(std::string name)
 {
     if (not_predefined(name))
        this->_name = name;
@@ -51,27 +51,27 @@ void    cgi::set_cgi_name(std::string name)
     
 }
 
-std::string cgi::get_cgi_methods(int i) const
+std::string Cgi::get_cgi_methods(int i) const
 {
     return this->_allow_methods[i];
 }
 
-std::vector<std::string> cgi::get_cgi_methods() const
+std::vector<std::string> Cgi::get_cgi_methods() const
 {
     return this->_allow_methods;
 }
 
-std::string cgi::get_cgi_name() const
+std::string Cgi::get_cgi_name() const
 {
     return this->_name;
 }
 
-std::string cgi::get_cgi_path() const
+std::string Cgi::get_cgi_path() const
 {
     return this->_cgi_path;
 }
 
-unsigned int cgi::get_cgi_methods_size()
+unsigned int Cgi::get_cgi_methods_size()
 {
     return this->_allow_methods.size();
 }
@@ -80,7 +80,7 @@ unsigned int cgi::get_cgi_methods_size()
     operator
 */
 
-cgi    &cgi::operator=(cgi const &rhs)
+Cgi    &Cgi::operator=(Cgi const &rhs)
 {
     this->_name = rhs._name;
     this->_cgi_path = rhs._cgi_path;
@@ -88,7 +88,7 @@ cgi    &cgi::operator=(cgi const &rhs)
     return *this;
 }
 
-bool cgi::not_predefined(std::string &word) const
+bool Cgi::not_predefined(std::string &word) const
 {
     if (word != "}" && word != "server" && word != "{" && word != "listen" 
             && word != "root" && word != "allow_methods" && word != "server_names"

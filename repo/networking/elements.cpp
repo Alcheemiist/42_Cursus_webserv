@@ -107,7 +107,7 @@ void init_socket(t_socket *_socket)
 // #define PRINT_LINE_VALUE(x) println(__FILE__, ":", __LINE__, " ", #x, " = ", x)
 // #include "../config/print.hpp"
 
-void LaunchServer(parse_config *config)
+void LaunchServer(ParseConfig *config)
 {
 	// std::vector<server> servs = config->get_server_vect();
 	// for (std::vector<server>::iterator it = servs.begin(); it != servs.end(); it++) {

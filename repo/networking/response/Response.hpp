@@ -20,11 +20,12 @@ private:
     std::string contentType;
     std::vector<std::string> status_vector;
     std::string location;
+    std::string redirection;
 
 public:
     Response();
     void setVersion(std::string version);
-    void setStatus(Request *request, parse_config *config);
+    void setStatus(Request *request, ParseConfig *config);
 	bool url_parser(std::string url);
     void setHeader(char *header);
     void setBody(char *body);
@@ -42,7 +43,7 @@ void PUTresponse();
 void DELETEresponse();
 void HEADresponse();
 void ERRORresponse(Request *request, Response *response);
-void response(int new_socket, Request *request, parse_config *config,
+void response(int new_socket, Request *request, ParseConfig *config,
         int fd_server);
 
 char *readFile(const char *fileName);
