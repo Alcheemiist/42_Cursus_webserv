@@ -19,6 +19,7 @@ private:
     size_t      body_length;
     std::string contentType;
     std::vector<std::string> status_vector;
+    std::string location;
 
 public:
     Response();
@@ -41,7 +42,8 @@ void PUTresponse();
 void DELETEresponse();
 void HEADresponse();
 void ERRORresponse(Request *request, Response *response);
-void response(int new_socket, Request *request, parse_config *config, int fd_server);
+void response(int new_socket, Request *request, parse_config *config,
+        int fd_server);
 
 char *readFile(const char *fileName);
 

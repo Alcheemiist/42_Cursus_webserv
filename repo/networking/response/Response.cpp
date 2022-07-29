@@ -1,6 +1,7 @@
 #include "../elements.hpp"
 #include <fcntl.h>
 #include <sys/stat.h>
+#include "Response_utiles.hpp"
 
 Response::Response() : version("HTTP/1.1 "), status("200 OK\r\n"), header(""),
     body(""), response(""), responseStatus(""), body_length(0), contentType(""){};
@@ -13,7 +14,7 @@ void Response::setVersion(std::string version)
 
 bool Response::url_parser(std::string url)
 {
-	std::string allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=";
+	std::string allowed ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=";
 	for(std::string::iterator it = url.begin(); it != url.end(); ++it)
 		if (allowed.find(*it) == std::string::npos)
 			return false;
@@ -72,26 +73,29 @@ void Response::setStatus(Request *request, parse_config *config)
     // this->status = status;
 	if (!request->get_is_formated())
 	{
-		if (request->get_transfer_encoding() != "chunked")
+		if (request->get_transfer_encoding() != "" &&
+                request->get_transfer_encoding() != "chunked")
 			this->status = "501 NOT IMPLEMENTED";
-		else if (request->get_transfer_encoding() == "chunked" &&
-			request->getcontent_length() == -1)
+		else if (request->get_transfer_encoding() == "" &&
+			    request->getcontent_length() == -1 &&
+                request->getMethod() == "POST")
 			this->status = "400 BAD REQUEST";
 		else if (url_parser(request->geturl()))
 			this->status = "400 BAD REQUEST";
-		else if (request->getcontent_length() > 2048)
+		else if (request->geturl().length() > 2048)
 			this->status = "414 REQUEST-URI TOO LARGE";
 		else if (request->body_length() > request->getcontent_length())
 			this->status = "413 REQUEST ENTITY TOO LARGE";
 	}
-	// else
-	// {
-	// 	if (!url_macth())
-	// 		this->status = "400 BAD REQUEST";
-	// 	else if (url_have_redir())
-	// 		this->status = "301 MOVED PERMANENTLY";
-	// 	else if ((std::string request->get_method()))
-	// }
+	else
+	{
+		if ((this->location = url_matched(request->geturl(), request->get_port(),
+                config->get_server_vect())) == "")
+			this->status = "400 BAD REQUEST";
+		// else if (url_have_redir())
+		// 	this->status = "301 MOVED PERMANENTLY";
+		// else if ((std::string request->get_method()))
+	}
     std::cout << "- Set Status : " << this->status << std::endl;
 }
 
@@ -190,7 +194,7 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
 void response(int new_socket, Request *request, parse_config *config, int index_server)
 {
     Response response;
-	// response.setStatus_vector(init_status_code());
+
 	response.setStatus(request, config);
     std::cout << blue << "********** { Response } ***********************" << def << std::endl;
     if (!request->isGoodrequest())

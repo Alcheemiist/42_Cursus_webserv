@@ -9,7 +9,7 @@
 class cgi;
 class location
 {
-    
+
 protected:
     std::vector<cgi>			_cgi;
     std::string                 _name;
