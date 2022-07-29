@@ -53,5 +53,6 @@ char *readFile(const char *fileName);
 long readRequest(int new_socket, Request *request);
 std::vector<std::string> split(const std::string &s, char delim);
 size_t getFileSize(const char *fileName);
+std::string to_Lower_case(std::string str);
 
 #endif

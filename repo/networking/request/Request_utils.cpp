@@ -45,3 +45,11 @@ void Request::show()
     }
     std::cout << red << "--------------- End Request ----------------- " << def << std::endl;
 }
+
+std::string to_Lower_case(std::string str)
+{
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    return str;
+}
+
+
