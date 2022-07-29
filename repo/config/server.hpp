@@ -4,12 +4,12 @@
 #include "parse_confile.hpp"
 #include <string>
 #include <iostream>
-class location;
-class cgi;
+class Location;
+class Cgi;
 
 class Socket;
 
-class server
+class Server
 {
 
 protected:
@@ -22,16 +22,16 @@ protected:
     std::vector<std::vector<std::string> > _error_pages;
     std::vector<std::vector<std::string> > _redirections;
     std::string _root;
-    std::vector<location> _location;
-    std::vector<cgi> _cgi;
+    std::vector<Location> _location;
+    std::vector<Cgi> _cgi;
     long long int _client_max_body_size;
     bool _autoindex;
     // t_socket _socket;
 
 public:
-    server();
-    ~server();
-    server(const server &src);
+    Server();
+    ~Server();
+    Server(const Server &src);
     void set_to_default();
 	void set_listen_port(int listenp);
     void set_name_vect(std::vector<std::string> name);
@@ -45,10 +45,10 @@ public:
     void set_redirections(std::string redirection_from, std::string redirection_to);
     void set_root(std::string root);
     void set_upload_path(std::string upload_path);
-	void set_location_vect(std::vector<location> location);
-    void set_location(location location);
-	void set_cgi_vect(std::vector<cgi> cgi);
-    void set_cgi(cgi cgi);
+	void set_location_vect(std::vector<Location> location);
+    void set_location(Location location);
+	void set_cgi_vect(std::vector<Cgi> cgi);
+    void set_cgi(Cgi cgi);
     void set_client_max_body_size(std::string client_max_body_size);
     void set_client_max_body_size(long long int client_max_body_size);
     void set_autoindex(bool autoindex);
@@ -71,10 +71,10 @@ public:
     std::vector<std::vector<std::string> > get_redirections() const;
     std::string get_root() const;
     std::string get_upload_path() const;
-    location get_location(int i) const;
+    Location get_location(int i) const;
     unsigned int get_location_size() const;
     unsigned int get_cgi_size() const;
-    cgi get_cgi(int i) const;
+    Cgi get_cgi(int i) const;
     long long int get_client_max_body_size() const;
     unsigned int get_allowed_methods_size() const;
     bool get_autoindex() const;
@@ -89,8 +89,8 @@ public:
     bool not_predefined(std::string &) const;
     bool is_number(const std::string &str);
     void check_host(std::string);
-    std::vector<location> get_location() const;
-    std::vector<cgi> get_cgi() const;
-    server &operator=(server const &rhs);
+    std::vector<Location> get_location() const;
+    std::vector<Cgi> get_cgi() const;
+    Server &operator=(Server const &rhs);
 };
 #endif

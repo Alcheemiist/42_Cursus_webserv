@@ -21,17 +21,17 @@ std::string *split_url(std::string str)
 	return str_array;
 }
 
-std::string url_matched(std::string url, int port, const std::vector<server> locations)
+std::string url_matched(std::string url, int port, const std::vector<Server> servers)
 {
-	server serv;
+	Server serv;
 	std::string path;
-	std::vector<location> loc= serv.get_location();
+	std::vector<Location> loc= serv.get_location();
 
-	for (std::vector<server>::const_iterator it_server = locations.begin();
-			it_server != locations.end() || it_server->get_listen_port() == port;
+	for (std::vector<Server>::const_iterator it_server = servers.begin();
+			it_server != servers.end() || it_server->get_listen_port() == port;
 			++it_server)
 		{serv = *it_server;}
-	for (std::vector<location>::const_iterator
+	for (std::vector<Location>::const_iterator
 			it_loc = loc.begin(); it_loc != loc.end(); ++it_loc)
 	{
 		if (url.compare(0, it_loc->get_locations_path().length(),
@@ -44,4 +44,57 @@ std::string url_matched(std::string url, int port, const std::vector<server> loc
 	}
 	return "";
 }
+
+std::string url_redirected(std::string url, int port, const std::vector<Server> redirections)
+{
+	Server serv;
+	std::string path;
+	std::vector<std::vector<std::string> > red = serv.get_redirections();
+	// std::vector<Location> loc= serv.get_location();
+
+	for (std::vector<Server>::const_iterator it_server = redirections.begin();
+			it_server != redirections.end() || it_server->get_listen_port() == port;
+			++it_server)
+		{serv = *it_server;}
+
+	for (std::vector<std::vector<std::string> >::const_iterator
+			reds = red.begin(); reds != red.end(); ++reds)
+	{
+		if (url.compare(0, (*reds)[0].length(), (*reds)[0]) == 0)
+		{
+			path =  (*reds)[1] + '/' +
+				url.substr((*reds)[1].length());
+			return	path;
+		}
+	}
+	return "";
+}
+
+// bool	method_is_allowed(std::string method, const std::vector<Server> servres)
+// {
+// 	Server serv;
+// 	std::string path;
+// 	std::vector<std::vector<std::string> > red = serv.get_redirections();
+// 	// std::vector<Location> loc= serv.get_location();
+
+// 	for (std::vector<Server>::const_iterator it_server = servres.begin();
+// 			it_server != servres.end() || it_server->get_listen_port() == port;
+// 			++it_server)
+// 		{serv = *it_server;}
+
+// 	if (serv.get_allowed_methods().find(method) != serv.get_allowed_methods().end())
+// 		return true;
+
+// 	for (std::vector<std::vector<std::string> >::const_iterator
+// 			reds = red.begin(); reds != red.end(); ++reds)
+// 	{
+// 		if (url.compare(0, (*reds)[0].length(), (*reds)[0]) == 0)
+// 		{
+// 			path =  (*reds)[1] + '/' +
+// 				url.substr((*reds)[1].length());
+// 			return	path;
+// 		}
+// 	}
+// 	return "";
+// }
 

@@ -9,15 +9,15 @@
 #include <vector>
 
 
-class cgi
+class Cgi
 {
 protected:
     std::string           		_name;
     std::string                 _cgi_path;
     std::vector<std::string>    _allow_methods;
 public:
-    cgi();
-    ~cgi();
+    Cgi();
+    ~Cgi();
 
     std::string                 get_cgi_path() const;
     std::string                 get_cgi_methods(int i) const;
@@ -29,7 +29,7 @@ public:
     void                        set_cgi_name(std::string name);
     unsigned int                get_cgi_methods_size();
     bool                        not_predefined(std::string &word) const;
-    cgi                         &operator=(cgi const & rhs);
+    Cgi                         &operator=(Cgi const & rhs);
 };
 
 

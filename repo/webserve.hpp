@@ -75,6 +75,6 @@ public:
     std::string getDefaultpath() { return Defaultpath; };
 };
 
-void LaunchServer(parse_config *c);
+void LaunchServer(ParseConfig *c);
 
 #endif

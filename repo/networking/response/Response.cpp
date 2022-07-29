@@ -66,7 +66,7 @@ std::string Response::getResponse() const
     return res;
 };
 
-void Response::setStatus(Request *request, parse_config *config)
+void Response::setStatus(Request *request, ParseConfig *config)
 {
 	(void)request;
 	(void)config;
@@ -91,10 +91,12 @@ void Response::setStatus(Request *request, parse_config *config)
 	{
 		if ((this->location = url_matched(request->geturl(), request->get_port(),
                 config->get_server_vect())) == "")
-			this->status = "400 BAD REQUEST";
-		// else if (url_have_redir())
-		// 	this->status = "301 MOVED PERMANENTLY";
-		// else if ((std::string request->get_method()))
+			this->status = "404 NOT FOUND";
+		else if ((this->redirection = url_redirected(request->geturl(), request->get_port(),
+                config->get_server_vect())) != "")
+			this->status = "301 MOVED PERMANENTLY";
+		// else if (!method_is_allowed(request->getMethod(), config->get_server_vect()))
+        //     this->status = "405 METHOD NOT ALLOWED";
 	}
     std::cout << "- Set Status : " << this->status << std::endl;
 }
@@ -153,7 +155,7 @@ void POSTresponse()
     std::cout << "im doing post response\n";
 }
 
-void GETresponse(Request *request, Response *response, parse_config *config, int index_server)
+void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
     if (!request->getPath().empty())
@@ -191,7 +193,7 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
     }
 }
 
-void response(int new_socket, Request *request, parse_config *config, int index_server)
+void response(int new_socket, Request *request, ParseConfig *config, int index_server)
 {
     Response response;
 
