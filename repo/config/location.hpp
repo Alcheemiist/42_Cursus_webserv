@@ -60,6 +60,7 @@ public:
     bool                         is_number(const std::string &str);
     bool                         not_predefined(std::string &) const;
     Location                    &operator=(Location const & rhs);
+    std::vector<std::string>    get_allow_methods() const;
 };
 
 #endif
