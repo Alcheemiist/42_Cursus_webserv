@@ -23,10 +23,11 @@ class Response
         bool        is_complete;
         std::string body_file_path;
         size_t      maxBufferLenght;
+        bool        requestFuckedUp;
 
     public:
         Response() : version("HTTP/1.1 "), status("200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""), body_file_size(0),
-        is_complete(false), body_file_path(""), maxBufferLenght(0) {};
+        is_complete(false), body_file_path(""), maxBufferLenght(0), requestFuckedUp(false) {};
         
         void setVersion(std::string version)
         {
@@ -162,6 +163,9 @@ class Response
 
         void set_maxBufferLenght(size_t size) { this->maxBufferLenght = size; };
         size_t get_maxBufferLenght() { return this->maxBufferLenght; };
+        // to remove
+        void set_requestFuckedUp(bool i) { this->requestFuckedUp = i; };
+        bool get_requestFuckedUp() { return this->requestFuckedUp; };
 };
 
 void GETresponse(Request *request, Response *response, Config *config);

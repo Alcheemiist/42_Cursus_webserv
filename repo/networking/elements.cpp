@@ -148,7 +148,7 @@ void LaunchServer(ParseConfig *config)
                         std::string header = responses[i].getHeader();
                         size_send = write(requests.find(clients[i].server_fd)->first, header.c_str() , header.size());
                         _send_size[i] = size_send;
-                        serv_response[i]++;
+                        serv_response[i]++;                            
                     }
                     if (serv_response[i] == 4) 
                     {
