@@ -95,8 +95,8 @@ void Response::setStatus(Request *request, ParseConfig *config)
 		else if ((this->redirection = url_redirected(request->geturl(), request->get_port(),
                 config->get_server_vect())) != "")
 			this->status = "301 MOVED PERMANENTLY";
-		// else if (!method_is_allowed(request->getMethod(), config->get_server_vect()))
-        //     this->status = "405 METHOD NOT ALLOWED";
+		else if (!method_is_allowed(request->getMethod(), config->get_server_vect()))
+            this->status = "405 METHOD NOT ALLOWED";
 	}
     std::cout << "- Set Status : " << this->status << std::endl;
 }
