@@ -193,3 +193,8 @@ bool Location::not_predefined(std::string &word) const
         return (1);
     return (0);
 }
+
+std::vector<std::string>    Location::get_allow_methods() const
+{
+    return (_allow_methods);
+}
