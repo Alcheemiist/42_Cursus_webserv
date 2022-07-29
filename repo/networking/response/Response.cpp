@@ -2,6 +2,32 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+char *readAllFile(char *path)
+{
+    char buffer[DATA_BUFFER_SIZE];
+    char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
+    int max_size = getFileSize(path);
+    int fd = open(path, O_RDWR);
+    size_t read_size = 0;
+    
+    if (fd < 0)
+        throw std::runtime_error("Error opening file");
+    else
+        for (int i = 0; i < max_size; i += DATA_BUFFER_SIZE)
+        {
+            int size = read(fd, buffer, DATA_BUFFER_SIZE);
+            for (int i = 0; i < size; i++)
+                return_buffer[i + read_size] = buffer[i];
+            if (size == 0)
+                break;
+            if (size < 0)
+                throw std::runtime_error("Error reading file");
+            read_size += size;
+        }
+        return_buffer[max_size] = '\0';
+    return return_buffer;
+}
+
 size_t _getFileSize(const char *fileName)
 {
     struct stat st;
@@ -61,9 +87,11 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
             strcpy(path + (strlen(path)), "index.html");
         else
             strcpy(path + (strlen(path) - 1), request->getPath().c_str());
+
         stat(path, &st);
         char s2[50];
-        if (st.st_size > 0)
+        
+        if (st.st_size > 0 && open(path, O_RDONLY) > 0)
         {
             strcpy(s2, " 200 OK\r\n");
             response->setResponseStatus(s2);
@@ -71,19 +99,25 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
             response->setContentType(path);
             response->setbody_file_size(getFileSize(path));
             // response->setBody(read_by_vector(path, response));
+            response->setpath(path);
             std::cout << B_blue << "getFileSize(path): " << getFileSize(path) << B_def << std::endl;
+
         }
         else
         {
-            char ss[100] = "./errorsPages/404/404.html";
+            response->set_requestFuckedUp(true);
+
             strcpy(s2, " 404 NOT FOUND\r\n");
+            char _path[100] = "./errorsPages/404/404.html";
             response->setResponseStatus(s2);
             response->setResponseHeader();
-            response->setContentType(ss);
-            strcpy(path , "./errorsPages/404/404.html");
-            // response->setBody(/÷readFile("./errorsPages/404/404.html"));
+            response->setContentType(_path);
+            response->setbody_file_size(getFileSize(_path));
+            // response->setBody(read_by_vector(path, response));
+            response->setpath(_path);
+            std::cout << B_blue << "getFileSize(path): " << getFileSize(_path) << B_def << std::endl;
+
         }
-        response->setpath(path);
         free(path);
     }
 }
