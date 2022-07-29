@@ -9,7 +9,7 @@
 #include "cgi.hpp"
 
 //-------------constructor--------------
-server::server():
+Server::Server():
     _name(),
     _listen_port(-1),
     _listen_host(),
@@ -28,27 +28,27 @@ server::server():
 std::string server_names[] = {"listen","root","allow_methods", "upload_path", "index", "error_page", "autoindex", "redirection"};
 
 //-------------destructor--------------
-server::~server()
+Server::~Server()
 {
 }
 
 
 //-------------seters------------------
 
-void	server::set_listen_port(int listenp) {
+void	Server::set_listen_port(int listenp) {
 	_listen_port = listenp;
 }
 
-void	server::set_name_vect(std::vector<std::string> names) {
+void	Server::set_name_vect(std::vector<std::string> names) {
 	_name = names;
 }
 
-void    server::set_name(std::string name)
+void    Server::set_name(std::string name)
 {
     _name.push_back(name);
 }
 
-server::server(const server &src)
+Server::Server(const Server &src)
 {
     if (this != &src)
     {
@@ -56,7 +56,7 @@ server::server(const server &src)
     }
 }
 
-void    server::set_upload_path(std::string upload_path)
+void    Server::set_upload_path(std::string upload_path)
 {
     if (not_predefined(upload_path))
         _upload_path = upload_path;
@@ -67,7 +67,7 @@ void    server::set_upload_path(std::string upload_path)
     }
 }
 
-void    server::set_to_default()
+void    Server::set_to_default()
 {
     if (_allowed_methods.empty() || _root.empty())
         throw std::runtime_error("Error: server need more info!!");
@@ -78,7 +78,7 @@ void    server::set_to_default()
     }
 }
 
-void    server::check_host(std::string listen_host)
+void    Server::check_host(std::string listen_host)
 {
     if (listen_host != "localhost")
     {
@@ -125,7 +125,7 @@ void    server::check_host(std::string listen_host)
         }
     }
 }
-void    server::set_listen(std::string listen)
+void    Server::set_listen(std::string listen)
 {
     if (!_listen_host.empty() || _listen_port != -1)
     {
@@ -174,12 +174,12 @@ void    server::set_listen(std::string listen)
     }
 }
 
-void    server::set_allowed_methods_vect(std::vector<std::string> allowed_methods)
+void    Server::set_allowed_methods_vect(std::vector<std::string> allowed_methods)
 {
 	_allowed_methods = allowed_methods;
 }
 
-void    server::set_allowed_methods(std::string allowed_methods)
+void    Server::set_allowed_methods(std::string allowed_methods)
 {
     if (allowed_methods == "POST" || allowed_methods == "GET" || allowed_methods == "DELETE")
         _allowed_methods.push_back(allowed_methods);
@@ -190,17 +190,17 @@ void    server::set_allowed_methods(std::string allowed_methods)
     }
 }
 
-void    server::set_index_vect(std::vector<std::string> index)
+void    Server::set_index_vect(std::vector<std::string> index)
 {
     _index = index;
 }
 
-void    server::set_index(std::string index)
+void    Server::set_index(std::string index)
 {
     _index.push_back(index);
 }
 
-void    server::set_error_pages(std::string error_pages, std::string number_error)
+void    Server::set_error_pages(std::string error_pages, std::string number_error)
 {
     if (!not_predefined(error_pages) || !not_predefined(number_error))
     {
@@ -216,7 +216,7 @@ void    server::set_error_pages(std::string error_pages, std::string number_erro
     }
 }
 
-void    server::set_redirections(std::string redirection_from, std::string redirection_to)
+void    Server::set_redirections(std::string redirection_from, std::string redirection_to)
 {
     if (!not_predefined(redirection_from) || !not_predefined(redirection_to))
     {
@@ -232,7 +232,7 @@ void    server::set_redirections(std::string redirection_from, std::string redir
     }
 }
 
-void    server::set_root(std::string root)
+void    Server::set_root(std::string root)
 {
     if (not_predefined(root))
         _root = root;
@@ -243,7 +243,7 @@ void    server::set_root(std::string root)
     }
 }
 
-bool server::is_number(const std::string& str)
+bool Server::is_number(const std::string& str)
 {
 	for (size_t i = 0; i < str.length(); i++)
 	{
@@ -255,7 +255,7 @@ bool server::is_number(const std::string& str)
 	return true;
 }
 
-void    server::set_client_max_body_size(std::string client_max_body_size)
+void    Server::set_client_max_body_size(std::string client_max_body_size)
 {
     if (not_predefined(client_max_body_size) && is_number(client_max_body_size))
         _client_max_body_size =std::stoi(client_max_body_size);
@@ -266,128 +266,128 @@ void    server::set_client_max_body_size(std::string client_max_body_size)
     }
 }
 
-void    server::set_client_max_body_size(long long int client_max_body_size)
+void    Server::set_client_max_body_size(long long int client_max_body_size)
 {
     _client_max_body_size = client_max_body_size;
 }
 
-void    server::set_autoindex(bool autoindex)
+void    Server::set_autoindex(bool autoindex)
 {
     _autoindex = autoindex;
 }
 
 
-void   server::set_location_vect(std::vector<location> location)
+void   Server::set_location_vect(std::vector<Location> location)
 {
     _location = location;
 }
 
-void   server::set_location(location location)
+void   Server::set_location(Location location)
 {
     _location.push_back(location);
 }
 
-void    server::set_cgi_vect(std::vector<cgi> cgi)
+void    Server::set_cgi_vect(std::vector<Cgi> cgi)
 {
     _cgi = cgi;
 }
 
-void    server::set_cgi(cgi cgi)
+void    Server::set_cgi(Cgi cgi)
 {
     _cgi.push_back(cgi);
 }
 
 //-------------geters------------------
 
-std::string    server::get_name(int i) const
+std::string    Server::get_name(int i) const
 {
     return _name[i];
 }
 
-std::string    server::get_upload_path() const
+std::string    Server::get_upload_path() const
 {
     return _upload_path;
 }
 
-std::string   server::get_listen_host() const
+std::string   Server::get_listen_host() const
 {
     return _listen_host;
 }
 
-int   server::get_listen_port() const
+int   Server::get_listen_port() const
 {
     return _listen_port;
 }
 
-std::string  server::get_allowed_methods(int i) const
+std::string  Server::get_allowed_methods(int i) const
 {
     return _allowed_methods[i];
 }
 
-std::vector<std::string>  server::get_allowed_methods() const
+std::vector<std::string>  Server::get_allowed_methods() const
 {
     return _allowed_methods;
 }
 
-std::vector<std::string> server::get_error_pages(int i) const
+std::vector<std::string> Server::get_error_pages(int i) const
 {
     return _error_pages[i];
 }
 
-unsigned int server::get_error_pages_size() const
+unsigned int Server::get_error_pages_size() const
 {
     return _error_pages.size();
 }
 
-unsigned int server::get_redirections_size() const
+unsigned int Server::get_redirections_size() const
 {
     return _redirections.size();
 }
 
-std::vector<std::string> server::get_redirections(int i) const
+std::vector<std::string> Server::get_redirections(int i) const
 {
     return _redirections[i];
 }
 
-std::string server::get_root() const
+std::string Server::get_root() const
 {
     return _root;
 }
 
-bool   server::get_autoindex() const
+bool   Server::get_autoindex() const
 {
     return _autoindex;
 }
 
 
-long long int    server::get_client_max_body_size() const
+long long int    Server::get_client_max_body_size() const
 {
     return _client_max_body_size;
 }
 
-location   server::get_location(int i) const
+Location   Server::get_location(int i) const
 {
     return _location[i];
 }
 
-cgi     server::get_cgi(int i) const
+Cgi     Server::get_cgi(int i) const
 {
     return _cgi[i];
 }
 
-unsigned int    server::get_allowed_methods_size() const
+unsigned int    Server::get_allowed_methods_size() const
 {
     return _allowed_methods.size();
 }
 
-std::vector<std::vector<std::string> > server::get_redirections() const
+std::vector<std::vector<std::string> > Server::get_redirections() const
 {
     return this->_redirections;
 }
 
 //----------methods
 
-unsigned int server::fill_allowed_methods(std::vector<std::string> words, unsigned int i)
+unsigned int Server::fill_allowed_methods(std::vector<std::string> words, unsigned int i)
 {
     i++;
     while (i < words.size() && not_predefined(words[i]))
@@ -404,7 +404,7 @@ unsigned int server::fill_allowed_methods(std::vector<std::string> words, unsign
     return i;
 }
 
-unsigned int server::fill_name(std::vector<std::string> words, unsigned int i)
+unsigned int Server::fill_name(std::vector<std::string> words, unsigned int i)
 {
     i++;
     while (i < words.size() && words[i] != "}" && words[i] != "server" && words[i] != "{" && words[i] != "listen" 
@@ -426,7 +426,7 @@ unsigned int server::fill_name(std::vector<std::string> words, unsigned int i)
     return i;
 }
 
-unsigned int server::fill_listen(std::vector<std::string> words, unsigned int i)
+unsigned int Server::fill_listen(std::vector<std::string> words, unsigned int i)
 {
     i++;
     while (i < words.size() && words[i] != "}" && words[i] != "server" && words[i] != "{" && words[i] != "listen" 
@@ -443,7 +443,7 @@ unsigned int server::fill_listen(std::vector<std::string> words, unsigned int i)
     return i;
 }
 
-unsigned int server::fill_index(std::vector<std::string> words, unsigned int i)
+unsigned int Server::fill_index(std::vector<std::string> words, unsigned int i)
 {
     i++;
     while (i < words.size() && words[i] != "}" && words[i] != "server" && words[i] != "{" && words[i] != "listen" 
@@ -465,7 +465,7 @@ unsigned int server::fill_index(std::vector<std::string> words, unsigned int i)
     return i;
 }
 
-unsigned int server::fill_autoindex(std::vector<std::string> words, unsigned int i)
+unsigned int Server::fill_autoindex(std::vector<std::string> words, unsigned int i)
 {
     if (words[i + 1] == "on")
         set_autoindex(true);
@@ -474,11 +474,11 @@ unsigned int server::fill_autoindex(std::vector<std::string> words, unsigned int
     return i;
 }
 
-unsigned int server::fill_location(std::vector<std::string> words, unsigned int i, bool &location_flag)
+unsigned int Server::fill_location(std::vector<std::string> words, unsigned int i, bool &location_flag)
 {
     location_flag = true;
     // bool cgi_flag = false;
-    location l;
+    Location l;
     l.set_locations_path(words[i + 1]);
     while (1)
     {
@@ -513,33 +513,33 @@ unsigned int server::fill_location(std::vector<std::string> words, unsigned int 
     return i;
 }
 
-unsigned int server::get_index_size() const
+unsigned int Server::get_index_size() const
 {
     return (_index.size());
 }
 
-unsigned int server::get_location_size() const
+unsigned int Server::get_location_size() const
 {
     return _location.size();
 }
 
-unsigned int server::get_cgi_size() const
+unsigned int Server::get_cgi_size() const
 {
     return _cgi.size();
 }
 
-unsigned int server::get_name_size() const
+unsigned int Server::get_name_size() const
 {
     return _name.size();
 }
 
-std::string                  server::get_index(int i) const
+std::string                  Server::get_index(int i) const
 {
     return  (_index[i]);
 }
 
 
-unsigned int server::fill_cgi(std::vector<std::string> words, unsigned int i, bool &cgi_flag)
+unsigned int Server::fill_cgi(std::vector<std::string> words, unsigned int i, bool &cgi_flag)
 {
     if (_cgi.size())
     {
@@ -547,7 +547,7 @@ unsigned int server::fill_cgi(std::vector<std::string> words, unsigned int i, bo
         exit(1);
     }
     cgi_flag = true;
-    cgi c;
+    Cgi c;
     c.set_cgi_name(words[i + 1]);
     while (1)
     {
@@ -576,7 +576,7 @@ unsigned int server::fill_cgi(std::vector<std::string> words, unsigned int i, bo
     operator
 */
 
-server    &server::operator=(server const &rhs)
+Server    &Server::operator=(Server const &rhs)
 {
     if (this != &rhs)
     {
@@ -597,7 +597,7 @@ server    &server::operator=(server const &rhs)
     return *this;
 }
 
-bool server::not_predefined(std::string &word) const
+bool Server::not_predefined(std::string &word) const
 {
     if (word != "}" && word != "server" && word != "{" && word != "listen" 
             && word != "root" && word != "allow_methods" && word != "server_names"
@@ -609,17 +609,17 @@ bool server::not_predefined(std::string &word) const
     return (0);
 }
 
-std::vector<location>    server::get_location() const
+std::vector<Location>    Server::get_location() const
 {
     return _location;
 }
 
-std::vector<std::string>     server::get_index() const
+std::vector<std::string>     Server::get_index() const
 {
     return _index;
 }
 
-std::vector<cgi>    server::get_cgi() const
+std::vector<Cgi>    Server::get_cgi() const
 {
     return _cgi;
 }

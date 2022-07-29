@@ -29,7 +29,7 @@ void init_socket(t_socket *_socket)
         throw std::runtime_error("listen failed");
 }
 
-void LaunchServer(parse_config *config)
+void LaunchServer(ParseConfig *config)
 {
     std::map<int, Request> requests;
     std::map<int, t_socket> clients;

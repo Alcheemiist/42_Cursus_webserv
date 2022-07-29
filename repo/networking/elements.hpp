@@ -27,6 +27,6 @@ size_t readSocketBuffer(int fd, char **buffer);
 t_socket accepteConnection(t_socket *_socket);
 void close_fds(t_socket *_socket_server, int nServers, std::map<int, t_socket> clients);
 void init_socket(t_socket *_socket);
-void LaunchServer(parse_config *config);
+void LaunchServer(ParseConfig *config);
 
 #endif

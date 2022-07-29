@@ -379,9 +379,9 @@ void validateCgiContextAttr(std::string attr, int index) {
 	}
 }
 
-void   portToParseConfigClass(Component &root, parse_config &config) {
+void   portToParseConfigClass(Component &root, ParseConfig &config) {
 	std::vector<Component> serverComponents = root.children(0).findChildren(SERVER_CONTEXT);
-	std::vector<server> servers;
+	std::vector<Server> servers;
 	// std::vector<std::string> _name; 								done
     // int _listen_port; 											done
     // std::string _listen_host; 									done
@@ -396,7 +396,7 @@ void   portToParseConfigClass(Component &root, parse_config &config) {
     // std::vector<cgi> _cgi;										done
     // std::vector<location> _location;								done
 	for (std::vector<Component>::iterator it = serverComponents.begin(); it != serverComponents.end(); it++) {
-		server currentServer;
+		Server currentServer;
 		Component *serverNamesDiretive = it->findFirstChild(SERVER_NAMES_DIRECTIVE);
 		if (serverNamesDiretive) {
 			currentServer.set_name_vect(serverNamesDiretive->attr());
@@ -444,9 +444,9 @@ void   portToParseConfigClass(Component &root, parse_config &config) {
 		// std::vector<std::string>    _allow_methods;				done
 
 		std::vector<Component> serverCgiComponents = it->findChildren(CGI_CONTEXT);
-		std::vector<cgi> serverCgis;
+		std::vector<Cgi> serverCgis;
 		for (std::vector<Component>::iterator scit = serverCgiComponents.begin(); scit != serverCgiComponents.end(); scit++) {
-			cgi currentServerCgi;
+			Cgi currentServerCgi;
 
 			currentServerCgi.set_cgi_name(scit->attr(0));
 			Component *cgiPath = scit->findFirstChild(CGI_PATH_DIRECTIVE);
@@ -474,9 +474,9 @@ void   portToParseConfigClass(Component &root, parse_config &config) {
 		// std::vector<cgi>			_cgi;							done
 
 		std::vector<Component> locationComponents = it->findChildren(LOCATION_CONTEXT);
-		std::vector<location> locations;
+		std::vector<Location> locations;
 		for (std::vector<Component>::iterator lit = locationComponents.begin(); lit != locationComponents.end(); lit++) {
-			location currentLocation;
+			Location currentLocation;
 			
 			currentLocation.set_locations_path(lit->attr(0));
 			Component *locationAllowedMethodsDirective = lit->findFirstChild(ALLOW_METHODS_DIRECTIVE);
@@ -504,9 +504,9 @@ void   portToParseConfigClass(Component &root, parse_config &config) {
 				currentLocation.set_upload_path(locationUploadPathDirective->attr(0));
 			}
 			std::vector<Component> locationCgiComponents = lit->findChildren(CGI_CONTEXT);
-			std::vector<cgi> locationCgis;
+			std::vector<Cgi> locationCgis;
 			for (std::vector<Component>::iterator lcit = locationCgiComponents.begin(); lcit != locationCgiComponents.end(); lcit++) {
-				cgi currentLocationCgi;
+				Cgi currentLocationCgi;
 
 				currentLocationCgi.set_cgi_name(lcit->attr(0));
 				Component *locationCgiPath = lcit->findFirstChild(CGI_PATH_DIRECTIVE);
@@ -777,7 +777,7 @@ void printComponentRecursively(Component &current, std::string cfg, int tabs = 0
 	}
 }
 
-int parse_main(int ac, char **av, parse_config &config) {
+int parse_main(int ac, char **av, ParseConfig &config) {
 	(void)ac;
 	(void)av;
 

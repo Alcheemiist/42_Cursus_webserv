@@ -48,7 +48,7 @@ std::vector<char> read_by_vector(char *path, Response *response)
     return buffer;
 }
 
-void GETresponse(Request *request, Response *response, parse_config *config, int index_server)
+void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
     if (!request->getPath().empty())
@@ -88,7 +88,7 @@ void GETresponse(Request *request, Response *response, parse_config *config, int
     }
 }
 
-Response response(int new_socket, Request *request, parse_config *config, int index_server)
+Response response(int new_socket, Request *request, ParseConfig *config, int index_server)
 {
     (void)new_socket;
     Response response;

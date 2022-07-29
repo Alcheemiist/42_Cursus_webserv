@@ -6,7 +6,7 @@
 /*   By: isaadi <isaadi@student.1337.ma>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 23:27:53 by nabboudi          #+#    #+#             */
-/*   Updated: 2022/07/25 19:30:04 by isaadi           ###   ########.fr       */
+/*   Updated: 2022/07/29 01:08:23 by isaadi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,20 +22,20 @@
 #include "location.hpp"
 #include "cgi.hpp"
 
-class cgi;
-class location;
-class server;
+class Cgi;
+class Location;
+class Server;
 
-class parse_config
+class ParseConfig
 {
     protected:
         std::vector<std::string> _lines;
         std::vector<std::string> _words;
-        std::vector<server> _servers;
+        std::vector<Server> _servers;
         
     public:
-        parse_config():_lines(), _words(), _servers(){};
-        ~parse_config(){};
+        ParseConfig():_lines(), _words(), _servers(){};
+        ~ParseConfig(){};
         void                start_parsing();
         void                split_by_space();
         void                accolade_error();
@@ -44,8 +44,8 @@ class parse_config
         void                specified_words(std::string&);
         unsigned int        server_parsing(unsigned int&);
         size_t              get_lines_size() const;
-        const std::vector<server> &get_server_vect() const;
-        void				set_server_vect(std::vector<server>);
+        const std::vector<Server> &get_server_vect() const;
+        void				set_server_vect(std::vector<Server>);
         void                set_lines(std::vector<std::string> lines);
         void                read_lines();
         void                read_server();
@@ -54,7 +54,7 @@ class parse_config
         int                 basic_error(std::string , char const *, std::string);
         unsigned int        fill_index(std::vector<std::string>, unsigned int);
 };
-int parse_main(int argc, char **argv, parse_config &conf);
+int parse_main(int argc, char **argv, ParseConfig &conf);
 
 
 #endif
