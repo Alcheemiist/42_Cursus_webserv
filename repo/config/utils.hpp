@@ -18,6 +18,9 @@ std::string to_string(T val)
 
 int to_int(std::string _s);
 std::string getFileAndLine(const char *f, int l);
+std::string &to_upper(std::string &in);
+std::string &URLencode(std::string &url);
+std::string &URLdecode(std::string &url);
 
 # define FILE_LINE getFileAndLine(__FILE__, __LINE__)
 

@@ -26,3 +26,27 @@ int to_int(std::string _s) {
 std::string getFileAndLine(const char *f, int l) {
 	return std::string(f) + ":" +  to_string(l);
 }
+
+
+std::string &to_upper(std::string &in) {
+	for (std::string::iterator it = in.begin(); it != in.end(); it++) {
+		*it = std::toupper(*it);
+	}
+	return in;
+}
+
+std::string &URIencode(std::string &uri, std::string encodeSet = ";/?:@&=+$,") {
+	// while (uri.find("%"))
+	(void)uri;
+	(void)encodeSet;
+}
+
+std::string &URIdecode(std::string &uri) {
+	(void)uri;
+
+}
+
+bool isValidURI(const std::string &uri) {
+	(void)uri;
+}
+
