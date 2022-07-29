@@ -27,6 +27,7 @@ private:
     int requestStatus;
     int client_fd;
     int _fdBodyFile;
+    int _port;
 
 //
     bool        is_formated;
@@ -67,6 +68,7 @@ public:
     int getRequestStatus() const { return requestStatus; };
     int getcontent_length() const { return _content_length; };
     std::string geturl() const { return _path; };
+    int get_port() const { return _port; };
     // METHODS --------------------------------------------------
     bool
     isGoodrequest()

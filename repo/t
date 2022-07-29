@@ -1,333 +1,0 @@
-[31m Default Webserve Configuration  [39m
-[1m./webserve:767 config file not provided, choosing default file[0m
-[0;38;5;236m[0m[0;38;5;42m[0m[0;38;5;236m[0m[0;38;5;176mhttp [0m[0;38;5;42m[0m{
-[0;38;5;236m→   [0m[0;38;5;176mserver [0m[0;38;5;42m[0m{
-[0;38;5;236m→   →   [0m[0;38;5;117mserver_names [0m[0;38;5;33mY1[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mlisten [0m[0;38;5;33mlocalhost:8001[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mroot [0m[0;38;5;33m../www/[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mPOST DELETE GET[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117merror_page [0m[0;38;5;33m404 ./errorsPages/404/404.html[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117merror_page [0m[0;38;5;33m403 ./errorsPages/403.html[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mautoindex [0m[0;38;5;33mon[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mupload_path [0m[0;38;5;33m/upload/[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mredirect [0m[0;38;5;33m/doooooxsxvasvf /PATH01/ temporary[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mredirect [0m[0;38;5;33m/PATH00/index.html /PATH01/index.html 300[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;176mlocation [0m[0;38;5;42m/PATH00/ [0m{
-[0;38;5;236m→   →   →   [0m[0;38;5;117mclient_max_body_size [0m[0;38;5;33m3000[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mroot [0m[0;38;5;33m./root/hangover-master/[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mautoindex [0m[0;38;5;33mon[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mPOST GET DELETE[0m[1m;
-[0m[0;38;5;236m→   →   [0m}
-[0;38;5;236m→   →   [0m[0;38;5;176mlocation [0m[0;38;5;42m/root/ [0m{
-[0;38;5;236m→   →   →   [0m[0;38;5;117mroot [0m[0;38;5;33m./root/[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mautoindex [0m[0;38;5;33mon[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mPOST[0m[1m;
-[0m[0;38;5;236m→   →   [0m}
-[0;38;5;236m→   →   [0m[0;38;5;176mcgi [0m[0;38;5;42m.php [0m{
-[0;38;5;236m→   →   →   [0m[0;38;5;117mcgi_path [0m[0;38;5;33m./cgi/php-cgi[0m[1m;
-[0m[0;38;5;236m→   →   [0m}
-[0;38;5;236m→   →   [0m[0;38;5;176mlocation [0m[0;38;5;42m/PATH01/ [0m{
-[0;38;5;236m→   →   →   [0m[0;38;5;117mroot [0m[0;38;5;33m./root/roxy-master/[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mautoindex [0m[0;38;5;33mon[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mGET POST[0m[1m;
-[0m[0;38;5;236m→   →   [0m}
-[0;38;5;236m→   →   [0m[0;38;5;176mlocation [0m[0;38;5;42m/PATH00/test/ [0m{
-[0;38;5;236m→   →   →   [0m[0;38;5;117mroot [0m[0;38;5;33m./root/test/[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mautoindex [0m[0;38;5;33mon[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mindex [0m[0;38;5;33mindex.html index.html sudo.php sudo.gcc[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mGET[0m[1m;
-[0m[0;38;5;236m→   →   [0m}
-[0;38;5;236m→   →   [0m[0;38;5;176mlocation [0m[0;38;5;42m/PATH00/test/erro [0m{
-[0;38;5;236m→   →   →   [0m[0;38;5;117mroot [0m[0;38;5;33m./root/univers/[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mautoindex [0m[0;38;5;33mon[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mclient_max_body_size [0m[0;38;5;33m1234[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mGET[0m[1m;
-[0m[0;38;5;236m→   →   [0m}
-[0;38;5;236m→   →   [0m[0;38;5;176mlocation [0m[0;38;5;42m/cocacola/ [0m{
-[0;38;5;236m→   →   →   [0m[0;38;5;117mroot [0m[0;38;5;33m./root/cocacola/[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mautoindex [0m[0;38;5;33moff[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mclient_max_body_size [0m[0;38;5;33m1234[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mGET DELETE[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mindex [0m[0;38;5;33mo.html[0m[1m;
-[0m[0;38;5;236m→   →   [0m}
-[0;38;5;236m→   →   [0m[0;38;5;176mlocation [0m[0;38;5;42m/pepsi/ [0m{
-[0;38;5;236m→   →   →   [0m[0;38;5;117mroot [0m[0;38;5;33m./root/pepsi/[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mautoindex [0m[0;38;5;33mon[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mclient_max_body_size [0m[0;38;5;33m1234[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mGET[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mindex [0m[0;38;5;33mindex.html[0m[1m;
-[0m[0;38;5;236m→   →   [0m}
-[0;38;5;236m→   [0m}
-[0;38;5;236m→   [0m[0;38;5;176mserver [0m[0;38;5;42m[0m{
-[0;38;5;236m→   →   [0m[0;38;5;117mserver_names [0m[0;38;5;33mY1[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mlisten [0m[0;38;5;33mlocalhost:9091[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mroot [0m[0;38;5;33m../www/[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mPOST DELETE GET[0m[1m;
-[0m[0;38;5;236m→   →   [0m[0;38;5;176mlocation [0m[0;38;5;42m/pepsi1/ [0m{
-[0;38;5;236m→   →   →   [0m[0;38;5;117mroot [0m[0;38;5;33m./root1/pepsi1/[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mautoindex [0m[0;38;5;33mon[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mclient_max_body_size [0m[0;38;5;33m1234[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mallow_methods [0m[0;38;5;33mGET[0m[1m;
-[0m[0;38;5;236m→   →   →   [0m[0;38;5;117mindex [0m[0;38;5;33mindex.html[0m[1m;
-[0m[0;38;5;236m→   →   [0m}
-[0;38;5;236m→   [0m}
-[0;38;5;236m[0m}
-Launching 2 server...
-[32minit server Y1 on port: 8001 path root :../www/[39m
-[32minit server Y1 on port: 9091 path root :../www/[39m
-
-Waiting on select(0)...
-  There is a ready fds for R/W successfuly RC= 1
-  accepte connection from server_socket : 3
-Incoming connection from 5.
-  client accepte connection : 5
- status client : 2 max_sd : 5
- ready to read from clients.server.fd 5 accepted from server.fd 3
-[44mGET / HTTP/1.1[49m
-[44mHost: localhost:8001[49m
-[44mConnection: keep-alive[49m
-[44mCache-Control: max-age=0[49m
-[44msec-ch-ua: " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"[49m
-[44msec-ch-ua-mobile: ?0[49m
-[44msec-ch-ua-platform: "macOS"[49m
-[44mUpgrade-Insecure-Requests: 1[49m
-[44mUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36[49m
-[44mAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9[49m
-[44mSec-Fetch-Site: none[49m
-[44mSec-Fetch-Mode: navigate[49m
-[44mSec-Fetch-User: ?1[49m
-[44mSec-Fetch-Dest: document[49m
-[44mAccept-Encoding: gzip, deflate, br[49m
-[44mAccept-Language: en-US,en;q=0.9,fr;q=0.8,ar;q=0.7[49m
-[44m[49m
- created request->first : 5 == client.server_fd 5
- request is complete 
-[31m--------------- Request ----------------- [39m
-method: GET
-path: /
-version: HTTP/1.1
-host:  localhost:8001
-connection:  keep-alive
-accept:  text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
-accept-encoding:  gzip, deflate, br
-accept-language:  en-US,en;q=0.9,fr;q=0.8,ar;q=0.7
-content-length: 0
-content-type: 
-[34m-----------------Headers--------------------- [39m
-Cache-Control:  max-age=0
-Sec-Fetch-Dest:  document
-Sec-Fetch-Mode:  navigate
-Sec-Fetch-Site:  none
-Sec-Fetch-User:  ?1
-Upgrade-Insecure-Requests:  1
-User-Agent:  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36
-sec-ch-ua:  " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"
-sec-ch-ua-mobile:  ?0
-sec-ch-ua-platform:  "macOS"
-[31m--------------- End Request ----------------- [39m
-  ready to responde the client  5
-  send response 3 (sending request) to fd : 5 == 5
-[34m********** { Response } ***********************[39m
-[42mIM DOING GET REQUEST[49m
-[41mroot path = {../www/}[49m
-[44mGET from File: ../www/index.html[49m
-- Set Status :  404 NOT FOUND
-
-- Set Version : HTTP/1.1 
-[31m- Set Content-Type : ./errorsPages/404/404.html[32m html[39m
-- Set body of size = 1757
-[34m********** {End Response } ******************[39m
-
-[32mBUFFER SEND SIZE 1817[39m
-[42m********** data size send {1817}******************[49m
-
-Waiting on select(0)...
-  There is a ready fds for R/W successfuly RC= 1
-  accepte connection from server_socket : 3
-Incoming connection from 5.
-  client accepte connection : 5
- status client : 2 max_sd : 5
- ready to read from clients.server.fd 5 accepted from server.fd 3
-[44mGET /style.css HTTP/1.1[49m
-[44mHost: localhost:8001[49m
-[44mConnection: keep-alive[49m
-[44msec-ch-ua: " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"[49m
-[44msec-ch-ua-mobile: ?0[49m
-[44mUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36[49m
-[44msec-ch-ua-platform: "macOS"[49m
-[44mAccept: text/css,*/*;q=0.1[49m
-[44mSec-Fetch-Site: same-origin[49m
-[44mSec-Fetch-Mode: no-cors[49m
-[44mSec-Fetch-Dest: style[49m
-[44mReferer: http://localhost:8001/[49m
-[44mAccept-Encoding: gzip, deflate, br[49m
-[44mAccept-Language: en-US,en;q=0.9,fr;q=0.8,ar;q=0.7[49m
-[44m[49m
- created request->first : 5 == client.server_fd 5
- request is complete 
-[31m--------------- Request ----------------- [39m
-method: GET
-path: /style.css
-version: HTTP/1.1
-host:  localhost:8001
-connection:  keep-alive
-accept:  text/css,*/*;q=0.1
-accept-encoding:  gzip, deflate, br
-accept-language:  en-US,en;q=0.9,fr;q=0.8,ar;q=0.7
-content-length: 0
-content-type: 
-[34m-----------------Headers--------------------- [39m
-Referer:  http
-Sec-Fetch-Dest:  style
-Sec-Fetch-Mode:  no-cors
-Sec-Fetch-Site:  same-origin
-User-Agent:  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36
-sec-ch-ua:  " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"
-sec-ch-ua-mobile:  ?0
-sec-ch-ua-platform:  "macOS"
-[31m--------------- End Request ----------------- [39m
-  ready to responde the client  5
-  send response 3 (sending request) to fd : 5 == 5
-[34m********** { Response } ***********************[39m
-[42mIM DOING GET REQUEST[49m
-[41mroot path = {../www/}[49m
-[44mGET from File: ../www/style.css[49m
-- Set Status :  404 NOT FOUND
-
-- Set Version : HTTP/1.1 
-[31m- Set Content-Type : ./errorsPages/404/404.html[32m html[39m
-- Set body of size = 1757
-[34m********** {End Response } ******************[39m
-
-[32mBUFFER SEND SIZE 1817[39m
-[42m********** data size send {1817}******************[49m
-
-Waiting on select(0)...
-  There is a ready fds for R/W successfuly RC= 1
-  accepte connection from server_socket : 3
-Incoming connection from 5.
-  client accepte connection : 5
- status client : 2 max_sd : 5
- ready to read from clients.server.fd 5 accepted from server.fd 3
-
-Waiting on select(0)...
-  There is a ready fds for R/W successfuly RC= 1
- ready to read from clients.server.fd 5 accepted from server.fd 3
-[44mGET /script.js HTTP/1.1[49m
-[44mHost: localhost:8001[49m
-[44mConnection: keep-alive[49m
-[44msec-ch-ua: " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"[49m
-[44msec-ch-ua-mobile: ?0[49m
-[44mUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36[49m
-[44msec-ch-ua-platform: "macOS"[49m
-[44mAccept: */*[49m
-[44mSec-Fetch-Site: same-origin[49m
-[44mSec-Fetch-Mode: no-cors[49m
-[44mSec-Fetch-Dest: script[49m
-[44mReferer: http://localhost:8001/[49m
-[44mAccept-Encoding: gzip, deflate, br[49m
-[44mAccept-Language: en-US,en;q=0.9,fr;q=0.8,ar;q=0.7[49m
-[44m[49m
- created request->first : 5 == client.server_fd 5
- request is complete 
-[31m--------------- Request ----------------- [39m
-method: GET
-path: /script.js
-version: HTTP/1.1
-host:  localhost:8001
-connection:  keep-alive
-accept:  */*
-accept-encoding:  gzip, deflate, br
-accept-language:  en-US,en;q=0.9,fr;q=0.8,ar;q=0.7
-content-length: 0
-content-type: 
-[34m-----------------Headers--------------------- [39m
-Referer:  http
-Sec-Fetch-Dest:  script
-Sec-Fetch-Mode:  no-cors
-Sec-Fetch-Site:  same-origin
-User-Agent:  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36
-sec-ch-ua:  " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"
-sec-ch-ua-mobile:  ?0
-sec-ch-ua-platform:  "macOS"
-[31m--------------- End Request ----------------- [39m
-  ready to responde the client  5
-  send response 3 (sending request) to fd : 5 == 5
-[34m********** { Response } ***********************[39m
-[42mIM DOING GET REQUEST[49m
-[41mroot path = {../www/}[49m
-[44mGET from File: ../www/script.js[49m
-- Set Status :  404 NOT FOUND
-
-- Set Version : HTTP/1.1 
-[31m- Set Content-Type : ./errorsPages/404/404.html[32m html[39m
-- Set body of size = 1757
-[34m********** {End Response } ******************[39m
-
-[32mBUFFER SEND SIZE 1817[39m
-[42m********** data size send {1817}******************[49m
-
-Waiting on select(0)...
-  There is a ready fds for R/W successfuly RC= 1
-  accepte connection from server_socket : 3
-Incoming connection from 5.
-  client accepte connection : 5
- status client : 2 max_sd : 5
- ready to read from clients.server.fd 5 accepted from server.fd 3
-[44mGET /favicon.ico HTTP/1.1[49m
-[44mHost: localhost:8001[49m
-[44mConnection: keep-alive[49m
-[44msec-ch-ua: " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"[49m
-[44msec-ch-ua-mobile: ?0[49m
-[44mUser-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36[49m
-[44msec-ch-ua-platform: "macOS"[49m
-[44mAccept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8[49m
-[44mSec-Fetch-Site: same-origin[49m
-[44mSec-Fetch-Mode: no-cors[49m
-[44mSec-Fetch-Dest: image[49m
-[44mReferer: http://localhost:8001/[49m
-[44mAccept-Encoding: gzip, deflate, br[49m
-[44mAccept-Language: en-US,en;q=0.9,fr;q=0.8,ar;q=0.7[49m
-[44m[49m
- created request->first : 5 == client.server_fd 5
- request is complete 
-[31m--------------- Request ----------------- [39m
-method: GET
-path: /favicon.ico
-version: HTTP/1.1
-host:  localhost:8001
-connection:  keep-alive
-accept:  image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
-accept-encoding:  gzip, deflate, br
-accept-language:  en-US,en;q=0.9,fr;q=0.8,ar;q=0.7
-content-length: 0
-content-type: 
-[34m-----------------Headers--------------------- [39m
-Referer:  http
-Sec-Fetch-Dest:  image
-Sec-Fetch-Mode:  no-cors
-Sec-Fetch-Site:  same-origin
-User-Agent:  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36
-sec-ch-ua:  " Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"
-sec-ch-ua-mobile:  ?0
-sec-ch-ua-platform:  "macOS"
-[31m--------------- End Request ----------------- [39m
-  ready to responde the client  5
-  send response 3 (sending request) to fd : 5 == 5
-[34m********** { Response } ***********************[39m
-[42mIM DOING GET REQUEST[49m
-[41mroot path = {../www/}[49m
-[44mGET from File: ../www/favicon.ico[49m
-- Set Status :  404 NOT FOUND
-
-- Set Version : HTTP/1.1 
-[31m- Set Content-Type : ./errorsPages/404/404.html[32m html[39m
-- Set body of size = 1757
-[34m********** {End Response } ******************[39m
-
-[32mBUFFER SEND SIZE 1817[39m
-[42m********** data size send {1817}******************[49m
-
-Waiting on select(0)...
-[31m { SIGINT was catched! }[39m
-[32mShutdown server properly.[39m
