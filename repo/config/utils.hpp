@@ -5,6 +5,9 @@
 
 # include <sstream>
 
+#define PRINT_VALUE(x) println(#x, " = ", x)
+#define PRINT_LINE_VALUE(x) println(__FILE__, ":", __LINE__, " ", #x, " = ", x)
+
 template <typename T>
 std::string to_string(T val)
 {
