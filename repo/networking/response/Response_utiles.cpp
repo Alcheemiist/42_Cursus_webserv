@@ -85,3 +85,56 @@ bool	method_is_allowed(std::string method, std::string url ,Server server)
 	return allowed;
 }
 
+std::string get_location_url(std::string url, Server server)
+{
+	std::string location;
+	for (std::vector<Location>::const_iterator
+			it_loc = server.get_location().begin();
+			it_loc != server.get_location().end(); ++it_loc)
+	{
+		if (url.compare(0, it_loc->get_locations_path().length(),
+				it_loc->get_locations_path()) == 0)
+			{
+				return it_loc->get_locations_path() +
+					url.substr(it_loc->get_locations_path().length());
+			}
+	}
+	return "";
+}
+
+std::string get_redirection_url(std::string url, Server server)
+{
+	std::string location;
+	for (std::vector<std::vector<std::string> >::const_iterator
+			reds = server.get_redirections().begin();
+			reds != server.get_redirections().end(); ++reds)
+	{
+		for (std::vector<std::string>::const_iterator
+				it_red = reds->begin(); it_red != reds->end(); ++it_red)
+		{
+			if (url.compare(0, it_red->length(), *it_red) == 0)
+				return *it_red + url.substr(it_red->length());
+		}
+	}
+	return "";
+}
+
+bool	requested_file_in_root(std::string url, Server server)
+{
+	std::string path = server.get_root() + url;
+	if (file_exist(path))
+		return (true);
+	return (false);
+}
+
+bool is_file(std::string url)
+{
+	struct stat s;
+	if( stat(url.c_str(),&s) == 0 )
+	{
+	    if( s.st_mode & S_IFDIR )
+			return (false);
+	    return (true);
+	}
+	return (false);
+}

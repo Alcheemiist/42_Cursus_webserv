@@ -20,13 +20,14 @@ class Response
         size_t      body_length;
         std::string contentType;
         std::vector<std::string> status_vector;
-        std::string location;
-        std::string redirection;
+        std::string location_url;
+        std::string redirection_url;
 
     public:
         Response();
         void setVersion(std::string version);
         void setStatus(Request *request, Server server);
+        void setStatus(std::string status);
     	bool url_is_formated(std::string url);
         void setHeader(char *header);
         void setBody(char *body);
@@ -36,6 +37,10 @@ class Response
         std::string getResponse() const;
         std::string getBody() { return body; };
         void setContentType(char *path);
+        void set_redirection_url(std::string url);
+        void set_location_url(std::string url);
+        std::string get_redirection_url();
+        std::string get_location_url();
 };
 
 void GETresponse(Request *request, Response *response, Config *config);

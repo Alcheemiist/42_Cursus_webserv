@@ -66,6 +66,11 @@ std::string Response::getResponse() const
     return res;
 };
 
+void Response::setStatus(std::string status)
+{
+    this->status = status;
+}
+
 void Response::setStatus(Request *request, Server server)
 {
 	if (!request->get_is_formated())
@@ -136,6 +141,27 @@ void Response::setContentType(char *path)
     std::cout << red << "- Set Content-Type : " << s << green << " " << s1 << def << std::endl;
 };
 
+void Response::set_redirection_url(std::string url)
+{
+    this->redirection_url = url;
+}
+
+void Response::set_location_url(std::string url)
+{
+    this->location_url = url;
+}
+
+std::string Response::get_redirection_url()
+{
+    return this->redirection_url;
+}
+
+std::string Response::get_location_url()
+{
+    return this->location_url;
+}
+
+
 void ERRORresponse(Request *request, Response *response)
 {
     (void)request;
@@ -155,6 +181,52 @@ void POSTresponse()
 
 void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
+    response->set_location_url(get_location_url(request->geturl(),
+        config->get_server_vect()[index_server]));
+
+    response->set_redirection_url(get_redirection_url(request->geturl(),
+        config->get_server_vect()[index_server]));
+
+    if(!requested_file_in_root(request->geturl(),
+        config->get_server_vect()[index_server]))
+    {
+        response->setStatus(request, config->get_server_vect()[index_server]);
+    }
+    else if (request->geturl().back() != '/')
+    {
+        response->setStatus("301 MOVED PERMANENTLY");
+    }
+    else
+    {
+        if (!file_exist(request->geturl() + "index.html"))
+        {
+            if (config->get_server_vect()[index_server].get_autoindex())
+            {
+                // get_autoindex();
+                response->setStatus("200 OK");
+            }
+            else
+            {
+              response->setStatus("403 FORBIDDEN");
+            }
+        }
+        else
+        {
+            if (is_file(request->geturl()))
+            {
+                // if (Location_have_cgi(request->geturl()))
+                // {
+                //     // get_cgi();
+                // }
+                // else
+                // {
+                //     response->setStatus("200 OK");
+                //     // request_file
+                // }
+            }
+        }
+    }
+
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
     if (!request->getPath().empty())
     {
