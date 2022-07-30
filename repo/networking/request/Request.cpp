@@ -33,6 +33,7 @@ void Request::show()
     std::cout << "accept-language: " << this->_accept_language << std::endl;
     std::cout << "content-length: " << this->_content_length << std::endl;
     std::cout << "content-type: " << this->_content_type << std::endl;
+    std::cout << "transfer-encoding" << this->transfer_encoding << std::endl;
     std::cout << blue << "-----------------Headers--------------------- " << def << std::endl;
     for (std::map<std::string, std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); ++it)
     {
@@ -95,6 +96,8 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
                 this->_content_length = std::stoi(tmp[1]);
             else if (tmp[0] == "Content-Type")
                 this->_content_type = tmp[1];
+            else if (tmp[0] == "Transfer-Encoding")
+                this->transfer_encoding = tmp[1];
             else if (tmp[0] == "Referer")
                 this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(tmp[0]) , tmp[1] + tmp[2] ));
             else

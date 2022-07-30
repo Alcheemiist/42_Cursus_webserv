@@ -56,6 +56,7 @@ class Response
         std::string get_header() { return this->header; };
         std::string getHeader() 
         {
+            /* Here to formed other headers */
             // status line
             std::string res;
             res.append(version);
@@ -82,6 +83,8 @@ class Response
             // CRLF
             res.append("\r\n\r\n");
             setHeader(res);
+
+
             return res;
         };
         std::string getBody() { return body; };

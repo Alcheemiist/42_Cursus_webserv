@@ -56,10 +56,10 @@ void LaunchServer(ParseConfig *config)
     FD_ZERO(&backup_wr_set);
     FD_ZERO(&backup_er_set);
 
-    // std::cout << "Launching " << nServers << " server..." << std::endl;
-    for (int i = 0; i < nServers; i++)
+    std::cout << "Launching " << nServers << " server..." << std::endl;
+    for (size_t  i = 0; (int )i < nServers && i < config->get_server_vect().size() - 1; i++)
     {
-        // std::cout << green << "init server " << config->get_server_vect()[i].get_name(0) << " on port: " << config->get_server_vect()[i].get_listen_port() << " path root :" << config->get_server_vect()[i].get_root() << def << std::endl;
+        std::cout << green << "init server " << config->get_server_vect()[i].get_name(0) << " on port: " << config->get_server_vect()[i].get_listen_port() << " path root :" << config->get_server_vect()[i].get_root() << def << std::endl;
         serv_response[i] = 1;
         first[i] = true;
         _socket_server[i].port = config->get_server_vect()[i].get_listen_port();
@@ -143,8 +143,14 @@ void LaunchServer(ParseConfig *config)
                 {
                     if (serv_response[i] == 3) 
                     {
+                        std::cout << B_red  << "server fd " << clients[i].server_fd << " index_server "<<  clients[i].index_server << " i " << i << B_def <<std::endl;
+
                         responses.insert(std::pair<int, Response>(i,\
+                        
+                        // PROCCES RESPONSE 
                         response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config, clients[i].index_server)));
+                        //
+
                         std::string header = responses[i].getHeader();
                         size_send = write(requests.find(clients[i].server_fd)->first, header.c_str() , header.size());
                         _send_size[i] = size_send;

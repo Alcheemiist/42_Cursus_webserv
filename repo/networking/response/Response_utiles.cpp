@@ -23,28 +23,32 @@ std::string *split_url(std::string str)
 
 bool get_matched_location_for_request_uri(std::string url, Server server)
 {
-	for (std::vector<Location>::const_iterator
-			it_loc = server.get_location().begin();
-			it_loc != server.get_location().end(); ++it_loc)
+	std::vector<Location> location = server.get_location();
+	std::vector<Location>::const_iterator it_loc = location.begin();
+	while (it_loc != server.get_location().end())
 	{
+	
 		if (url.compare(0, it_loc->get_locations_path().length(),
-				it_loc->get_locations_path()) == 0)
-			{
-				return (true);
-			}
+						it_loc->get_locations_path()) == 0)
+		{
+			return (true);
+		}
+		it_loc++;
 	}
 	return (false);
 }
 
-bool	url_redirected(std::string url, Server server)
+bool url_redirected(std::string url, Server server)
 {
 	std::vector<std::vector<std::string> > red = server.get_redirections();
 
 	for (std::vector<std::vector<std::string> >::const_iterator
-			reds = red.begin(); reds != red.end(); ++reds)
+			 reds = red.begin();
+		 reds != red.end(); ++reds)
 	{
 		for (std::vector<std::string>::const_iterator
-				it_red = reds->begin(); it_red != reds->end(); ++it_red)
+				 it_red = reds->begin();
+			 it_red != reds->end(); ++it_red)
 		{
 			if (url.compare(0, it_red->length(), *it_red) == 0)
 				return (true);
@@ -53,35 +57,36 @@ bool	url_redirected(std::string url, Server server)
 	return (false);
 }
 
-bool	method_is_allowed(std::string method, std::string url ,Server server)
+bool method_is_allowed(std::string method, std::string url, Server server)
 {
 	std::string path;
-	bool		allowed = false;
-	std::vector<Location> loc= server.get_location();
+	bool allowed = false;
+	std::vector<Location> loc = server.get_location();
 
-	for (std::vector<std::string>::const_iterator it_method =
-		server.get_allowed_methods().begin();
-		it_method != server.get_allowed_methods().end(); ++it_method)
+	std::vector<std::string> methods = server.get_allowed_methods();
+	std::vector<std::string>::const_iterator it_method = methods.begin();
+	while ( it_method != server.get_allowed_methods().end())
 	{
 		if (method.compare(*it_method) == 0)
 			allowed = true;
+		it_method++;
 	}
 
 	for (std::vector<Location>::const_iterator
-			it_loc = loc.begin(); it_loc != loc.end(); ++it_loc)
+			 it_loc = loc.begin();
+		 it_loc != loc.end(); ++it_loc)
 	{
-		if (url.compare(0, it_loc->get_locations_path().length(),
-				it_loc->get_locations_path()) == 0)
+		if (url.compare(0, it_loc->get_locations_path().length(), it_loc->get_locations_path()) == 0)
+		 {
+			std::vector<std::string> methods = it_loc->get_allow_methods();
+			std::vector<std::string>::const_iterator it_method = methods.begin();
+			while ( it_method != methods.end())
 			{
-				for (std::vector<std::string>::const_iterator it_method =
-					it_loc->get_allow_methods().begin();
-					it_method != it_loc->get_allow_methods().end(); ++it_method)
-				{
-					if (method.compare(*it_method) == 0)
-						allowed = true;
-				}
+				if (method.compare(*it_method) == 0)
+					allowed = true;
+				++it_method;
 			}
+		}
 	}
 	return allowed;
 }
-
