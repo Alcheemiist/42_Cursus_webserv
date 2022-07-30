@@ -1,5 +1,3 @@
-
-
 #include "location.hpp"
 
 Location::Location() : _cgi(),
@@ -192,4 +190,9 @@ bool Location::not_predefined(std::string &word) const
     if (word != "}" && word != "server" && word != "{" && word != "listen" && word != "root" && word != "allow_methods" && word != "server_names" && word != "upload_path" && word != "index" && word != "error_page" && word != "autoindex" && word != "redirection" && word != "client_max_body_size" && word != "location" && word != "cgi" && word != "cgi_path")
         return (1);
     return (0);
+}
+
+std::vector<std::string>    Location::get_allow_methods() const
+{
+    return (_allow_methods);
 }

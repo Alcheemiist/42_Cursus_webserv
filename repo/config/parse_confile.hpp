@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   parse_confile.hpp                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: isaadi <isaadi@student.1337.ma>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/06/27 23:27:53 by nabboudi          #+#    #+#             */
-/*   Updated: 2022/07/29 01:08:23 by isaadi           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef PARSE_CONFILE_HPP
 #define PARSE_CONFILE_HPP
 
@@ -32,7 +20,7 @@ class ParseConfig
         std::vector<std::string> _lines;
         std::vector<std::string> _words;
         std::vector<Server> _servers;
-        
+
     public:
         ParseConfig():_lines(), _words(), _servers(){};
         ~ParseConfig(){};

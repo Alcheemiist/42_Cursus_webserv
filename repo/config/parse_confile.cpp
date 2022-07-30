@@ -369,6 +369,7 @@ std::string ParseConfig::get_lines(int i) const
 {
     return (_lines[i]);
 }
+
 //--------setters-------------
 
 void ParseConfig::set_server_vect(std::vector<Server> servers) {

@@ -1,4 +1,4 @@
-#include "./elements.hpp"
+#include "../elements.hpp"
 
 char *readFile(const char *fileName)
 {

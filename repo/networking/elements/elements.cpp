@@ -1,4 +1,4 @@
-#include "./elements.hpp"
+#include "../elements.hpp"
 
 void init_socket(t_socket *_socket)
 {
@@ -46,7 +46,7 @@ void LaunchServer(ParseConfig *config)
     struct fd_set backup_rd_set, backup_wr_set, backup_er_set;
     struct timeval timeout;
 
-    timeout.tv_sec  = 120;
+    timeout.tv_sec  = 60000;
     timeout.tv_usec = rc = max_sd = index_client = 0;
 
     FD_ZERO(&working_rd_set);
@@ -162,7 +162,15 @@ void LaunchServer(ParseConfig *config)
                                 throw std::runtime_error(" error sending buffer");
                         }
                         else if (responses[i].get_finish())
+                        {
                             serv_response[i]++;
+                            std::cout << green << " **********        RESPONSIYA      ****************** " << def << std::endl;
+                            responses[i].show();
+                            std::cout << B_def <<  red << " [HEADER_SIZE] : " << blue  << (responses[i].get_header().size()) << def << std::endl;
+                            std::cout << B_def <<  red << " [BODY_SIZE] : " << blue  << getFileSize(responses[i].getpath().c_str()) << def << std::endl;
+                            std::cout << B_def <<  red << " [FULL SIZE OF RESPONSE] : " << blue  << _send_size[i] << def << std::endl;
+                            std::cout << green <<" **********    END RESPONSIYA      ****************** " <<  def << std::endl;
+                        }
                     }
                     if (serv_response[i] == 5) 
                     {
@@ -172,7 +180,7 @@ void LaunchServer(ParseConfig *config)
                         requests.erase(requests.find(clients[i].server_fd)->first);
                         serv_response[i] = 1;
                         first[i] = true;
-                        std::cout << B_green << "********** END response[data size send] : " << _send_size[i] << "} ******************" << B_def << std::endl;
+                        
                     }
                 }
             }

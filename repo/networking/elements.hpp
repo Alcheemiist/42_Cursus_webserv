@@ -11,15 +11,17 @@
 #include <sstream>
 #include <fcntl.h>
 #include <vector>
+#include <string>
+
 #include <sys/stat.h>
 
 #define MAX_CLIENTS 100000
 #define NO_SOCKET -1
 #define FALSE 0
 #define TRUE 1
-#define BUFER_SIZE (1024 * 16)         //
-#define DATA_BUFFER_SIZE (1024 * 16)   // reading buffer size
-#define SENDER_BUFFER_SIZE (1024 * 16) // writing buffer size
+#define BUFER_SIZE (10244)         //
+#define DATA_BUFFER_SIZE (10244)   // reading buffer size
+#define SENDER_BUFFER_SIZE (10244) // writing buffer size
 
 char *readFile(const char *fileName);
 size_t getFileSize(const char *fileName);
