@@ -18,29 +18,29 @@ void Response::setStatus(Request *request, Server server)
 	{
 		if (request->get_transfer_encoding() != "" &&
                 request->get_transfer_encoding() != "chunked")
-			this->status = "501 NOT IMPLEMENTED";
+			this->status = "501 NOT IMPLEMENTED\r\n";
 		else if (request->get_transfer_encoding() == "" &&
 			    request->getcontent_length() == -1 &&
                 request->getMethod() == "POST")
-			this->status = "400 BAD REQUEST";
+			this->status = "400 BAD REQUEST\r\n";
 		else if (url_is_formated(request->geturl()))
-			this->status = "400 BAD REQUEST";
+			this->status = "400 BAD REQUEST\r\n";
 		else if (request->geturl().length() > MAX_URL_LENGTH)
-			this->status = "414 REQUEST-URI TOO LARGE";
+			this->status = "414 REQUEST-URI TOO LARGE\r\n";
 		// else if (request->body_length() > request->getcontent_length())
 		// else if (check_max_body_length(request->getbody_length(),
         //             request->getcontent_length()))
-		// 	this->status = "413 REQUEST ENTITY TOO LARGE";
+		// 	this->status = "413 REQUEST ENTITY TOO LARGE\r\n";
 	}
 	else
 	{
 		if (get_matched_location_for_request_uri(request->geturl(), server))
-			this->status = "404 NOT FOUND";
+			this->status = "404 NOT FOUND\r\n";
 		else if (url_redirected(request->geturl(), server))
-			this->status = "301 MOVED PERMANENTLY";
+			this->status = "301 MOVED PERMANENTLY\r\n";
 		else if (!method_is_allowed(request->getMethod(), request->geturl(),
                     server))
-            this->status = "405 METHOD NOT ALLOWED";
+            this->status = "405 METHOD NOT ALLOWED\r\n";
 	}
     std::cout << "- Set Status : " << this->status << std::endl;
 }
@@ -156,6 +156,8 @@ std::vector<char> read_by_vector(char *path, Response *response)
 
 void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
+    (void )index_server;
+    /* This function is about to form other headers and set the body to read later */
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
     if (!request->getPath().empty())
     {
@@ -170,7 +172,9 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
 
         stat(path, &st);
         char s2[50];
-        
+
+
+        /* this status forme to be removed */
         if (st.st_size > 0 && open(path, O_RDONLY) > 0)
         {
             strcpy(s2, "200 OK\r\n");
@@ -209,7 +213,14 @@ Response response(int new_socket, Request *request, ParseConfig *config, int ind
 
     std::cout << blue << "********** { Procces Response } ***********************" << def << std::endl;
 	
+    /* is_req_well_formed() */
     response.setStatus(request, config->get_server_vect()[index_server]);
+    
+    // if () there is an error status go fill the response body with the error html page  
+    //     ERRORresponse(request, &response);
+    // if () the response is good ....
+
+    /**/
     
     if (!(request->getMethod().compare("GET")))
         GETresponse(request, &response, config, index_server);
@@ -217,8 +228,7 @@ Response response(int new_socket, Request *request, ParseConfig *config, int ind
         POSTresponse();
     else if (request->getMethod().compare("DELETE") == 0)
         DELETEresponse();
-    else
-        ERRORresponse(request, &response);
+    
     
     std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
     return response;
