@@ -65,7 +65,7 @@ std::vector<char> read_by_vector(char *path, Response *response)
     {
         for (int i = 0; i < response->getbody_file_size(); i += n)
         {
-            if ((n = read(fd, _buffer + i, 1024)) < 0)
+            if ((n = read(fd, _buffer + i, (1024 * 16))) < 0)
                 break;
         }
         buffer.insert(buffer.begin(), _buffer, _buffer + response->getbody_file_size());
@@ -107,7 +107,7 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
         {
             response->set_requestFuckedUp(true);
 
-            strcpy(s2, " 404 NOT FOUND\r\n");
+            strcpy(s2, "404 Not Found\r\n");
             char _path[100] = "./errorsPages/404/404.html";
             response->setResponseStatus(s2);
             response->setResponseHeader();

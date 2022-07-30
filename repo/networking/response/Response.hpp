@@ -54,7 +54,7 @@ class Response
         std::string getpath (){ return this->body_file_path; }
         void setResponseStatus(char *_status) 
         {
-            this->status = _status; 
+            this->status = _status;
             std::cout << "- Set Status : " << this->status << std::endl;
         };
         void setResponseHeader() { this->header = this->version.c_str(); std::cout << "- Set Version : " << this->version << std::endl;};
@@ -144,8 +144,8 @@ class Response
             int size = lseek(fd, maxBufferLenght, SEEK_SET);
             if (size < 0)
                 std::cout << "lseek error";
-            char *buf = (char *)malloc(1025);
-            int read_size = read(fd, buf, 1024);
+            char *buf = (char *)malloc((1024 * 16) + 1);
+            int read_size = read(fd, buf, (1024 * 16));
             if (read_size < 0)
                 std::cout << "read error";
             maxBufferLenght += read_size;

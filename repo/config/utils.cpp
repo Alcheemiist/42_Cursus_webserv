@@ -39,14 +39,16 @@ std::string &URIencode(std::string &uri, std::string encodeSet = ";/?:@&=+$,") {
 	// while (uri.find("%"))
 	(void)uri;
 	(void)encodeSet;
+	return uri;
 }
 
 std::string &URIdecode(std::string &uri) {
 	(void)uri;
-
+	return uri;
 }
 
-bool isValidURI(const std::string &uri) {
+bool isValidURL(const std::string &uri) {
 	(void)uri;
+	return true;
 }
 
