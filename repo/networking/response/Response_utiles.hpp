@@ -6,9 +6,15 @@
 #include "../elements.hpp"
 
 std::string *split_url(std::string str);
-std::string url_matched(std::string url, int port, const std::vector<Server> locations);
-std::string url_redirected(std::string url, int port, const std::vector<Server> redirections);
+
+bool get_matched_location_for_request_uri(std::string url, Server server);
+
+bool url_redirected(std::string url, Server server);
+
 std::vector<std::string>	get_location(int port);
-bool	method_is_allowed(std::string url, std::string method, int port, const std::vector<Server> servres);
+
+bool	method_is_allowed(std::string method, std::string url, Server server);
+
+bool file_exist(std::string path);
 
 #endif // !Re

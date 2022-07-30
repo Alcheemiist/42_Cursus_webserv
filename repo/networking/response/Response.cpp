@@ -12,7 +12,7 @@ void Response::setVersion(std::string version)
     std::cout << "- Set Version : " << this->version << std::endl;
 };
 
-bool Response::url_parser(std::string url)
+bool Response::url_is_formated(std::string url)
 {
 	std::string allowed ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=";
 	for(std::string::iterator it = url.begin(); it != url.end(); ++it)
@@ -66,11 +66,8 @@ std::string Response::getResponse() const
     return res;
 };
 
-void Response::setStatus(Request *request, ParseConfig *config)
+void Response::setStatus(Request *request, Server server)
 {
-	(void)request;
-	(void)config;
-    // this->status = status;
 	if (!request->get_is_formated())
 	{
 		if (request->get_transfer_encoding() != "" &&
@@ -80,23 +77,23 @@ void Response::setStatus(Request *request, ParseConfig *config)
 			    request->getcontent_length() == -1 &&
                 request->getMethod() == "POST")
 			this->status = "400 BAD REQUEST";
-		else if (url_parser(request->geturl()))
+		else if (url_is_formated(request->geturl()))
 			this->status = "400 BAD REQUEST";
-		else if (request->geturl().length() > 2048)
+		else if (request->geturl().length() > MAX_URL_LENGTH)
 			this->status = "414 REQUEST-URI TOO LARGE";
-		else if (request->body_length() > request->getcontent_length())
-			this->status = "413 REQUEST ENTITY TOO LARGE";
+		// else if (request->body_length() > request->getcontent_length())
+		// else if (check_max_body_length(request->getbody_length(),
+        //             request->getcontent_length()))
+		// 	this->status = "413 REQUEST ENTITY TOO LARGE";
 	}
 	else
 	{
-		if ((this->location = url_matched(request->geturl(), request->get_port(),
-                config->get_server_vect())) == "")
+		if (get_matched_location_for_request_uri(request->geturl(), server))
 			this->status = "404 NOT FOUND";
-		else if ((this->redirection = url_redirected(request->geturl(), request->get_port(),
-                config->get_server_vect())) != "")
+		else if (url_redirected(request->geturl(), server))
 			this->status = "301 MOVED PERMANENTLY";
-		else if (!method_is_allowed(request->geturl(), request->getMethod(),
-                    request->get_port(), config->get_server_vect()))
+		else if (!method_is_allowed(request->getMethod(), request->geturl(),
+                    server))
             this->status = "405 METHOD NOT ALLOWED";
 	}
     std::cout << "- Set Status : " << this->status << std::endl;
@@ -198,11 +195,11 @@ void response(int new_socket, Request *request, ParseConfig *config, int index_s
 {
     Response response;
 
-	response.setStatus(request, config);
-    std::cout << blue << "********** { Response } ***********************" << def << std::endl;
-    if (!request->isGoodrequest())
-        ERRORresponse(request, &response);
-    else if (!(request->getMethod().compare("GET")))
+	response.setStatus(request, config->get_server_vect()[index_server]);
+    // std::cout << blue << "********** { Response } ***********************" << def << std::endl;
+    // if (!request->isGoodrequest())
+    //     ERRORresponse(request, &response);
+    if (!(request->getMethod().compare("GET")))
         GETresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("POST") == 0)
         POSTresponse();
@@ -210,8 +207,8 @@ void response(int new_socket, Request *request, ParseConfig *config, int index_s
         DELETEresponse();
     else
         ERRORresponse(request, &response);
-    std::cout << blue << "********** {End Response } ******************" << def << std::endl
-              << std::endl;
+    // std::cout << blue << "********** {End Response } ******************" << def << std::endl
+    //           << std::endl;
     std::string str = response.getResponse();
     size_t lenght = str.size();
     ssize_t size_send = send(new_socket, str.c_str(), lenght, MSG_OOB);
