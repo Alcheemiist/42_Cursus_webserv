@@ -1,6 +1,86 @@
 #include "../elements.hpp"
 #include <fcntl.h>
 #include <sys/stat.h>
+#include "Response_utiles.hpp"
+
+bool Response::url_is_formated(std::string url)
+{
+	std::string allowed ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=";
+	for(std::string::iterator it = url.begin(); it != url.end(); ++it)
+		if (allowed.find(*it) == std::string::npos)
+			return false;
+	return (true);
+}
+
+void Response::setStatus(Request *request, Server server)
+{
+	if (!request->get_is_formated())
+	{
+		if (request->get_transfer_encoding() != "" &&
+                request->get_transfer_encoding() != "chunked")
+			this->status = "501 NOT IMPLEMENTED";
+		else if (request->get_transfer_encoding() == "" &&
+			    request->getcontent_length() == -1 &&
+                request->getMethod() == "POST")
+			this->status = "400 BAD REQUEST";
+		else if (url_is_formated(request->geturl()))
+			this->status = "400 BAD REQUEST";
+		else if (request->geturl().length() > MAX_URL_LENGTH)
+			this->status = "414 REQUEST-URI TOO LARGE";
+		// else if (request->body_length() > request->getcontent_length())
+		// else if (check_max_body_length(request->getbody_length(),
+        //             request->getcontent_length()))
+		// 	this->status = "413 REQUEST ENTITY TOO LARGE";
+	}
+	else
+	{
+		if (get_matched_location_for_request_uri(request->geturl(), server))
+			this->status = "404 NOT FOUND";
+		else if (url_redirected(request->geturl(), server))
+			this->status = "301 MOVED PERMANENTLY";
+		else if (!method_is_allowed(request->getMethod(), request->geturl(),
+                    server))
+            this->status = "405 METHOD NOT ALLOWED";
+	}
+    std::cout << "- Set Status : " << this->status << std::endl;
+}
+
+void Response::setContentType(char *path)
+{
+    std::string s(path);
+    std::string s1 = s.substr(s.find_last_of(".") + 1);
+    if (s1 == "html")
+        this->contentType = "text/html";
+    else if (s1 == "css")
+        this->contentType = "text/css";
+    else if (s1 == "js")
+        this->contentType = "application/javascript";
+    else if (s1 == "jpg")
+        this->contentType = "image/jpeg";
+    else if (s1 == "png")
+        this->contentType = "image/png";
+    else if (s1 == "gif")
+        this->contentType = "image/gif";
+    else if (s1 == "ico")
+        this->contentType = "image/x-icon";
+    else if (s1 == "svg")
+        this->contentType = "image/svg+xml";
+    else if (s1 == "mp3")
+        this->contentType = "audio/mpeg";
+    else if (s1 == "mp4")
+        this->contentType = "video/mp4";
+    else if (s1 == "ogg")
+        this->contentType = "audio/ogg";
+    else if (s1 == "ogv")
+        this->contentType = "video/ogg";
+    else if (s1 == "wav")
+        this->contentType = "audio/wav";
+    else if (s1 == "webm")
+        this->contentType = "video/webm";
+    else if (s1 == "txt")
+        this->contentType = "text/plain";
+    std::cout << red << "- Set Content-Type : " << s << green << " " << s1 << def << std::endl;
+};
 
 char *readAllFile(char *path)
 {
@@ -93,7 +173,7 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
         
         if (st.st_size > 0 && open(path, O_RDONLY) > 0)
         {
-            strcpy(s2, " 200 OK\r\n");
+            strcpy(s2, "200 OK\r\n");
             response->setResponseStatus(s2);
             response->setResponseHeader();
             response->setContentType(path);
@@ -126,10 +206,12 @@ Response response(int new_socket, Request *request, ParseConfig *config, int ind
 {
     (void)new_socket;
     Response response;
-    std::cout << blue << "********** { Response } ***********************" << def << std::endl;
-    if (!request->isGoodrequest())
-        ERRORresponse(request, &response);
-    else if (!(request->getMethod().compare("GET")))
+
+    std::cout << blue << "********** { Procces Response } ***********************" << def << std::endl;
+	
+    response.setStatus(request, config->get_server_vect()[index_server]);
+    
+    if (!(request->getMethod().compare("GET")))
         GETresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("POST") == 0)
         POSTresponse();
@@ -137,6 +219,7 @@ Response response(int new_socket, Request *request, ParseConfig *config, int ind
         DELETEresponse();
     else
         ERRORresponse(request, &response);
-    std::cout << blue << "********** {End Response } ******************" << def << std::endl ;
+    
+    std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
     return response;
 }
