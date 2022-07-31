@@ -39,4 +39,6 @@ bool	requested_file_in_root(std::string url, Server server);
 
 bool is_file(std::string url);
 
+bool Location_support_upload(std::string url, Server server);
+
 #endif // !Re

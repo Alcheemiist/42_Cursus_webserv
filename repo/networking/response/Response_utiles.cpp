@@ -139,3 +139,24 @@ bool is_file(std::string url)
 	return (false);
 }
 
+bool Location_support_upload(std::string url, Server server)
+{
+	std::vector<Location> loc= server.get_location();
+	for (std::vector<Location>::const_iterator
+			it_loc = loc.begin(); it_loc != loc.end(); ++it_loc)
+	{
+		if (url.compare(0, it_loc->get_locations_path().length(),
+				it_loc->get_locations_path()) == 0)
+			{
+				for (std::vector<std::string>::const_iterator it_method =
+					it_loc->get_allow_methods().begin();
+					it_method != it_loc->get_allow_methods().end(); ++it_method)
+				{
+					// if (it_method->compare("POST") == 0
+					// 		&& it_loc->get_upload(url))
+					// 	return (true);
+				}
+			}
+	}
+	return (false);
+}
