@@ -169,7 +169,8 @@ void ERRORresponse(Request *request, Response *response)
     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
 }
 
-void DELETEresponse(Request *request, Response *response, ParseConfig *config, int index_server)
+void DELETEresponse(Request *request, Response *response, ParseConfig *config,
+                        int index_server)
 {
     (void)request;
     (void)response;
@@ -222,48 +223,46 @@ void DELETEresponse(Request *request, Response *response, ParseConfig *config, i
     // }
 }
 
-void POSTresponse(Request *request, Response *response, ParseConfig *config, int index_server)
+void POSTresponse(Request *request, Response *response, ParseConfig *config,
+                    int index_server)
 {
-    (void)request;
-    (void)response;
-    (void)config;
-    (void)index_server;
-    // response->set_location_url(get_location_url(request->geturl(),
-    //     config->get_server_vect()[index_server]));
-    // if(Location_support_upload(request->geturl(), config->get_server_vect()[index_server]))
-    // {
-    //     upload_response(request, response, config, index_server);
-    // }
-    // else
-    // {
-    //     if (!requested_file_in_root(request->geturl(),
-    //         config->get_server_vect()[index_server]))
-    //     {
-    //         esponse->setStatus("404 NOT FOUND");
-    //     }
-    //     else
-    //     {
-    //         if (is_file(request->geturl()))
-    //         {
+    response->set_location_url(get_location_url(request->geturl(),
+        config->get_server_vect()[index_server]));
+    if(Location_support_upload(request->geturl(),
+            config->get_server_vect()[index_server]))
+    {
+        // upload_response(request, response, config, index_server);
+    }
+    else
+    {
+        if (!requested_file_in_root(request->geturl(),
+            config->get_server_vect()[index_server]))
+        {
+            response->setStatus("404 NOT FOUND");
+        }
+        else
+        {
+            if (is_file(request->geturl()))
+            {
     //             if (Location_have_cgi(request->geturl()))
     //                 cgi_response(request, response, config, index_server);
     //             else
     //                 response->setStatus("405 METHOD NOT ALLOWED");
-    //         }
-    //         else
-    //         {
-    //             if (request->geturl().back() != '/')
-    //                 response->setStatus("301 MOVED PERMANENTLY");
-    //             else if (!file_exist(request->geturl() + "index.html"))
-    //                 response->setStatus("403 FORBIDDEN");
+            }
+            else
+            {
+                if (request->geturl().back() != '/')
+                    response->setStatus("301 MOVED PERMANENTLY");
+                else if (!file_exist(request->geturl() + "index.html"))
+                    response->setStatus("403 FORBIDDEN");
     //             else
     //                 if (Location_have_cgi(request->geturl()))
     //                     cgi_response(request, response, config, index_server);
     //                 else
     //                     response->setStatus("403 FORBIDDEN");
-    //         }
-    //     }
-    // }
+            }
+        }
+    }
     std::cout << "im doing post response\n";
 }
 
