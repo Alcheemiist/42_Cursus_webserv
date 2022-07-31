@@ -17,7 +17,7 @@ class Response
         std::string body;
         std::string response;
         std::string responseStatus;
-        size_t body_length;
+        size_t      body_length;
         std::string contentType;
         //
         size_t      body_file_size;
@@ -33,7 +33,7 @@ class Response
     public:
         Response() : version("HTTP/1.1 "), status("200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""),
         body_file_size(0),  is_complete(false), body_file_path(""), maxBufferLenght(0), requestFuckedUp(false) {};
-        
+
         void setVersion(std::string version) { this->version = version; };
         void setStatus(std::string status) { this->status = status; };
         void setHeader(char *_header) { this->header = _header; };
@@ -99,7 +99,6 @@ class Response
             int fd = open(this->body_file_path.c_str(), O_RDONLY);
             if (fd < 0)
             {
-                
                 std::cout << "open file error";
             }
             int size = lseek(fd, maxBufferLenght, SEEK_SET);
@@ -127,15 +126,31 @@ class Response
         void set_requestFuckedUp(bool i) { this->requestFuckedUp = i; };
         bool get_requestFuckedUp() { return this->requestFuckedUp; };
         //
-    	bool url_is_formated(std::string url);
         void setStatus(Request *request, Server server);
         void show() { std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;  };
+        void set_redirection(std::string url)
+        {
+            this->redirection = url;
+        };
+        std::string get_redirection()
+        {
+            return this->redirection;
+        };
+        void set_location(std::string url)
+        {
+            this->location = url;
+        };
+        std::string get_location()
+        {
+            return this->location;
+        };
+
 };
 
-void GETresponse(Request *request, Response *response, Config *config);
-void POSTresponse();
+void GETresponse(Request *request, Response *response, ParseConfig *config, int server_index);
+void POSTresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 void PUTresponse();
-void DELETEresponse();
+void DELETEresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 void HEADresponse();
 void ERRORresponse(Request *request, Response *response);
 Response response(int new_socket, Request *request, ParseConfig *config, int fd_server);
@@ -143,3 +158,62 @@ char *readFile(const char *fileName);
 
 
 #endif
+
+
+// #pragma once
+
+// #ifndef RESPONSE_HPP
+// #define RESPONSE_HPP
+
+// #include "../elements.hpp"
+// #include <vector>
+// #define MAX_URL_LENGTH 2048
+
+
+// class Response
+// {
+//     private:
+//         std::string version;
+//         std::string status;
+//         std::string header;
+//         std::string body;
+//         std::string response;
+//         std::string responseStatus;
+//         size_t      body_length;
+//         std::string contentType;
+//         std::vector<std::string> status_vector;
+//         std::string location_url;
+//         std::string redirection_url;
+
+//     public:
+//         Response();
+//         void setVersion(std::string version);
+//         void setStatus(Request *request, Server server);
+//         void setStatus(std::string status);
+//     	bool url_is_formated(std::string url);
+//         void setHeader(char *header);
+//         void setBody(char *body);
+//         void setResponseStatus(char *status);
+//         void setResponseHeader();
+//         size_t size() const;
+//         std::string getResponse() const;
+//         std::string getBody() { return body; };
+//         void setContentType(char *path);
+//         void set_redirection_url(std::string url);
+//         void set_location_url(std::string url);
+//         std::string get_redirection_url();
+//         std::string get_location_url();
+// };
+
+// void GETresponse(Request *request, Response *response, Config *config);
+// void POSTresponse(Request *request, Response *response, ParseConfig *config, int index_server);
+// void PUTresponse(Request *request, Response *response, ParseConfig *config, int index_server);
+// void DELETEresponse();
+// void HEADresponse();
+// void ERRORresponse(Request *request, Response *response);
+// void response(int new_socket, Request *request, ParseConfig *config,
+//         int fd_server);
+
+// char *readFile(const char *fileName);
+
+// #endif
