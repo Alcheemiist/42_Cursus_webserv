@@ -41,11 +41,12 @@ class Response
         void set_location_url(std::string url);
         std::string get_redirection_url();
         std::string get_location_url();
+
 };
 
 void GETresponse(Request *request, Response *response, Config *config);
-void POSTresponse();
-void PUTresponse();
+void POSTresponse(Request *request, Response *response, ParseConfig *config, int index_server);
+void PUTresponse(Request *request, Response *response, ParseConfig *config, int index_server);
 void DELETEresponse();
 void HEADresponse();
 void ERRORresponse(Request *request, Response *response);

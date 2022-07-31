@@ -169,13 +169,101 @@ void ERRORresponse(Request *request, Response *response)
     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
 }
 
-void DELETEresponse()
+void DELETEresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
-    std::cout << "im doing delete response\n";
+    (void)request;
+    (void)response;
+    (void)config;
+    (void)index_server;
+    // std::cout << "im doing delete response\n";
+    // response->set_location_url(get_location_url(request->geturl(),
+    //     config->get_server_vect()[index_server]));
+
+    // if(!requested_file_in_root(request->geturl(),
+    //     config->get_server_vect()[index_server]))
+    // {
+    //     response->setStatus("404 NOT FOUND");
+    // }
+    // else if (!is_file(request->geturl()))
+    // {
+    //     if (request->geturl().back() != '/')
+    //     {
+    //         response->setStatus("409 CONFLICT");
+    //     }
+    //     else
+    //     {
+    //         if (Location_have_cgi(request->geturl()))
+    //         {
+    //             if (file_exist(request->geturl() + "index.html"))
+    //                 response->setStatus("403 FORBIDDEN");
+    //             else
+    //                  cgi_response(request, response, config, index_server);
+    //         }
+    //         else
+    //         {
+    //             if (delete_directory(request->geturl()))
+    //                 response->setStatus("204 NO CONTENT");
+    //             else if (has_write_permission(request->geturl()))
+    //                 response->setStatus("403 FORBIDDEN");
+    //             else
+    //                 response->setStatus("500 INTERNAL SERVER ERROR");
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    //     if (Location_have_cgi(request->geturl()))
+    //          cgi_response(request, response, config, index_server);
+    //     else
+    //     {
+    //         if (delete_file(request->geturl()))
+    //             response->setStatus("204 NO CONTENT");
+    //     }
+    // }
 }
 
-void POSTresponse()
+void POSTresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
+    (void)request;
+    (void)response;
+    (void)config;
+    (void)index_server;
+    // response->set_location_url(get_location_url(request->geturl(),
+    //     config->get_server_vect()[index_server]));
+    // if(Location_support_upload(request->geturl(), config->get_server_vect()[index_server]))
+    // {
+    //     upload_response(request, response, config, index_server);
+    // }
+    // else
+    // {
+    //     if (!requested_file_in_root(request->geturl(),
+    //         config->get_server_vect()[index_server]))
+    //     {
+    //         esponse->setStatus("404 NOT FOUND");
+    //     }
+    //     else
+    //     {
+    //         if (is_file(request->geturl()))
+    //         {
+    //             if (Location_have_cgi(request->geturl()))
+    //                 cgi_response(request, response, config, index_server);
+    //             else
+    //                 response->setStatus("405 METHOD NOT ALLOWED");
+    //         }
+    //         else
+    //         {
+    //             if (request->geturl().back() != '/')
+    //                 response->setStatus("301 MOVED PERMANENTLY");
+    //             else if (!file_exist(request->geturl() + "index.html"))
+    //                 response->setStatus("403 FORBIDDEN");
+    //             else
+    //                 if (Location_have_cgi(request->geturl()))
+    //                     cgi_response(request, response, config, index_server);
+    //                 else
+    //                     response->setStatus("403 FORBIDDEN");
+    //         }
+    //     }
+    // }
     std::cout << "im doing post response\n";
 }
 
@@ -190,7 +278,7 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
     if(!requested_file_in_root(request->geturl(),
         config->get_server_vect()[index_server]))
     {
-        response->setStatus(request, config->get_server_vect()[index_server]);
+        response->setStatus("404 NOT FOUND");
     }
     else if (request->geturl().back() != '/')
     {
@@ -230,25 +318,24 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
     if (!request->getPath().empty())
     {
-        char *path = (char *)malloc(sizeof(char) * (1000));
-        std::cout << B_red << "root path = {" << config->get_server_vect()[index_server].get_root().c_str() << "}" << B_def << std::endl;
-        strcpy(path, config->get_server_vect()[index_server].get_root().c_str());
+        std::string path;// = (char *)malloc(sizeof(char) * (1000));
+        path = config->get_server_vect()[index_server].get_root();
         if (request->getPath() == "/")
-            strcpy(path + (strlen(path)), "index.html");
+            path += "index.html";
         else
-            strcpy(path + (strlen(path) - 1), request->getPath().c_str());
+            path += request->getPath();
         std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
 
         FILE *pFile;
-        pFile = fopen(path, "r");
+        pFile = fopen(path.c_str(), "r");
         char s2[50];
         if (pFile != NULL)
         {
             strcpy(s2, " 200 OK\r\n");
             response->setResponseStatus(s2);
             response->setResponseHeader();
-            response->setContentType(path);
-            response->setBody(readFile(path));
+            response->setContentType((char*)path.c_str());
+            response->setBody(readFile(path.c_str()));
         }
         else
         {
@@ -274,9 +361,9 @@ void response(int new_socket, Request *request, ParseConfig *config, int index_s
     if (!(request->getMethod().compare("GET")))
         GETresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("POST") == 0)
-        POSTresponse();
+        POSTresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("DELETE") == 0)
-        DELETEresponse();
+        DELETEresponse(request, &response, config, index_server);
     else
         ERRORresponse(request, &response);
     // std::cout << blue << "********** {End Response } ******************" << def << std::endl
