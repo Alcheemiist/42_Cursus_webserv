@@ -100,8 +100,7 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
                 this->transfer_encoding = tmp[1];
             else if (tmp[0] == "Referer")
                 this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(tmp[0]) , tmp[1] + tmp[2] ));
-            else
-                this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(tmp[0]) , tmp[1]));
+			this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(tmp[0]) , tmp[1]));
         }
     }
 
@@ -163,3 +162,10 @@ void Request::fill_body(char *buffer, size_t bytes)
     }
 }
 
+const std::map<std::string, std::string> &Request::getHeaders() const {
+	return _headers;
+}
+
+const struct sockaddr &Request::getRefClientAddr() const {
+	return _client_addr;
+}

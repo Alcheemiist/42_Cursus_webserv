@@ -97,13 +97,13 @@ std::string URLdecode(std::string url) {
 	return ret;
 }
 
-
 std::string URLremoveQueryParams(std::string url) {
 	if (url.find("?") != (size_t)-1) {
 		return url.substr(0, url.find("?"));
 	}
 	return url;
 }
+
 std::string URLgetQueryParams(std::string url) {
 	if (url.find("?") != (size_t)-1) {
 		return url.substr(url.find("?") + 1, url.length());
