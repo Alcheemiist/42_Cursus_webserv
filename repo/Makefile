@@ -1,7 +1,7 @@
 FLAGS = -Wall -Wextra -Werror -std=c++98 -g
 FS = -fsanitize=address -g 
 
-NAME = webserve
+NAME = webserv
 
 SRC =  *.cpp  \
 	   ./networking/request/*.cpp ./networking/response/*.cpp ./networking/elements/*.cpp\
@@ -44,6 +44,11 @@ re:	fclean all
 san:
 	c++  $(SRC) -o $(NAME) $(FLAGS) $(FS)
 
+sanserv:
+	c++  $(SRC) -o $(NAME) $(FLAGS) $(FS) -DPARSESERV
+
 sre: fclean san
+
+serv: fclean sanserv
 
 .PHONY: all clean fclean re

@@ -4,3 +4,4 @@ webserve
 .gitignore
 config/conf/conf.conf
 upload/*
+testarea/

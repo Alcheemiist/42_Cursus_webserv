@@ -5,6 +5,8 @@
 
 #include "../elements.hpp"
 #include <map>
+#include <sys/socket.h>
+
 
 class Request
 {
@@ -32,7 +34,7 @@ private:
     bool        is_formated;
     std::string transfer_encoding;
     int _port;
-
+	struct sockaddr _client_addr;
 
 public:
     Request() : _method(""), _path(""), _version(""), _host(""), _connection(""), _accept(""), _accept_encoding(""),  _content_type(""), _content_length(-1), _headers(std::map<std::string, std::string>()),
@@ -46,6 +48,7 @@ public:
     bool        getIsComplete() const { return _is_complete; };
     std::string getConnection() const { return _connection; };
     int         getRequestStatus() const { return requestStatus; };
+    const std::map<std::string, std::string> &getHeaders() const;
     void fill_body(char *buffer, size_t bytes);
     int getcontent_length() const { return _content_length; };
     int get_port() const { return _port; };
@@ -60,6 +63,7 @@ public:
     bool get_is_formated() { return is_formated; }
     std::string get_transfer_encoding() { return transfer_encoding; }
     std::string geturl() const { return _path; };
+	const struct sockaddr &getRefClientAddr() const;
 };
 
 char *readFile(const char *fileName);
