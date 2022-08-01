@@ -115,10 +115,11 @@ std::string get_location_url(std::string url, Server server)
 
 std::string get_redirection_url(std::string url, Server server)
 {
+	std::vector<std::vector<std::string> > redirections = server.get_redirections();
 	std::string location;
 	for (std::vector<std::vector<std::string> >::const_iterator
-			reds = server.get_redirections().begin();
-			reds != server.get_redirections().end(); ++reds)
+			reds = redirections.begin();
+			reds != redirections.end(); ++reds)
 	{
 		for (std::vector<std::string>::const_iterator
 				it_red = reds->begin(); it_red != reds->end(); ++it_red)
