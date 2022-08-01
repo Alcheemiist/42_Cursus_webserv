@@ -57,7 +57,7 @@ void LaunchServer(ParseConfig *config)
     FD_ZERO(&backup_er_set);
 
     std::cout << "Launching " << nServers << " server..." << std::endl;
-    for (size_t  i = 0; (int )i < nServers && i < config->get_server_vect().size() - 1; i++)
+    for (size_t  i = 0; (int )i < nServers; i++)
     {
         std::cout << green << "init server " << config->get_server_vect()[i].get_name(0) << " on port: " << config->get_server_vect()[i].get_listen_port() << " path root :" << config->get_server_vect()[i].get_root() << def << std::endl;
         serv_response[i] = 1;
