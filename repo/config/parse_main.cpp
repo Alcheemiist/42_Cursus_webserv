@@ -716,6 +716,17 @@ void startServer(int port) {
 			total += readret;
 			write(1, buffer, readret);
 		} while (readret == BUFFERSIZE);
+		std::string body =
+"<html>"
+"	<body>"
+"		<h1>"
+"			test test allah allah"
+"		</h1>"
+"</body>"
+"</html>"
+;
+		std::string sendback = "HTTP/1.1 200 OK\r\nContent-Length: " + to_string(body.length()) + "\r\nContent-Type: text/html\r\n\r\n" + body;
+		write(acceptfd, sendback.c_str(), sendback.length());
 		println("-- end read loop --");
 		println("total read: ", total);
 	}
@@ -814,5 +825,8 @@ int parse_main(int ac, char **av, ParseConfig &config) {
 		errorln(e.what());
 		exit(EXIT_FAILURE);
 	}
+	#if defined(PARSESERV)
+		startServer(8082);
+	#endif
 	return 0;
 }

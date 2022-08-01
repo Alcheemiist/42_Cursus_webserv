@@ -299,9 +299,11 @@ void    Server::set_cgi(Cgi cgi)
 
 //-------------geters------------------
 
-std::string    Server::get_name(int i) const
+std::string    Server::get_name(unsigned int i) const
 {
-    return _name[i];
+	if (i < _name.size())
+		return _name[i];
+	return "OUT OF BOUND INDEX";
 }
 
 std::string    Server::get_upload_path() const
