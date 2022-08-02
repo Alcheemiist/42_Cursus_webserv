@@ -34,15 +34,22 @@ std::string *split_url(std::string str)
 
 bool get_matched_location_for_request_uri(std::string url, Server server)
 {
-	for (std::vector<Location>::const_iterator
-			it_loc = server.get_location().begin();
-			it_loc != server.get_location().end(); ++it_loc)
+	std::vector<Location> location = server.get_location();
+	std::vector<Location>::const_iterator it_loc = location.begin();
+	
+	// check if path exist in root directory
+	if (url == "/")
+		return true;
+
+	// if (is_file_exist(server.get_root() + (url)))
+	// 	return true;
+
+	while (it_loc != location.end())
 	{
-		if (url.compare(0, it_loc->get_locations_path().length(),
-				it_loc->get_locations_path()) == 0)
-			{
-				return (true);
-			}
+		std::cout << it_loc->get_locations_path().c_str() << 	std::endl;
+		if (!strncmp(url.c_str() ,it_loc->get_locations_path().c_str() ,url.size()))
+			return (true);
+		it_loc++;
 	}
 	return (false);
 }

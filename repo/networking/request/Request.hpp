@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 
 
+size_t getFileSize(const char *fileName);
+
 class Request
 {
 private:
@@ -41,7 +43,7 @@ public:
                 bodyFileName(""), client_fd(-1), _fdBodyFile(-1), _is_complete(false), requestStatus(-1), status_message(""), bodyFileSize(0), is_formated(false), transfer_encoding(""), _port(0) {};
     Request(char *buffer, size_t bytes, int fd);
     ~Request(){};
-    int body_length(){  return 999999;  }
+    int get_body_length(){  return getFileSize(bodyFileName.c_str());  }
     std::string getMethod() const { return _method; };
     std::string getPath() const { return _path; };
     std::string getVersion() const { return _version; };
@@ -69,7 +71,6 @@ public:
 char *readFile(const char *fileName);
 long readRequest(int new_socket, Request *request);
 std::vector<std::string> split(const std::string &s, char delim);
-size_t getFileSize(const char *fileName);
 std::string to_Lower_case(std::string str);
 
 #endif // REQUEST_HPP
