@@ -2,8 +2,14 @@
 # define __UTILS_HPP__
 
 # include <string>
-
 # include <sstream>
+# include <iostream>
+# include <vector>
+# include <string>
+typedef unsigned char BYTE;
+
+std::string base64_encode(BYTE const* buf, unsigned int bufLen);
+std::vector<BYTE> base64_decode(std::string const&);
 
 #define PRINT_VALUE(x) println(#x, " = ", x)
 #define PRINT_LINE_VALUE(x) println(__FILE__, ":", __LINE__, " ", #x, " = ", x)
