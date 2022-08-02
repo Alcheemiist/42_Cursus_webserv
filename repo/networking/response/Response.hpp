@@ -4,6 +4,9 @@
 #define RESPONSE_HPP
 
 #include "../elements.hpp"
+
+class Request;
+
 #define MAX_URL_LENGTH 2048
 
 size_t getFileSize(const char *fileName);

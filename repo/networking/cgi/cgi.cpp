@@ -4,8 +4,12 @@
 #include "../../config/print.hpp"
 #include "../../config/error.hpp"
 #include "../../config/utils.hpp"
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 typedef std::map<std::string, std::string> HeaderMap;
+typedef std::string str;
 
 #define AUTHORIZATION_HEADER "authorization"
 #define AUTHORIZATION_ENV "AUTH_TYPE"
@@ -20,9 +24,11 @@ typedef std::map<std::string, std::string> HeaderMap;
 #define HOST_HEADER "host"
 #define QUERY_STRING_ENV "QUERY_STRING"
 #define REMOTE_ADDR_ENV "REMOTE_ADDR"
-typedef std::string str;
+#define REMOTE_HOST_ENV "REMOTE_HOST"
+#define REMOTE_IDENT_ENV "REMOTE_IDENT"
+#define REMOTE_USER_ENV "REMOTE_USER"
 
-char *ft_strchr(char *s, char c) {
+const char *ft_strchr(const char *s, char c) {
 	while (*s) {
 		if (*s == c) {
 			return s;
@@ -43,7 +49,7 @@ std::string getWord(std::string phrase, bool (*yes)(char)) {
 	return ret;
 }
 
-#define IS_SEPARATOR(x) (ft_strchr("()<>@,;:\\\"/[]?={} \t", x))
+#define IS_SEPARATOR(x) (!!ft_strchr("()<>@,;:\\\"/[]?={} \t", x))
 
 #define IS_CHAR(x) (std::isalnum(x) \
 					|| IS_SEPARATOR(x) \
@@ -65,14 +71,12 @@ if (hit != headers.end()) { env[header ## _ENV] = hit->second; } }
 
 
 std::string formulateResponseFromCGI(const Request &req, std::string cgiPath) {
+	(void)cgiPath;
 	HeaderMap env;
 	const HeaderMap &headers = req.getHeaders();
 
 	// AUTHORIZATION
-	ADD_ENV_HEADER_CUSTOM(AUTHORIZATION, {
-		std::string authScheme = getWord(hit->second, isValidTokenChar);
-		env[AUTHORIZATION_ENV] = authScheme;
-	});
+	// env[AUTHORIZATION_ENV] = "";
 	// CONTENT_LENGTH
 	ADD_ENV_HEADER(CONTENT_LENGTH);
 	// CONTENT_TYPE
@@ -92,5 +96,13 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath) {
 	char remoteAddr[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &adr->sin_addr, remoteAddr, INET_ADDRSTRLEN);
 	env[REMOTE_ADDR_ENV] = str(remoteAddr);
-	
+	// REMOTE_HOST
+	env[REMOTE_HOST_ENV] = str(remoteAddr);
+	// REMOTE_IDENT
+	env[REMOTE_IDENT_ENV] = "";
+	// REMOTE_USER 
+	/* not required unless authentication is also required */
+	// ADD_ENV_HEADER_CUSTOM(AUTHORIZATION, {
+	// });
+	return "0";
 }

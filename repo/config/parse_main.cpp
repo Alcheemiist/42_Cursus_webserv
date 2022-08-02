@@ -725,8 +725,12 @@ void startServer(int port) {
 "</body>"
 "</html>"
 ;
-		std::string sendback = "HTTP/1.1 200 OK\r\nContent-Length: " + to_string(body.length()) + "\r\nContent-Type: text/html\r\n\r\n" + body;
-		write(acceptfd, sendback.c_str(), sendback.length());
+		std::string sendback = std::string() + "HTTP/1.1 200 OK\r\n"
+		+ "Content-Length: " + to_string(body.length()) + "\r\n"
+		+ "Content-Type: text/html\r\n\r\n" + body
+		;
+		write(acceptfd, sendback.c_str(), sendback.length()-1);
+		close(acceptfd);
 		println("-- end read loop --");
 		println("total read: ", total);
 	}
