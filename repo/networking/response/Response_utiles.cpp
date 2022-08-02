@@ -181,3 +181,58 @@ bool Location_support_upload(std::string url, Server server)
 	}
 	return (false);
 }
+
+char    *readAllFile(char *path)
+{
+    char buffer[DATA_BUFFER_SIZE];
+    char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
+    int max_size = getFileSize(path);
+    int fd = open(path, O_RDWR);
+    size_t read_size = 0;
+
+    if (fd < 0)
+        throw std::runtime_error("Error opening file");
+    else
+        for (int i = 0; i < max_size; i += DATA_BUFFER_SIZE)
+        {
+            int size = read(fd, buffer, DATA_BUFFER_SIZE);
+            for (int i = 0; i < size; i++)
+                return_buffer[i + read_size] = buffer[i];
+            if (size == 0)
+                break;
+            if (size < 0)
+                throw std::runtime_error("Error reading file");
+            read_size += size;
+        }
+        return_buffer[max_size] = '\0';
+    return return_buffer;
+}
+
+size_t  _getFileSize(const char *fileName)
+{
+    struct stat st;
+    if (stat(fileName, &st) < 0)
+        return -1;
+    return st.st_size;
+}
+
+std::vector<char> read_by_vector(char *path, Response *response)
+{
+    int fd = open(path, O_RDWR), n = -1;
+    char *_buffer = (char *)malloc(sizeof(char) * (response->getbody_file_size() + 1));
+    std::vector<char> buffer;
+
+    if (fd < 0)
+        perror("Error opening file");
+    else
+    {
+        for (int i = 0; i < response->getbody_file_size(); i += n)
+        {
+            if ((n = read(fd, _buffer + i, (1024 * 16))) < 0)
+                break;
+        }
+        buffer.insert(buffer.begin(), _buffer, _buffer + response->getbody_file_size());
+    }
+    close(fd);
+    return buffer;
+}
