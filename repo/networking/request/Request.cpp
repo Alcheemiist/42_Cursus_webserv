@@ -166,6 +166,6 @@ const std::map<std::string, std::string> &Request::getHeaders() const {
 	return _headers;
 }
 
-const struct sockaddr &Request::getRefClientAddr() const {
+const struct sockaddr_in &Request::getRefClientAddr() const {
 	return _client_addr;
 }

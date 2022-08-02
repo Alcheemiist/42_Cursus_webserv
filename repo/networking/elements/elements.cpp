@@ -107,11 +107,6 @@ void LaunchServer(ParseConfig *config)
                     index_client++;
                 }
             
-            if (index_client == MAX_CLIENTS)
-                throw std::runtime_error("Max clients reached");
-            if (index_client == 0)
-                exit(0);
-            
             // only for clients
             for (int i = 0; i < index_client; i++)
             {
@@ -127,6 +122,8 @@ void LaunchServer(ParseConfig *config)
                     if (first[i])
                     {
                         Request request((buffer), bytes, clients[i].server_fd);
+                        request.set_client_addr(clients[i].address);
+                        
                         requests.insert(std::pair<int, Request>(clients[i].server_fd, request));
                         first[i] = false;
                     }
