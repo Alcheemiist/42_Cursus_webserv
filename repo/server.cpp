@@ -50,7 +50,6 @@ int main(int ac, char **av, char **ep)
         if (setup_signals() != 0)
             throw std::runtime_error("setup_signals() failed");
         
-        
         if (parse_main(ac, av, Config) != 0)
             throw std::runtime_error("Error while parsing config file.");
 

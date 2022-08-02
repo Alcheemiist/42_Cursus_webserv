@@ -57,7 +57,7 @@ void LaunchServer(ParseConfig *config)
     FD_ZERO(&backup_er_set);
 
     std::cout << "Launching " << nServers << " server..." << std::endl;
-    for (size_t  i = 0; (int )i < nServers; ++i)
+    for (int  i = 0; i < nServers; ++i)
     {
         std::cout << green << "init server " << config->get_server_vect()[i].get_name(0) << " on port: " << config->get_server_vect()[i].get_listen_port() << " path root :" << config->get_server_vect()[i].get_root() << def << std::endl;
         serv_response[i] = 1;
@@ -73,7 +73,7 @@ void LaunchServer(ParseConfig *config)
     std::string str_to_send;
     size_t   *_send_size = new size_t[MAX_CLIENTS];
 
-    for (int index_cycle = 0;;)
+    for (int index_cycle = 0;;index_cycle++)
     {
         memcpy(&working_rd_set, &backup_rd_set, sizeof(backup_rd_set));
         memcpy(&working_wr_set, &backup_wr_set, sizeof(backup_wr_set));
@@ -110,25 +110,28 @@ void LaunchServer(ParseConfig *config)
             // only for clients
             for (int i = 0; i < index_client; i++)
             {
+
                 // request
                 if (FD_ISSET(clients[i].server_fd, &working_rd_set) && serv_response[i] == 2)
                 {
                     int bytes = -1;
                     int fd = clients[i].server_fd;
                     char buffer[BUFER_SIZE + 1];
+
                     if ((bytes = read(fd, buffer, BUFER_SIZE)) < 0)
                         continue;
                     buffer[bytes] = '\0';
+                    
                     if (first[i])
                     {
                         Request request((buffer), bytes, clients[i].server_fd);
                         request.set_client_addr(clients[i].address);
-                        
                         requests.insert(std::pair<int, Request>(clients[i].server_fd, request));
                         first[i] = false;
                     }
                     else
                         requests.find(clients[i].server_fd)->second.fill_body(buffer, bytes);
+                        
                     if (requests.find(clients[i].server_fd)->second.getIsComplete())
                     {
                         serv_response[i]++;
@@ -146,11 +149,12 @@ void LaunchServer(ParseConfig *config)
                     if (serv_response[i] == 3) 
                     {
                         // kansift only headers for now
-                        std::cout << B_red  << "server fd " << clients[i].server_fd << " index_server "<<  clients[i].index_server << " i " << i << B_def <<std::endl;
                         responses.insert(std::pair<int, Response>(i,\
+                        
                         // PROCCES RESPONSE 
-                        response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config, clients[i].index_server)));
+                        response(&requests.find(clients[i].server_fd)->second, config, clients[i].index_server)));
                         //
+                        
                         std::string header = responses[i].getHeader();
                         // show headers 
                         responses[i].show();
@@ -171,6 +175,7 @@ void LaunchServer(ParseConfig *config)
                         }
                         else if (responses[i].get_finish())
                         {
+                            
                             serv_response[i]++;
                             std::cout << green << " **********        RESPONSIYA      ****************** " << def << std::endl;
                             responses[i].show();
@@ -194,6 +199,8 @@ void LaunchServer(ParseConfig *config)
 
             }
         }
+        if (index_cycle > 1000)
+            break;
     }
     close_fds(_socket_server, nServers, clients);
     std::cout << green << "Shutdown Server Properly." << def << std::endl;

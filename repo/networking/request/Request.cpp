@@ -33,7 +33,8 @@ void Request::show()
     std::cout << "accept-language: " << this->_accept_language << std::endl;
     std::cout << "content-length: " << this->_content_length << std::endl;
     std::cout << "content-type: " << this->_content_type << std::endl;
-    std::cout << "transfer-encoding" << this->transfer_encoding << std::endl;
+    std::cout << "transfer-encoding: " << this->transfer_encoding << std::endl;
+    std::cout << "host: " << this->_host << std::endl;
     std::cout << blue << "-----------------Headers--------------------- " << def << std::endl;
     for (std::map<std::string, std::string>::iterator it = this->_headers.begin(); it != this->_headers.end(); ++it)
     {
@@ -72,9 +73,15 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
                 badRequest();
                 throw std::runtime_error("invalid request");
             }
+            
             this->_method = (tmp[0]);
-            this->_path = tmp[1];
-            this->_version = (tmp[2]);
+            this->_path = URLgetFileName(tmp[1]);
+            
+            if (strncmp(tmp[2].c_str(), "HTTP/1.1", strlen("HTTP/1.1") ) == 0)
+                this->_version = (tmp[2].substr(0, tmp[2].find_first_of("\r\n")));
+            else 
+                throw std::runtime_error("invalid version");
+            
             is_first = false;
         }
         else if (!is_first)
@@ -83,29 +90,39 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
                 break;
             std::vector<std::string> tmp = split(line, ':');
 			std::pair<std::string, std::string> header;
-			if (line.find(':') != (size_t)-1) {
+
+			if (line.find(':') != (size_t)-1)
+            {
 				header.first = line.substr(0, line.find(':'));
-				header.second = line.substr(line.find(':') + 1, line.length());
-				this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(header.first) , header.second));
+				header.second = line.substr(line.find(':') + 2, line.length());
+                //
+                if (header.first == "Host")
+                    this->_host = header.second;
+                else if (header.first == "Connection")
+                    this->_connection = header.second;
+                else if (header.first == "Accept")
+                    this->_accept = header.second;
+                else if (header.first == "Accept-Encoding")
+                    this->_accept_encoding = header.second;
+                else if (header.first == "Accept-Language")
+                    this->_accept_language = header.second;
+                else if (header.first == "Content-Length")
+                    this->_content_length = std::stoi(header.second);
+                else if (header.first == "Content-Type")
+                    this->_content_type = header.second;
+                else if (header.first == "Transfer-Encoding")
+                    this->transfer_encoding = header.second;
+                else if (header.first == "Referer")
+                    this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(header.first) , header.second));
 			}
-            if (tmp[0] == "host")
-                this->_host = tmp[1];
-            else if (tmp[0] == "Connection")
-                this->_connection = tmp[1];
-            else if (tmp[0] == "Accept")
-                this->_accept = tmp[1];
-            else if (tmp[0] == "Accept-Encoding")
-                this->_accept_encoding = tmp[1];
-            else if (tmp[0] == "Accept-Language")
-                this->_accept_language = tmp[1];
-            else if (tmp[0] == "Content-Length")
-                this->_content_length = std::stoi(tmp[1]);
-            else if (tmp[0] == "Content-Type")
-                this->_content_type = tmp[1];
-            else if (tmp[0] == "Transfer-Encoding")
-                this->transfer_encoding = tmp[1];
-            else if (tmp[0] == "Referer")
-                this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(tmp[0]) , tmp[1] + tmp[2] ));
+            else 
+            {
+                this->_isGoodRequest = this->is_formated = false;
+                this->status_message =  "400 Bad Request\r\n";
+                this->_path = "./errorsPages/400.html"; 
+                std::cout << "bad request" << std::endl;
+            }
+            // std::cout << B_green <<"--->" << header.first << "/" << header.second << B_def << std::endl;
         }
     }
 
@@ -149,7 +166,7 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
         else
             this->bodyFileName += ".unknown";
 
-        std::cout << B_red << "bodyFileName: " << this->bodyFileName << B_def << std::endl;
+        // std::cout << B_red << "bodyFileName: " << this->bodyFileName << B_def << std::endl;
         this->fill_body(buffer + offset, bytes - offset);
     }
 }
@@ -162,7 +179,7 @@ void Request::fill_body(char *buffer, size_t bytes)
     // std::cout << blue << "reading request body " << bytes  << B_def << std::endl;
     if (this->_content_length <= getFileSize(this->bodyFileName.c_str()))
     {
-        std::cout << B_green << "request body file : " << getFileSize(this->bodyFileName.c_str()) << B_def << std::endl;
+        // std::cout << B_green << "request body file : " << getFileSize(this->bodyFileName.c_str()) << B_def << std::endl;
         this->_is_complete = true;
     }
 }
