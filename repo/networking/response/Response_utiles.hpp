@@ -43,4 +43,10 @@ bool is_file(std::string url);
 
 bool Location_support_upload(std::string url, Server server);
 
+char    *readAllFile(char *path);
+
+size_t  _getFileSize(const char *fileName);
+
+std::vector<char> read_by_vector(char *path, Response *response);
+
 #endif // !Re

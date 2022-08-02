@@ -76,40 +76,72 @@ void Response::setContentType(char *path)
     std::cout << red << "- Set Content-Type : " << s << green << " " << s1 << def << std::endl;
 };
 
-char *readAllFile(char *path)
+std::vector<char> Response::get_buffer() 
 {
-    char buffer[DATA_BUFFER_SIZE];
-    char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
-    int max_size = getFileSize(path);
-    int fd = open(path, O_RDWR);
-    size_t read_size = 0;
+    std::vector <char> buffer;
 
+    int fd = open(this->body_file_path.c_str(), O_RDONLY);
     if (fd < 0)
-        throw std::runtime_error("Error opening file");
-    else
-        for (int i = 0; i < max_size; i += DATA_BUFFER_SIZE)
-        {
-            int size = read(fd, buffer, DATA_BUFFER_SIZE);
-            for (int i = 0; i < size; i++)
-                return_buffer[i + read_size] = buffer[i];
-            if (size == 0)
-                break;
-            if (size < 0)
-                throw std::runtime_error("Error reading file");
-            read_size += size;
-        }
-        return_buffer[max_size] = '\0';
-    return return_buffer;
-}
+    {
+        std::cout << "open file error";
+    }
+    int size = lseek(fd, maxBufferLenght, SEEK_SET);
+    if (size < 0)
+        std::cout << "lseek error";
+    char *buf = (char *)malloc((1024 * 16) + 1);
+    int read_size = read(fd, buf, (1024 * 16));
+    if (read_size < 0)
+        std::cout << "read error";
+    maxBufferLenght += read_size;
+    for (int i = 0; i < read_size; i++)
+        buffer.push_back(buf[i]);
+    free(buf);
+    close(fd);
+    if (maxBufferLenght >= getFileSize(body_file_path.c_str()))
+        this->is_complete = true;
+    else 
+        this->is_complete = false;
+    std::cout << red << "- Read_size  : " << read_size << " maxBuffer : " << maxBufferLenght << " file path size : " << getFileSize(body_file_path.c_str()) << def << std::endl;
+    return buffer;
+};
 
-size_t _getFileSize(const char *fileName)
+std::string Response::getHeader() 
 {
-    struct stat st;
-    if (stat(fileName, &st) < 0)
-        return -1;
-    return st.st_size;
-}
+    /* Here to formed other headers */
+    // status line
+    std::string res;
+    res.append(version);
+    res.append(status);
+    // headers
+    res.append("Content-Type: ");
+    res.append(this->contentType);
+    res.append("\r\n");
 
+    size_t tt = getFileSize(body_file_path.c_str());
+    std::cout << tt << " {" <<  body_file_path << std::endl;
+    
+    // if (tt > 0)
+    // {
+    //     res.append("Content-Length: ");
+    //     res.append(std::to_string(tt));
+    //     res.append("\r\n");
+    // }
+    // else
+    // {
+    //     res.append("Content-Length: ");
+    //     res.append(std::to_string(0));
+    //     res.append("\r\n");
+    // }
+    res.append("server: alchemist\r\n");
+    res.append("location: wonderland");
+    // CRLF
+    res.append("\r\n\r\n");
+    setHeader(res);
+
+    return res;
+};
+
+//
 void ERRORresponse(Request *request, Response *response)
 {
     (void)request;
@@ -117,78 +149,9 @@ void ERRORresponse(Request *request, Response *response)
     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
 }
 
-std::vector<char> read_by_vector(char *path, Response *response)
+Response response( Request *request, ParseConfig *config, int index_server)
 {
-    int fd = open(path, O_RDWR), n = -1;
-    char *_buffer = (char *)malloc(sizeof(char) * (response->getbody_file_size() + 1));
-    std::vector<char> buffer;
-
-    if (fd < 0)
-        perror("Error opening file");
-    else
-    {
-        for (int i = 0; i < response->getbody_file_size(); i += n)
-        {
-            if ((n = read(fd, _buffer + i, (1024 * 16))) < 0)
-                break;
-        }
-        buffer.insert(buffer.begin(), _buffer, _buffer + response->getbody_file_size());
-    }
-    close(fd);
-    return buffer;
-}
-
-// void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
-// {
-//     (void )index_server;
-//     /* This function is about to form other headers and set the body to read later */
-//     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
-//     if (!request->getPath().empty())
-//     {
-//         char *path = (char *)malloc(sizeof(char) * (1000));
-//         std::cout << B_red << "root path = {" << config->get_server_vect()[index_server].get_root().c_str() << "}" << B_def << std::endl;
-//         strcpy(path, config->get_server_vect()[index_server].get_root().c_str());
-//         struct stat st;
-//         if (request->getPath() == "/")
-//             strcpy(path + (strlen(path)), "index.html");
-//         else
-//             strcpy(path + (strlen(path) - 1), request->getPath().c_str());
-//         stat(path, &st);
-//         char s2[50];
-//         /* this status forme to be removed */
-//         if (st.st_size > 0 && open(path, O_RDONLY) > 0)
-//         {
-//             strcpy(s2, "200 OK\r\n");
-//             response->setResponseStatus(s2);
-//             response->setResponseHeader();
-//             response->setContentType(path);
-//             response->setbody_file_size(getFileSize(path));
-//             // response->setBody(read_by_vector(path, response));
-//             response->setpath(path);
-//             std::cout << B_blue << "getFileSize(path): " << getFileSize(path) << B_def << std::endl;
-//         }
-//         else
-//         {
-//             response->set_requestFuckedUp(true);
-//             strcpy(s2, "404 Not Found\r\n");
-//             char _path[100] = "./errorsPages/404/404.html";
-//             response->setResponseStatus(s2);
-//             response->setResponseHeader();
-//             response->setContentType(_path);
-//             response->setbody_file_size(getFileSize(_path));
-//             // response->setBody(read_by_vector(path, response));
-//             response->setpath(_path);
-//             std::cout << B_blue << "getFileSize(path): " << getFileSize(_path) << B_def << std::endl;
-//         }
-//         free(path);
-//     }
-// }
-
-Response response(int new_socket, Request *request, ParseConfig *config, int index_server)
-{
-    (void)new_socket;
     Response response;
-
     std::cout << blue << "********** { Procces Response } ***********************" << def << std::endl;
 	
     /* is_req_well_formed() */
@@ -353,16 +316,17 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
             }
         }
     }
-
+    
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
     if (true)
     {
-        std::string path;// = (char *)malloc(sizeof(char) * (1000));
+        std::string path ;// = (char *)malloc(sizeof(char) * (1000));
+        path.reserve(10000);
         path = config->get_server_vect()[index_server].get_root();
         if (request->getPath() == "/")
-            path += "index.html";
+            path.append("index.html");
         else
-            path += request->getPath();
+            path.append(request->getPath());
 
         std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
 
@@ -392,6 +356,52 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
         fclose(pFile);
     }
 }
+
+// void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
+// {
+//     (void )index_server;
+//     /* This function is about to form other headers and set the body to read later */
+//     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
+//     if (!request->getPath().empty())
+//     {
+//         char *path = (char *)malloc(sizeof(char) * (1000));
+//         std::cout << B_red << "root path = {" << config->get_server_vect()[index_server].get_root().c_str() << "}" << B_def << std::endl;
+//         strcpy(path, config->get_server_vect()[index_server].get_root().c_str());
+//         struct stat st;
+//         if (request->getPath() == "/")
+//             strcpy(path + (strlen(path)), "index.html");
+//         else
+//             strcpy(path + (strlen(path) - 1), request->getPath().c_str());
+//         stat(path, &st);
+//         char s2[50];
+//         /* this status forme to be removed */
+//         if (st.st_size > 0 && open(path, O_RDONLY) > 0)
+//         {
+//             strcpy(s2, "200 OK\r\n");
+//             response->setResponseStatus(s2);
+//             response->setResponseHeader();
+//             response->setContentType(path);
+//             response->setbody_file_size(getFileSize(path));
+//             // response->setBody(read_by_vector(path, response));
+//             response->setpath(path);
+//             std::cout << B_blue << "getFileSize(path): " << getFileSize(path) << B_def << std::endl;
+//         }
+//         else
+//         {
+//             response->set_requestFuckedUp(true);
+//             strcpy(s2, "404 Not Found\r\n");
+//             char _path[100] = "./errorsPages/404/404.html";
+//             response->setResponseStatus(s2);
+//             response->setResponseHeader();
+//             response->setContentType(_path);
+//             response->setbody_file_size(getFileSize(_path));
+//             // response->setBody(read_by_vector(path, response));
+//             response->setpath(_path);
+//             std::cout << B_blue << "getFileSize(path): " << getFileSize(_path) << B_def << std::endl;
+//         }
+//         free(path);
+//     }
+// }
 
 // void response(int new_socket, Request *request, ParseConfig *config, int index_server)
 // {
