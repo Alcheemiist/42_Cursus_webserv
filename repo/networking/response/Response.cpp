@@ -7,33 +7,36 @@ void Response::setStatus(Request *request, Server server)
 {
 	if (!request->get_is_formated())
 	{
-		if (request->get_transfer_encoding() != "" &&
-                request->get_transfer_encoding() != "chunked")
+        
+		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked") // done 
 			this->status = "501 NOT IMPLEMENTED\r\n";
-		else if (request->get_transfer_encoding() == "" &&
-			    request->getcontent_length() == -1 &&
-                request->getMethod() == "POST")
-			this->status = "400 BAD REQUEST\r\n";
-		else if (url_is_formated(request->geturl()))
-			this->status = "400 BAD REQUEST\r\n";
-		else if (request->geturl().length() > MAX_URL_LENGTH)
+
+		else if (!request->get_transfer_encoding().size() && request->getcontent_length() <= 0 &&  request->getMethod() == "POST") // done // 405 not allowed in nginx 
+            this->status = "400 BAD REQUEST\r\n";
+
+		else if (!url_is_formated(request->geturl())) // done
+            this->status = "400 BAD REQUEST\r\n";
+
+        else if (request->geturl().length() > MAX_URL_LENGTH)  // done // nginx accepte more than 2048 char 
 			this->status = "414 REQUEST-URI TOO LARGE\r\n";
-		// else if (request->body_length() > request->getcontent_length())
-		// else if (check_max_body_length(request->getbody_length(),
-        //             request->getcontent_length()))
-		// 	this->status = "413 REQUEST ENTITY TOO LARGE\r\n";
-	}
-	else
-	{
-		if (get_matched_location_for_request_uri(request->geturl(), server))
-			this->status = "404 NOT FOUND\r\n";
-		else if (url_redirected(request->geturl(), server))
-			this->status = "301 MOVED PERMANENTLY\r\n";
-		else if (!method_is_allowed(request->getMethod(), request->geturl(),
-                    server))
-            this->status = "405 METHOD NOT ALLOWED\r\n";
-	}
-    std::cout << "- Set Status : " << this->status << std::endl;
+
+        else if ( request->get_body_length() > server.get_client_max_body_size()) // almost done
+        	this->status = "413 REQUEST ENTITY TOO LARGE\r\n";
+
+    }
+    std::cout << "NOT WORKING AS EXCPECTED FUNCTION DOWN HERE"  << std::endl;
+    // if (!get_matched_location_for_request_uri(request->geturl(), server)) // NOT WORKING TRASH
+    //     this->status = "-404 NOT FOUND\r\n";
+    
+    // else if (url_redirected(request->geturl(), server))
+    //     this->status = "301 MOVED PERMANENTLY\r\n";
+    
+    // else if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
+    //     this->status = "405 METHOD NOT ALLOWED\r\n";
+    // }
+    
+    std::cout << red << "-> Set Status : " << this->status << def  << std::endl;
+   
 }
 
 void Response::setContentType(char *path)
@@ -113,7 +116,6 @@ void ERRORresponse(Request *request, Response *response)
     (void)response;
     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
 }
-
 
 std::vector<char> read_by_vector(char *path, Response *response)
 {
@@ -204,12 +206,11 @@ Response response(int new_socket, Request *request, ParseConfig *config, int ind
     else if (request->getMethod().compare("DELETE") == 0)
         DELETEresponse(request, &response, config, index_server);
     std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
+    
     return response;
 }
 
-
-void DELETEresponse(Request *request, Response *response, ParseConfig *config,
-                        int index_server)
+void DELETEresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
 {
     (void)request;
     (void)response;
@@ -262,8 +263,7 @@ void DELETEresponse(Request *request, Response *response, ParseConfig *config,
     // }
 }
 
-void POSTresponse(Request *request, Response *response, ParseConfig *config,
-                    int index_server)
+void POSTresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
 {
     response->set_location(get_location_url(request->geturl(),
         config->get_server_vect()[index_server]));
@@ -307,6 +307,7 @@ void POSTresponse(Request *request, Response *response, ParseConfig *config,
 
 void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
+    /////// main process to set a good response : set mandatory headers + set path of file to send
     response->set_location(get_location_url(request->geturl(),
         config->get_server_vect()[index_server]));
 
@@ -354,7 +355,7 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
     }
 
     std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
-    if (!request->getPath().empty())
+    if (true)
     {
         std::string path;// = (char *)malloc(sizeof(char) * (1000));
         path = config->get_server_vect()[index_server].get_root();
@@ -362,6 +363,7 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
             path += "index.html";
         else
             path += request->getPath();
+
         std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
 
         FILE *pFile;
@@ -369,20 +371,23 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
         char s2[50];
         if (pFile != NULL)
         {
+            /////// main process to set a good response : set mandatory headers + set path of file to send
             strcpy(s2, " 200 OK\r\n");
             response->setResponseStatus(s2);
             response->setResponseHeader();
             response->setContentType((char*)path.c_str());
-            response->setBody(readFile(path.c_str()));
+            response->setpath(path);
         }
         else
         {
+            /////// main process to set a good response : set mandatory headers + set path of file to send
             char ss[100] = "./errorsPages/404/404.html";
             strcpy(s2, " 404 NOT FOUND\r\n");
             response->setResponseStatus(s2);
             response->setResponseHeader();
             response->setContentType(ss);
-            response->setBody(readFile("./errorsPages/404/404.html"));
+            response->setpath(ss);
+
         }
         fclose(pFile);
     }

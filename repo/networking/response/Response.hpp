@@ -65,25 +65,27 @@ class Response
             res.append("Content-Type: ");
             res.append(this->contentType);
             res.append("\r\n");
-            if (body_file_size > 0)
-            {
-                size_t tt = getFileSize(body_file_path.c_str());
-                res.append("Content-Length: ");
-                res.append(std::to_string(tt));
-                res.append("\r\n");
-            }
-            else
-            {
-                res.append("Content-Length: ");
-                res.append(std::to_string(0));
-                res.append("\r\n");
-            }
+
+            size_t tt = getFileSize(body_file_path.c_str());
+            std::cout << tt << " {" <<  body_file_path << std::endl;
+            
+            // if (tt > 0)
+            // {
+            //     res.append("Content-Length: ");
+            //     res.append(std::to_string(tt));
+            //     res.append("\r\n");
+            // }
+            // else
+            // {
+            //     res.append("Content-Length: ");
+            //     res.append(std::to_string(0));
+            //     res.append("\r\n");
+            // }
             res.append("server: alchemist\r\n");
             res.append("location: wonderland");
             // CRLF
             res.append("\r\n\r\n");
             setHeader(res);
-
 
             return res;
         };

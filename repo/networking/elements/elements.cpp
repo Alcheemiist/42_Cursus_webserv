@@ -57,7 +57,7 @@ void LaunchServer(ParseConfig *config)
     FD_ZERO(&backup_er_set);
 
     std::cout << "Launching " << nServers << " server..." << std::endl;
-    for (size_t  i = 0; (int )i < nServers; i++)
+    for (size_t  i = 0; (int )i < nServers; ++i)
     {
         std::cout << green << "init server " << config->get_server_vect()[i].get_name(0) << " on port: " << config->get_server_vect()[i].get_listen_port() << " path root :" << config->get_server_vect()[i].get_root() << def << std::endl;
         serv_response[i] = 1;
@@ -106,7 +106,12 @@ void LaunchServer(ParseConfig *config)
                     serv_response[index_client]++;
                     index_client++;
                 }
-
+            
+            if (index_client == MAX_CLIENTS)
+                throw std::runtime_error("Max clients reached");
+            if (index_client == 0)
+                exit(0);
+            
             // only for clients
             for (int i = 0; i < index_client; i++)
             {
@@ -143,27 +148,27 @@ void LaunchServer(ParseConfig *config)
                 {
                     if (serv_response[i] == 3) 
                     {
+                        // kansift only headers for now
                         std::cout << B_red  << "server fd " << clients[i].server_fd << " index_server "<<  clients[i].index_server << " i " << i << B_def <<std::endl;
-
                         responses.insert(std::pair<int, Response>(i,\
-                        
                         // PROCCES RESPONSE 
                         response(requests.find(clients[i].server_fd)->first, &requests.find(clients[i].server_fd)->second, config, clients[i].index_server)));
                         //
-
                         std::string header = responses[i].getHeader();
+                        // show headers 
+                        responses[i].show();
                         size_send = write(requests.find(clients[i].server_fd)->first, header.c_str() , header.size());
                         _send_size[i] = size_send;
                         serv_response[i]++;                            
                     }
                     if (serv_response[i] == 4) 
                     {
+                        // kansift hna l body by buffer 
                         if (responses[i].getpath().size() > 0 && !responses[i].get_finish())
                         {
                             std::vector<char> buffer = responses[i].get_buffer();
                             size_send = write(requests.find(clients[i].server_fd)->first, buffer.data(), buffer.size());
                             _send_size[i] += size_send;
-
                             if (size_send < 0)
                                 throw std::runtime_error(" error sending buffer");
                         }
@@ -186,9 +191,10 @@ void LaunchServer(ParseConfig *config)
                         requests.erase(requests.find(clients[i].server_fd)->first);
                         serv_response[i] = 1;
                         first[i] = true;
-                        
                     }
+
                 }
+
             }
         }
     }
