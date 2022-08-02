@@ -366,6 +366,13 @@ Response  response( Request *request, ParseConfig *config, int index_server)
 //     // }
 // }
 
+void ERRORresponse(Request *request, Response *response)
+{
+    (void)request;
+    (void)response;
+    std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
+}
+
 // void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 // {
 //     (void )index_server;

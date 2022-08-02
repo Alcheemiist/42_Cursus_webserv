@@ -69,16 +69,16 @@ all:	$(NAME)
 
 
 %.o: %.cpp $(HDR)
-	c++ $(FS) -c -o $@ $<
+	c++ $(FLAGS) -c -o $@ $<
 
 $(NAME) : $(OBJ)
 	c++ $(OBJ) -o $(NAME) $(FLAGS)
 
 clean:
-	rm -rf $(NAME)
-	rm -rf $(NAME).dSYM
-	rm -rf bodyfile
-	rm -rf log.txt
+	@rm -rf $(NAME)
+	@rm -rf $(NAME).dSYM
+	@rm -rf bodyfile
+	@rm -rf log.txt
 	rm -rf $(OBJ)
 		
 fclean:	clean

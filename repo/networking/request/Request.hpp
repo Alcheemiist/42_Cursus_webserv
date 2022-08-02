@@ -35,7 +35,7 @@ private:
     // attributes to reviewed
     bool        is_formated;
     std::string transfer_encoding;
-    int _port;
+    int         _port;
 	struct sockaddr_in _client_addr;
 
 public:
@@ -73,6 +73,7 @@ char *readFile(const char *fileName);
 long readRequest(int new_socket, Request *request);
 std::vector<std::string> split(const std::string &s, char delim);
 std::string to_Lower_case(std::string str);
+std::string URLgetFileName(std::string url);
 
 #endif // REQUEST_HPP
 

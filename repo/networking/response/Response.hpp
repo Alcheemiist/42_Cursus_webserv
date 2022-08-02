@@ -4,6 +4,9 @@
 #define RESPONSE_HPP
 
 #include "../elements.hpp"
+
+class Request;
+
 #define MAX_URL_LENGTH 2048
 
 size_t getFileSize(const char *fileName);
@@ -33,7 +36,7 @@ class Response
         std::string redirection;
 
     public:
-        Response() : version("HTTP/1.1 "), status("! 200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""),
+        Response() : version("HXXXX "), status("! 200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""),
         body_file_size(0),  is_complete(false), body_file_path(""), maxBufferLenght(0), requestFuckedUp(false) {};
 
         void setVersion(std::string version) { this->version = version; };
@@ -86,5 +89,9 @@ void HEADresponse();
 void ERRORresponse(Request *request, Response *response);
 Response response( Request *request, ParseConfig *config, int fd_server);
 char *readFile(const char *fileName);
+
+std::string URLgetFileName(std::string url);
+
+
 
 #endif
