@@ -18,8 +18,7 @@ void Cgi::set_cgi_path(std::string cgi_path)
     {
         std::cout << "Error: cgi path not well defined" << std::endl;
         exit(0);
-    } 
-    
+    }
 }
 
 void Cgi::set_cgi_methods_vect(std::vector<std::string> methods)
@@ -36,7 +35,7 @@ void Cgi::set_cgi_methods(std::string methods)
     {
         std::cout << "Error: allowed methods in cgi not well defined" << std::endl;
         exit(0);
-    } 
+    }
 }
 
 void    Cgi::set_cgi_name(std::string name)

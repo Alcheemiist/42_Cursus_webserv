@@ -1,4 +1,5 @@
 #include "Response_utiles.hpp"
+#include "../../config/print.hpp"
 
 bool url_is_formated(std::string url)
 {
@@ -36,21 +37,38 @@ bool get_matched_location_for_request_uri(std::string url, Server server)
 {
 	std::vector<Location> location = server.get_location();
 	std::vector<Location>::const_iterator it_loc = location.begin();
-	
+	std::string location_path;
+	int location_path_size = 0;
+	Location loca;
+
+
+
 	// check if path exist in root directory
-	if (url == "/")
-		return true;
+	// if (url == "/")
+	// 	return true;
 
 	// if (is_file_exist(server.get_root() + (url)))
 	// 	return true;
 
-	while (it_loc != location.end())
+	for (; it_loc != location.end(); it_loc++)
 	{
+		std::cout << "{ " << std::endl;
 		std::cout << it_loc->get_locations_path().c_str() << 	std::endl;
-		if (!strncmp(url.c_str() ,it_loc->get_locations_path().c_str() ,url.size()))
-			return (true);
-		it_loc++;
+		if (!it_loc->get_locations_path().compare(0, url.size(), url))
+		{
+			if (it_loc->get_locations_path().size() > location_path_size)
+			{
+				location_path_size = it_loc->get_locations_path().size();
+				loca = *it_loc;
+			}
+		}
+		if (location_path_size)
+			location_path = url.replace(0, location_path_size, loca.get_root());
+		else
+			location_path = url;
+
 	}
+	while(1);
 	return (false);
 }
 
