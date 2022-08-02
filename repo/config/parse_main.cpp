@@ -478,6 +478,7 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 		for (std::vector<Component>::iterator lit = locationComponents.begin(); lit != locationComponents.end(); lit++) {
 			Location currentLocation;
 			
+
 			currentLocation.set_locations_path(lit->attr(0));
 			Component *locationAllowedMethodsDirective = lit->findFirstChild(ALLOW_METHODS_DIRECTIVE);
 			if (locationAllowedMethodsDirective) {
@@ -493,7 +494,7 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 			}
 			Component *locationIndexDirective = lit->findFirstChild(INDEX_DIRECTIVE);
 			if (locationIndexDirective) {
-				currentLocation.set_locations_path(locationIndexDirective->attr(0));
+				currentLocation.set_index(locationIndexDirective->attr(0));
 			}
 			Component *locationAutoIndexDirective = lit->findFirstChild(AUTOINDEX_DIRECTIVE);
 			if (locationAutoIndexDirective) {
