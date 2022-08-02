@@ -104,5 +104,7 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath) {
 	/* not required unless authentication is also required */
 	// ADD_ENV_HEADER_CUSTOM(AUTHORIZATION, {
 	// });
-	return "0";
+
+	throw "remove this throw statement when cgi is done";
+	return "";
 }
