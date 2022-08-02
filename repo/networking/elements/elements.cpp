@@ -87,12 +87,10 @@ void LaunchServer(ParseConfig *config)
             throw std::runtime_error("Timeout");
         else
         {
-            std::cout << green << "Select OK (" << rc << ")" << def << std::endl;
             // only for servers to accepte new connections
             for (int i = 0; i < nServers; i++)
                 if (FD_ISSET(_socket_server[i].server_fd, &working_rd_set))
                 {
-                    std::cout << " on server side " << std::endl;
                     /* FLAG */serv_response[index_client] = 1;
                     t_socket _server = accepteConnection(&_socket_server[i]);
                     clients[index_client] = _server;
@@ -112,12 +110,10 @@ void LaunchServer(ParseConfig *config)
             // only for clients
             for (int i = 0; i < index_client; i++)
             {
-                std::cout << " on Client side && FLAG= " << serv_response[i] << std::endl;
 
                 // request
                 if (FD_ISSET(clients[i].server_fd, &working_rd_set) && serv_response[i] == 2)
                 {
-                    std::cout << red << "Request  " << i << def << std::endl;
                     int bytes = -1;
                     int fd = clients[i].server_fd;
                     char buffer[BUFER_SIZE + 1];
@@ -150,11 +146,9 @@ void LaunchServer(ParseConfig *config)
                 // response
                 if (FD_ISSET(clients[i].server_fd, &working_wr_set) && serv_response[i] >= 3)
                 {
-                    std::cout << green << "Response " << i << def << std::endl;
                     if (serv_response[i] == 3) 
                     {
                         // kansift only headers for now
-                        std::cout << B_red  << "server fd " << clients[i].server_fd << " index_server "<<  clients[i].index_server << " i " << i << B_def <<std::endl;
                         responses.insert(std::pair<int, Response>(i,\
                         
                         // PROCCES RESPONSE 
