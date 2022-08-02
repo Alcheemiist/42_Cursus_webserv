@@ -76,7 +76,6 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
             
             this->_method = (tmp[0]);
             this->_path = URLgetFileName(tmp[1]);
-         
             
             if (strncmp(tmp[2].c_str(), "HTTP/1.1", strlen("HTTP/1.1") ) == 0)
                 this->_version = (tmp[2].substr(0, tmp[2].find_first_of("\r\n")));
@@ -167,7 +166,7 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
         else
             this->bodyFileName += ".unknown";
 
-        std::cout << B_red << "bodyFileName: " << this->bodyFileName << B_def << std::endl;
+        // std::cout << B_red << "bodyFileName: " << this->bodyFileName << B_def << std::endl;
         this->fill_body(buffer + offset, bytes - offset);
     }
 }
@@ -180,7 +179,7 @@ void Request::fill_body(char *buffer, size_t bytes)
     // std::cout << blue << "reading request body " << bytes  << B_def << std::endl;
     if (this->_content_length <= getFileSize(this->bodyFileName.c_str()))
     {
-        std::cout << B_green << "request body file : " << getFileSize(this->bodyFileName.c_str()) << B_def << std::endl;
+        // std::cout << B_green << "request body file : " << getFileSize(this->bodyFileName.c_str()) << B_def << std::endl;
         this->_is_complete = true;
     }
 }

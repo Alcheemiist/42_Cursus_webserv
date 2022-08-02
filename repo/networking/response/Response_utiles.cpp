@@ -46,7 +46,7 @@ bool get_matched_location_for_request_uri(std::string url, Server server)
 
 	while (it_loc != location.end())
 	{
-		std::cout << it_loc->get_locations_path().c_str() << 	std::endl;
+		// std::cout << it_loc->get_locations_path().c_str() << 	std::endl;
 		if (!strncmp(url.c_str() ,it_loc->get_locations_path().c_str() ,url.size()))
 			return (true);
 		it_loc++;

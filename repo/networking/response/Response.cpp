@@ -117,8 +117,8 @@ std::string Response::getHeader()
     res.append(this->contentType);
     res.append("\r\n");
 
-    size_t tt = getFileSize(body_file_path.c_str());
-    std::cout << tt << " {" <<  body_file_path << std::endl;
+    // size_t tt = getFileSize(body_file_path.c_str());
+    // std::cout << tt << " {" <<  body_file_path << std::endl;
     
     // if (tt > 0)
     // {
@@ -142,12 +142,8 @@ std::string Response::getHeader()
 };
 
 //
-void ERRORresponse(Request *request, Response *response)
-{
-    (void)request;
-    (void)response;
-    std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
-}
+
+
 
 Response response( Request *request, ParseConfig *config, int index_server)
 {
@@ -155,6 +151,8 @@ Response response( Request *request, ParseConfig *config, int index_server)
     std::cout << blue << "********** { Procces Response } ***********************" << def << std::endl;
 	
     /* is_req_well_formed() */
+    // form_and_decode_url(request);
+
     response.setStatus(request, config->get_server_vect()[index_server]);
     
     // if () there is an error status go fill the response body with the error html page  
@@ -168,6 +166,7 @@ Response response( Request *request, ParseConfig *config, int index_server)
         POSTresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("DELETE") == 0)
         DELETEresponse(request, &response, config, index_server);
+
     std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
     
     return response;
@@ -316,12 +315,12 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
             }
         }
     }
-    
-    std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
+
+    // std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
     if (true)
     {
         std::string path ;// = (char *)malloc(sizeof(char) * (1000));
-        path.reserve(10000);
+        path.reserve(1000);
         path = config->get_server_vect()[index_server].get_root();
         if (request->getPath() == "/")
             path.append("index.html");
@@ -337,6 +336,7 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
         {
             /////// main process to set a good response : set mandatory headers + set path of file to send
             strcpy(s2, " 200 OK\r\n");
+            response->setVersion(request->getVersion());
             response->setResponseStatus(s2);
             response->setResponseHeader();
             response->setContentType((char*)path.c_str());
@@ -345,8 +345,9 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
         else
         {
             /////// main process to set a good response : set mandatory headers + set path of file to send
-            char ss[100] = "./errorsPages/404/404.html";
+            char ss[100] = "./errorsPages/404.html";
             strcpy(s2, " 404 NOT FOUND\r\n");
+            response->setVersion(request->getVersion());
             response->setResponseStatus(s2);
             response->setResponseHeader();
             response->setContentType(ss);
@@ -355,6 +356,13 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
         }
         fclose(pFile);
     }
+}
+
+void ERRORresponse(Request *request, Response *response)
+{
+    (void)request;
+    (void)response;
+    std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
 }
 
 // void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
