@@ -82,6 +82,12 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
             if (line == "\r")
                 break;
             std::vector<std::string> tmp = split(line, ':');
+			std::pair<std::string, std::string> header;
+			if (line.find(':') != (size_t)-1) {
+				header.first = line.substr(0, line.find(':'));
+				header.second = line.substr(line.find(':') + 1, line.length());
+				this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(header.first) , header.second));
+			}
             if (tmp[0] == "host")
                 this->_host = tmp[1];
             else if (tmp[0] == "Connection")
@@ -100,7 +106,6 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
                 this->transfer_encoding = tmp[1];
             else if (tmp[0] == "Referer")
                 this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(tmp[0]) , tmp[1] + tmp[2] ));
-			this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(tmp[0]) , tmp[1]));
         }
     }
 

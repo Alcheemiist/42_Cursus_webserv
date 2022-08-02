@@ -73,11 +73,12 @@ bool	url_redirected(std::string url, Server server)
 
 bool	method_is_allowed(std::string method, std::string url ,Server server)
 {
+	(void)method;
+	(void)url;
 	std::string path;
 	bool		allowed = false;
-	std::vector<Location> loc= server.get_location();
+	std::vector<Location> loc = server.get_location();
 
-	
 	// for (std::vector<std::string>::const_iterator it_method =
 	// 	server.get_allowed_methods().begin();
 	// 	it_method != server.get_allowed_methods().end(); ++it_method)
