@@ -1,7 +1,11 @@
-webserve.dSYM/
-webserve
+webserv.dSYM/
+webserv
 .phpcgi
 .gitignore
 config/conf/conf.conf
 upload/*
 testarea/
+*.o
+*/.o
+*/*/.o
+*/*/*/.o
