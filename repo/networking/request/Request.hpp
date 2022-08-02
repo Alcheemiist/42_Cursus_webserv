@@ -36,7 +36,7 @@ private:
     bool        is_formated;
     std::string transfer_encoding;
     int _port;
-	struct sockaddr _client_addr;
+	struct sockaddr_in _client_addr;
 
 public:
     Request() : _method(""), _path(""), _version(""), _host(""), _connection(""), _accept(""), _accept_encoding(""),  _content_type(""), _content_length(-1), _headers(std::map<std::string, std::string>()),
@@ -65,7 +65,8 @@ public:
     bool get_is_formated() { return is_formated; }
     std::string get_transfer_encoding() { return transfer_encoding; }
     std::string geturl() const { return _path; };
-	const struct sockaddr &getRefClientAddr() const;
+	const struct sockaddr_in &getRefClientAddr() const;
+    void set_client_addr(struct sockaddr_in client_addr) { _client_addr = client_addr; };
 };
 
 char *readFile(const char *fileName);
