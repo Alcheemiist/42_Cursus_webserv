@@ -8,6 +8,8 @@
 
 size_t getFileSize(const char *fileName);
 
+class Request;
+
 class Response
 {
     private:
