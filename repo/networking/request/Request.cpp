@@ -77,7 +77,7 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
             }
             
             this->_method = (tmp[0]);
-            this->_path = URLremoveQueryParams(tmp[1]);
+            this->_path = tmp[1];
             
             if (strncmp(tmp[2].c_str(), "HTTP/1.1", strlen("HTTP/1.1") ) == 0)
                 this->_version = (tmp[2].substr(0, tmp[2].find_first_of("\r\n")));

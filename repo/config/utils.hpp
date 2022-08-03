@@ -31,6 +31,7 @@ std::string URLdecode(std::string url);
 std::string URLremoveQueryParams(std::string url);
 std::string URLgetQueryParams(std::string url);
 bool isValidURLPath(std::string url);
+std::string getFileContents(std::string path);
 
 
 # define FILE_LINE getFileAndLine(__FILE__, __LINE__)

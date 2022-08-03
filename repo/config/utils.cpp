@@ -1,3 +1,4 @@
+#include <fstream>
 #include <string>
 #include <sstream>
 #include <iomanip>
@@ -215,4 +216,12 @@ std::vector<BYTE> base64_decode(std::string const &encoded_string) {
 	}
 
 	return ret;
+}
+
+std::string getFileContents(std::string path) {
+	std::ifstream bodyFile;
+	bodyFile.open(path, std::ios::in);
+	std::stringstream strStream;
+	strStream << bodyFile.rdbuf();
+	return strStream.str();
 }

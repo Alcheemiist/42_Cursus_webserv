@@ -27,6 +27,13 @@ typedef std::string str;
 #define REMOTE_HOST_ENV "REMOTE_HOST"
 #define REMOTE_IDENT_ENV "REMOTE_IDENT"
 #define REMOTE_USER_ENV "REMOTE_USER"
+#define REQUEST_METHOD_ENV "REQUEST_METHOD"
+#define SCRIPT_NAME_ENV "SCRIPT_NAME"
+#define SERVER_NAME_ENV "SERVER_NAME"
+#define SERVER_PORT_ENV "SERVER_PORT"
+#define SERVER_PROTOCOL_ENV "SERVER_PROTOCOL"
+#define SERVER_SOFTWARE_ENV "SERVER_SOFTWARE"
+#define REDIRECT_STATUS_ENV "REDIRECT_STATUS"
 
 const char *ft_strchr(const char *s, char c) {
 	while (*s) {
@@ -68,13 +75,22 @@ if (hit != headers.end()) exec_block }
 { HeaderMap::const_iterator hit = headers.find(header ## _HEADER);\
 if (hit != headers.end()) { env[header ## _ENV] = hit->second; } }
 
+static size_t fileCount;
 
-
-std::string formulateResponseFromCGI(const Request &req, std::string cgiPath) {
+std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, char **oenv) {
 	(void)cgiPath;
 	HeaderMap env;
 	const HeaderMap &headers = req.getHeaders();
 
+	for (size_t x = 0; oenv[x]; x++) {
+		std::string keyval = oenv[x];
+		std::string key, val;
+		if (keyval.find('=') != (size_t)-1) {
+			key = keyval.substr(0, keyval.find('='));
+			val = keyval.substr(keyval.find('=') + 1, keyval.length());
+			env[key] = val;
+		}
+	}
 	// AUTHORIZATION
 	// env[AUTHORIZATION_ENV] = "";
 	// CONTENT_LENGTH
@@ -85,10 +101,16 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath) {
 	env[GATEWAY_INTERFACE_ENV] = "CGI/1.1";
 	// PATH_INFO
 	env[PATH_INFO_ENV] = URLremoveQueryParams(req.getPath());
-	// PATH_TRANSLATED
+	// PATH_TRANSLATED && 
+	// SERVER_NAME
 	ADD_ENV_HEADER_CUSTOM(HOST, {
-		env[PATH_TRANSLATED_ENV] = str(SCHEME) + "://" + hit->second + env[PATH_INFO_ENV];
-	});
+			env[PATH_TRANSLATED_ENV] = str(SCHEME) + "://" + hit->second + env[PATH_INFO_ENV];
+			std::string hostname = hit->second;
+			if (hostname.find(':') != (size_t)-1)
+				hostname = hostname.substr(0, hostname.find(':'));
+			env[SERVER_NAME_ENV] = hostname;	
+		}
+	);
 	// QUERY_STRING
 	env[QUERY_STRING_ENV] = URLgetQueryParams(req.getPath());
 	// REMOTE_ADDR
@@ -101,10 +123,88 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath) {
 	// REMOTE_IDENT
 	env[REMOTE_IDENT_ENV] = "";
 	// REMOTE_USER 
-	/* not required unless authentication is also required */
-	// ADD_ENV_HEADER_CUSTOM(AUTHORIZATION, {
-	// });
+	/* not required unless authentication is also required, which it never will*/
+	// ADD_ENV_HEADER_CUSTOM(AUTHORIZATION, {});
+	// REQUEST_METHOD
+	env[REQUEST_METHOD_ENV] = req.getMethod();
+	// SCRIPT_NAME
+	env[SCRIPT_NAME_ENV] = URLgetFileName(req.getPath()).substr(1, req.getPath().length());
+	// SERVER_PORT
+	env[SERVER_PORT_ENV] = to_string(ntohs(adr->sin_port));
+	// SERVER_PROTOCOL
+	env[SERVER_PROTOCOL_ENV] = "HTTP/1.1";
+	// SERVER_SOFTWARE
+	env[SERVER_SOFTWARE_ENV] = "webserv";
+	// REDIRECT_STATUS
+	env[REDIRECT_STATUS_ENV] = "200";
+	int bFd = 0;
+	if (env[REQUEST_METHOD_ENV] == "POST") {
+		std::string bodyFname = req.getBodyFileName();
 
-	throw "remove this throw statement when cgi is done";
-	return "";
+		bFd = open(bodyFname.c_str(), O_RDONLY);
+		struct stat sb;
+		if (bFd == -1 || !(stat(bodyFname.c_str(), &sb) == 0 && S_ISREG(sb.st_mode))) {
+			throw "request body file error";
+		}
+	}
+
+
+	std::string ret = "./networking/cgi/" + str("cgi_response_") + to_string(fileCount);
+
+	fileCount++;
+
+	int resFd = open(ret.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	// errorln("resfd = ", resFd, ", WRITE RET = ", write(resFd, "test", 4), ", errno = ", errno);
+	struct stat sb;
+	if (resFd == -1 || !(stat(ret.c_str(), &sb) == 0 && S_ISREG(sb.st_mode))) {
+		throw "response body file creation error";
+	}
+
+	pid_t pid = fork();
+
+
+	if (pid == -1) {
+		throw "fork error";
+	}
+	else if (!pid) {
+		dup2(bFd, 0);
+		dup2(resFd, 1);
+		char *av[3];
+		std::string av0 = "." + URLgetFileName(cgiPath);
+		av[0] = strdup(av0.c_str());
+		av[1] = strdup(env[SCRIPT_NAME_ENV].c_str());
+		av[2] = NULL;
+		char **ep = new char*[env.size() + 1];
+		size_t ep_i = 0;
+		for (HeaderMap::iterator it = env.begin(); it != env.end(); it++) {
+			std::string keyval = it->first + '=' + it->second;
+			ep[ep_i] = strdup(keyval.c_str());
+			ep_i++;
+		}
+		ep[ep_i] = NULL;
+
+		// errorln("BISMILLAH ", cgiPath);
+		// for (int i = 0; av[i]; i++) {
+		// 	errorln("av ", i, " = |", av[i], "|");
+		// }
+		// for (int i = 0; ep[i]; i++) {
+		// 	errorln("ep ", i, " = ", ep[i]);
+		// }
+		std::string cdhere = cgiPath.substr(0, cgiPath.find_last_of("/"));
+		// errorln("chdir ", cdhere);
+		// errorln("chdir ret = ", 
+		chdir(cdhere.c_str())
+		// )
+		;
+		// errorln("fcontent = ", getFileContents(av[1]));
+		execve(URLgetFileName(cgiPath).substr(1, cgiPath.length()).c_str(), av, oenv);
+		// errorln("ERROR EXECUTING CGI");
+		exit(255);
+	}
+	else {
+		wait(NULL);
+	}
+
+	// throw "remove this throw statement when cgi is done";
+	return ret;
 }

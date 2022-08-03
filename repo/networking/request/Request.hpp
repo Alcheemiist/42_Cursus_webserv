@@ -50,6 +50,7 @@ public:
     bool        getIsComplete() const { return _is_complete; };
     std::string getConnection() const { return _connection; };
     int         getRequestStatus() const { return requestStatus; };
+	std::string getBodyFileName() const { return bodyFileName; };
     const std::map<std::string, std::string> &getHeaders() const;
     void fill_body(char *buffer, size_t bytes);
     int getcontent_length() const { return _content_length; };
