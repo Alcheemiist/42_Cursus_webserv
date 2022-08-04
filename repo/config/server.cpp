@@ -7,6 +7,7 @@
 #include <sstream>  
 #include "location.hpp"
 #include "cgi.hpp"
+#include <cstring>
 
 //-------------constructor--------------
 Server::Server():
