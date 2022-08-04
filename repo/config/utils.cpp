@@ -4,6 +4,8 @@
 #include <iomanip>
 #include "utils.hpp"
 #include "throwed.hpp"
+#include <algorithm>
+
 
 int to_int(std::string _s) {
 	const char *s = _s.c_str();

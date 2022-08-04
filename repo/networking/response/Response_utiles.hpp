@@ -8,14 +8,14 @@
 
 #include "../elements.hpp"
 
-errno_t _access_s(
-   const char *path,
-   int mode
-);
-errno_t _waccess_s(
-   const wchar_t *path,
-   int mode
-);
+// errno_t _access_s(
+//    const char *path,
+//    int mode
+// );
+// errno_t _waccess_s(
+//    const wchar_t *path,
+//    int mode
+// );
 
 std::string *split_url(std::string str);
 
