@@ -25,17 +25,13 @@ void Response::setStatus(Request *request, Server server)
 
     }
     std::cout << "NOT WORKING AS EXCPECTED FUNCTION DOWN HERE"  << std::endl;
-    if (!get_matched_location_for_request_uri(request->geturl(), server)) // NOT WORKING TRASH
-        this->status = "-404 NOT FOUND\r\n";
-    // else if (url_redirected(request->geturl(), server))
-    //     this->status = "301 MOVED PERMANENTLY\r\n";
-    
-    // else if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
-    //     this->status = "405 METHOD NOT ALLOWED\r\n";
-    // }
-    
+    if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
+        this->status = "405 METHOD NOT ALLOWED\r\n";
+    else if (url_redirected(request->geturl(), server))
+        this->status = "301 MOVED PERMANENTLY\r\n";
+    else if (!get_matched_location_for_request_uri(request->geturl(), server)) // NOT WORKING TRASH
+        this->status = "404 NOT FOUND\r\n";
     std::cout << red << "-> Set Status : " << this->status << def  << std::endl;
-   
 }
 
 // void Response::setContentType(char *path)
@@ -155,16 +151,12 @@ Response  response( Request *request, ParseConfig *config, int index_server)
     /* is_req_well_formed() */
 
     response.setStatus(request, config->get_server_vect()[index_server]);
-    // while (1)
-    // {
-    //     ;
-    // }
     // if () there is an error status go fill the response body with the error html page
     //     ERRORresponse(request, &response);
     // if () the response is good ....
     /**/
-    // if (!(request->getMethod().compare("GET")))
-    //     GETresponse(request, &response, config, index_server);
+    if (!(request->getMethod().compare("GET")))
+        GETresponse(request, &response, config, index_server);
     // else if (request->getMethod().compare("POST") == 0)
     //     POSTresponse(request, &response, config, index_server);
     // else if (request->getMethod().compare("DELETE") == 0)
@@ -183,7 +175,6 @@ Response  response( Request *request, ParseConfig *config, int index_server)
 //     // std::cout << "im doing delete response\n";
 //     // response->set_location_url(get_location_url(request->geturl(),
 //     //     config->get_server_vect()[index_server]));
-
 //     // if(!requested_file_in_root(request->geturl(),
 //     //     config->get_server_vect()[index_server]))
 //     // {
@@ -282,10 +273,8 @@ Response  response( Request *request, ParseConfig *config, int index_server)
 //     /////// main process to set a good response : set mandatory headers + set path of file to send
 //     // response->set_location(get_location_url(request->geturl(),
 //     //     config->get_server_vect()[index_server]));
-
 //     // response->set_redirection(get_redirection_url(request->geturl(),
 //     //     config->get_server_vect()[index_server]));
-
 //     // if(!requested_file_in_root(request->geturl(),
 //     //     config->get_server_vect()[index_server]))
 //     // {
@@ -325,7 +314,6 @@ Response  response( Request *request, ParseConfig *config, int index_server)
 //     //         }
 //     //     }
 //     // }
-    
 //     // std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
 //     // if (true)
 //     // {
@@ -336,9 +324,7 @@ Response  response( Request *request, ParseConfig *config, int index_server)
 //     //         path.append("index.html");
 //     //     else
 //     //         path.append(request->getPath());
-
 //     //     std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
-
 //     //     FILE *pFile;
 //     //     pFile = fopen(path.c_str(), "r");
 //     //     char s2[50];
@@ -360,7 +346,6 @@ Response  response( Request *request, ParseConfig *config, int index_server)
 //     //         response->setResponseHeader();
 //     //         response->setContentType(ss);
 //     //         response->setpath(ss);
-
 //     //     }
 //     //     fclose(pFile);
 //     // }

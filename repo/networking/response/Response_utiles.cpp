@@ -1,6 +1,14 @@
 #include "Response_utiles.hpp"
 #include "../../config/print.hpp"
 
+int str_matched(std::string str1, std::string str2)
+{
+	int i = 0;
+	for (i = 0; i < str1.length() || i < str2.length() ||
+			str1[i] != str2[i] ; i++);
+	return i;
+}
+
 bool url_is_formated(std::string url)
 {
 	std::string allowed ="ABCDEFGHIJKLMNOPQRSTUVWXYZ\
@@ -37,65 +45,105 @@ bool get_matched_location_for_request_uri(std::string url, Server server)
 {
 	std::vector<Location> location = server.get_location();
 	std::vector<Location>::const_iterator it_loc = location.begin();
-	std::string location_path;
-	int location_path_size = 0;
-	Location loca;
-
-
-
-	// check if path exist in root directory
-	// if (url == "/")
-	// 	return true;
-
-	// if (is_file_exist(server.get_root() + (url)))
-	// 	return true;
+	std::string location_path = "";
+	std::string location_str;
+	int location_path_matched = 0;
+	Location location_matched;
 
 	for (; it_loc != location.end(); it_loc++)
 	{
-		std::cout << "{ " << std::endl;
-		std::cout << it_loc->get_locations_path().c_str() << 	std::endl;
-		if (!it_loc->get_locations_path().compare(0, url.size(), url))
+		location_str = it_loc->get_locations_path();
+		if (location_str.back() != '/')
+			location_str += '/';
+		if (url.substr(0, location_str.size()) == location_str && it_loc->get_root() != "")
 		{
-			if (it_loc->get_locations_path().size() > location_path_size)
+			if (str_matched(location_str, location_path) > location_path_matched)
 			{
-				location_path_size = it_loc->get_locations_path().size();
-				loca = *it_loc;
+				location_path = location_str;
+				location_path_matched = str_matched(location_str, location_path);
+				location_matched = *it_loc;
 			}
 		}
-		if (location_path_size)
-			location_path = url.replace(0, location_path_size, loca.get_root());
-		else
-			location_path = url;
-
 	}
-	while(1);
-	return (false);
+	if (location_path_matched)
+		location_path = url.replace(0, location_path.size(), location_matched.get_root());
+	else
+		location_path = server.get_root() + url;
+	return (file_exist(location_path));
 }
 
 bool	url_redirected(std::string url, Server server)
 {
 	std::vector<std::vector<std::string> > red = server.get_redirections();
+	std::string redirection_str;
+	std::string redirection_path = "";
+	int redirection_path_matched = 0;
 
-	for (std::vector<std::vector<std::string> >::const_iterator
-			reds = red.begin(); reds != red.end(); ++reds)
+	for(std::vector<std::vector<std::string> >::iterator it = red.begin(); it != red.end(); ++it)
 	{
-		for (std::vector<std::string>::const_iterator
-				it_red = reds->begin(); it_red != reds->end(); ++it_red)
+		redirection_str = it->at(0);
+		if ((*it)[1].back() != '/')
+				redirection_str += '/';
+		if (url.substr(0, redirection_str.size()) == redirection_str)
 		{
-			if (url.compare(0, it_red->length(), *it_red) == 0)
-				return (true);
+			if (str_matched(redirection_str, redirection_path) > redirection_path_matched)
+			{
+				redirection_path = (*it)[2];
+				redirection_path_matched = str_matched(redirection_str, redirection_path);
+			}
 		}
 	}
+	if (redirection_path_matched)
+		return (true);
 	return (false);
+		// redirection_path = url.replace(0, redirection_path.size(), redirection_path);
 }
 
 bool	method_is_allowed(std::string method, std::string url ,Server server)
 {
-	(void)method;
-	(void)url;
-	std::string path;
-	bool		allowed = false;
-	std::vector<Location> loc = server.get_location();
+	bool allowed = false;
+	std::vector<std::string> _allowed_methods = server.get_allowed_methods();
+	for (std::vector<std::string>::iterator it = _allowed_methods.begin(); it != _allowed_methods.end(); ++it)
+		if (*it == method)
+			allowed = true;
+	if (!allowed)
+		return (false);
+
+	std::vector<Location> location = server.get_location();
+	std::vector<Location>::const_iterator it_loc = location.begin();
+	std::string location_path = "";
+	std::string location_str;
+	int location_path_matched = 0;
+	Location location_matched;
+
+	for (; it_loc != location.end(); it_loc++)
+	{
+		location_str = it_loc->get_locations_path();
+		if (location_str.back() != '/')
+			location_str += '/';
+		if (url.substr(0, location_str.size()) == location_str && it_loc->get_root() != "")
+		{
+			if (str_matched(location_str, location_path) > location_path_matched)
+			{
+				location_path = location_str;
+				location_path_matched = str_matched(location_str, location_path);
+				location_matched = *it_loc;
+			}
+		}
+	}
+	_allowed_methods = it_loc->get_methods();
+	for (std::vector<std::string>::iterator it = _allowed_methods.begin(); it != _allowed_methods.end(); ++it)
+		if (*it == method)
+			return true;
+	if (!allowed)
+		return (false);
+
+
+	// (void)method;
+	// (void)url;
+	// std::string path;
+	// bool		allowed = false;
+	// std::vector<Location> loc = server.get_location();
 
 	// for (std::vector<std::string>::const_iterator it_method =
 	// 	server.get_allowed_methods().begin();
@@ -120,7 +168,7 @@ bool	method_is_allowed(std::string method, std::string url ,Server server)
 	// 			}
 	// 		}
 	// }
-	return allowed;
+	// return allowed;
 }
 
 std::string get_location_url(std::string url, Server server)
@@ -254,3 +302,4 @@ std::vector<char> read_by_vector(char *path, Response *response)
     close(fd);
     return buffer;
 }
+

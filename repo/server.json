@@ -1,0 +1,139 @@
+(Server) $0 = {
+	_name = size=1 {
+	  [0] = "Y1"
+	}
+	_listen_port = 8080
+	_listen_host = "localhost"
+	_allowed_methods = size=3 {
+	  [0] = "POST"
+	  [1] = "DELETE"
+	  [2] = "GET"
+	}
+	_index = size=0 {}
+	_upload_path = "/upload/"
+	_error_pages = size=1 {
+	  [0] = size=2 {
+		[0] = "404"
+		[1] = "./errorsPages/404/404.html"
+	  }
+	}
+	_redirections = size=1 {
+	  [0] = size=2 {
+		[0] = "/doooooxsxvasvf"
+		[1] = "/PATH01/"
+	  }
+	}
+	_root = "../www/"
+	_location = size=7 {
+	  [0] = {
+		_cgi = size=0 {}
+		_name = ""
+		_locations_path = "/PATH00/"
+		_allow_methods = size=3 {
+		  [0] = "POST"
+		  [1] = "GET"
+		  [2] = "DELETE"
+		}
+		_root = "./root/hangover-master/"
+		_client_max_body_size = 3000
+		_index = size=0 {}
+		_autoindex = true
+		_upload_path = ""
+	  }
+	  [1] = {
+		_cgi = size=0 {}
+		_name = ""
+		_locations_path = "/root/"
+		_allow_methods = size=1 {
+		  [0] = "POST"
+		}
+		_root = "./root/"
+		_client_max_body_size = -1
+		_index = size=0 {}
+		_autoindex = true
+		_upload_path = ""
+	  }
+	  [2] = {
+		_cgi = size=0 {}
+		_name = ""
+		_locations_path = "/PATH01/"
+		_allow_methods = size=2 {
+		  [0] = "GET"
+		  [1] = "POST"
+		}
+		_root = "./root/roxy-master/"
+		_client_max_body_size = -1
+		_index = size=0 {}
+		_autoindex = true
+		_upload_path = ""
+	  }
+	  [3] = {
+		_cgi = size=0 {}
+		_name = ""
+		_locations_path = "/PATH00/test/"
+		_allow_methods = size=1 {
+		  [0] = "GET"
+		}
+		_root = "./root/test/"
+		_client_max_body_size = -1
+		_index = size=1 {
+		  [0] = "index.html"
+		}
+		_autoindex = true
+		_upload_path = ""
+	  }
+	  [4] = {
+		_cgi = size=0 {}
+		_name = ""
+		_locations_path = "/PATH00/test/erro"
+		_allow_methods = size=1 {
+		  [0] = "GET"
+		}
+		_root = "./root/univers/"
+		_client_max_body_size = 1234
+		_index = size=0 {}
+		_autoindex = true
+		_upload_path = ""
+	  }
+	  [5] = {
+		_cgi = size=0 {}
+		_name = ""
+		_locations_path = "/cocacola/"
+		_allow_methods = size=2 {
+		  [0] = "GET"
+		  [1] = "DELETE"
+		}
+		_root = "./root/cocacola/"
+		_client_max_body_size = 1234
+		_index = size=1 {
+		  [0] = "o.html"
+		}
+		_autoindex = false
+		_upload_path = ""
+	  }
+	  [6] = {
+		_cgi = size=0 {}
+		_name = ""
+		_locations_path = "/pepsi/"
+		_allow_methods = size=1 {
+		  [0] = "GET"
+		}
+		_root = "./root/pepsi/"
+		_client_max_body_size = 1234
+		_index = size=1 {
+		  [0] = "index.html"
+		}
+		_autoindex = true
+		_upload_path = ""
+	  }
+	}
+	_cgi = size=1 {
+	  [0] = {
+		_name = ".php"
+		_cgi_path = "./cgi/php-cgi"
+		_allow_methods = size=0 {}
+	  }
+	}
+	_client_max_body_size = -1
+	_autoindex = true
+  }

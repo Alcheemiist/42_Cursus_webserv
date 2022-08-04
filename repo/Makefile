@@ -4,23 +4,23 @@ FS = -fsanitize=address -g
 NAME = webserv
 
 SRC =  ./config/AllowedComponent.cpp \
-./config/cgi.cpp \
-./config/Component.cpp \
-./config/LexicalError.cpp \
-./config/location.cpp \
-./config/LogicalError.cpp \
-./config/parse_confile.cpp \
-./config/parse_main.cpp \
-./config/ParsingError.cpp \
-./config/server.cpp \
-./config/utils.cpp \
-./networking/cgi/cgi.cpp \
-./networking/elements/elements.cpp \
-./networking/elements/elements2.cpp \
-./networking/request/Request.cpp \
-./networking/response/Response.cpp \
-./networking/response/Response_utiles.cpp \
-./server.cpp
+	./config/cgi.cpp \
+	./config/Component.cpp \
+	./config/LexicalError.cpp \
+	./config/location.cpp \
+	./config/LogicalError.cpp \
+	./config/parse_confile.cpp \
+	./config/parse_main.cpp \
+	./config/ParsingError.cpp \
+	./config/server.cpp \
+	./config/utils.cpp \
+	./networking/cgi/cgi.cpp \
+	./networking/elements/elements.cpp \
+	./networking/elements/elements2.cpp \
+	./networking/request/Request.cpp \
+	./networking/response/Response.cpp \
+	./networking/response/Response_utiles.cpp \
+	./server.cpp
 
 OBJ = $(SRC:.cpp=.o)
 
@@ -69,10 +69,10 @@ all:	$(NAME)
 
 
 %.o: %.cpp $(HDR)
-	c++ $(FLAGS) -c -o $@ $<
+	c++ -g $(FLAGS) -c -o $@ $<
 
 $(NAME) : $(OBJ)
-	c++ $(OBJ) -o $(NAME) $(FLAGS)
+	c++  -g $(OBJ) -o $(NAME) $(FLAGS)
 
 clean:
 	@rm -rf $(NAME)
@@ -86,10 +86,10 @@ fclean:	clean
 re:	fclean all
 
 san:
-	c++  $(SRC) -o $(NAME) $(FLAGS) $(FS)
+	c++  -g $(SRC) -o $(NAME) $(FLAGS) $(FS)
 
 sanserv:
-	c++  $(SRC) -o $(NAME) $(FLAGS) $(FS) -DPARSESERV
+	c++  -g $(SRC) -o $(NAME) $(FLAGS) $(FS) -DPARSESERV
 
 sre: fclean san
 
