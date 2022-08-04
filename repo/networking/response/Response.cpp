@@ -3,8 +3,77 @@
 #include <sys/stat.h>
 #include "Response_utiles.hpp"
 
+Response  response(Request *request, ParseConfig *config, int index_server)
+{
+    std::cout << blue << "********** { Procces Response } ***********************" << def << std::endl;
+    Response response;
+
+    /* is_req_well_formed() */
+
+    response.setStatus(request, config->get_server_vect()[index_server]);
+    exit(0);
+    // if () there is an error status go fill the response body with the error html page
+    //     ERRORresponse(request, &response);
+    // if () the response is good ....
+    /**/
+    if (!(request->getMethod().compare("GET")))
+        GETresponse(request, &response, config, index_server);
+    // else if (request->getMethod().compare("POST") == 0)
+    //     POSTresponse(request, &response, config, index_server);
+    // else if (request->getMethod().compare("DELETE") == 0)
+    //     DELETEresponse(request, &response, config, index_server);
+    // std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
+
+
+
+
+
+    // std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
+    // if (true)
+    // {
+    //     std::string path ;// = (char *)malloc(sizeof(char) * (1000));
+    //     path.reserve(10000);
+    //     path = config->get_server_vect()[index_server].get_root();
+    //     if (request->getPath() == "/")
+    //         path.append("index.html");
+    //     else
+    //         path.append(request->getPath());
+    //     std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
+    //     FILE *pFile;
+    //     pFile = fopen(path.c_str(), "r");
+    //     char s2[50];
+    //     if (pFile != NULL)
+    //     {
+    //         /////// main process to set a good response : set mandatory headers + set path of file to send
+    //         strcpy(s2, " 200 OK\r\n");
+    //         response->setResponseStatus(s2);
+    //         response->setResponseHeader();
+    //         response->setContentType((char*)path.c_str());
+    //         response->setpath(path);
+    //     }
+    //     else
+    //     {
+    //         /////// main process to set a good response : set mandatory headers + set path of file to send
+    //         char ss[100] = "./errorsPages/404/404.html";
+    //         strcpy(s2, " 404 NOT FOUND\r\n");
+    //         response->setResponseStatus(s2);
+    //         response->setResponseHeader();
+    //         response->setContentType(ss);
+    //         response->setpath(ss);
+    //     }
+    //     fclose(pFile);
+    // }
+
+
+    return response;
+}
+
 void Response::setStatus(Request *request, Server server)
 {
+    this->init_location(request->geturl(),server);
+    this->init_redirection(request->geturl(), server);
+    std::cout << "Requested path : " << this->requested_path << std::endl;
+    std::cout << "Redirection path : " << this->redirection_path << std::endl;
 	if (!request->get_is_formated())
 	{
         
@@ -27,12 +96,70 @@ void Response::setStatus(Request *request, Server server)
     std::cout << "NOT WORKING AS EXCPECTED FUNCTION DOWN HERE"  << std::endl;
     if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
         this->status = "405 METHOD NOT ALLOWED\r\n";
-    else if (url_redirected(request->geturl(), server))
+    else if (!get_redirection().empty())
         this->status = "301 MOVED PERMANENTLY\r\n";
-    else if (!get_matched_location_for_request_uri(request->geturl(), server)) // NOT WORKING TRASH
+    else if (!file_exist(get_location())) // NOT WORKING TRASH
         this->status = "404 NOT FOUND\r\n";
     std::cout << red << "-> Set Status : " << this->status << def  << std::endl;
 }
+
+void Response::init_location(std::string url, Server server)
+{
+	std::vector<Location> location = server.get_location();
+	std::vector<Location>::const_iterator it_loc = location.begin();
+	std::string location_path = "";
+	std::string location_str;
+	int location_path_matched = 0;
+	Location location_matched;
+
+	for (; it_loc != location.end(); it_loc++)
+	{
+		location_str = it_loc->get_locations_path();
+		if (location_str.back() != '/')
+			location_str += '/';
+		if (url.substr(0, location_str.size()) == location_str && it_loc->get_root() != "")
+		{
+			if (str_matched(location_str, location_path) > location_path_matched)
+			{
+				location_path = location_str;
+				location_path_matched = str_matched(location_str, location_path);
+				location_matched = *it_loc;
+			}
+		}
+	}
+	if (location_path_matched)
+		this->requested_path = remove_duplicate_slash(url.replace(0, location_path.size(), location_matched.get_root()));
+	else
+		this->requested_path = remove_duplicate_slash(server.get_root() + url);
+}
+
+void	Response::init_redirection(std::string url, Server server)
+{
+	std::vector<std::vector<std::string> > red = server.get_redirections();
+	std::string redirection_str;
+	std::string _redirection_path = "";
+	int redirection_path_matched = 0;
+
+	for(std::vector<std::vector<std::string> >::iterator it = red.begin(); it != red.end(); ++it)
+	{
+		redirection_str = it->at(0);
+		if (redirection_str.back() == '/')
+				redirection_str.pop_back();
+		if (url.substr(0, redirection_str.size()) == redirection_str)
+		{
+			if (str_matched(redirection_str, _redirection_path) > redirection_path_matched)
+			{
+				_redirection_path = (*it)[2];
+				redirection_path_matched = str_matched(redirection_str, _redirection_path);
+			}
+		}
+	}
+	if (redirection_path_matched)
+        this->redirection_path = url.replace(0, _redirection_path.size(), _redirection_path);
+    else
+        this->redirection_path = "";
+}
+
 
 // void Response::setContentType(char *path)
 // {
@@ -135,7 +262,6 @@ std::string Response::getHeader()
     return res;
 };
 
-//
 // void ERRORresponse(Request *request, Response *response)
 // {
 //     (void)request;
@@ -143,28 +269,7 @@ std::string Response::getHeader()
 //     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
 // }
 
-Response  response( Request *request, ParseConfig *config, int index_server)
-{
-    std::cout << blue << "********** { Procces Response } ***********************" << def << std::endl;
-    Response response;
 
-    /* is_req_well_formed() */
-
-    response.setStatus(request, config->get_server_vect()[index_server]);
-    // if () there is an error status go fill the response body with the error html page
-    //     ERRORresponse(request, &response);
-    // if () the response is good ....
-    /**/
-    if (!(request->getMethod().compare("GET")))
-        GETresponse(request, &response, config, index_server);
-    // else if (request->getMethod().compare("POST") == 0)
-    //     POSTresponse(request, &response, config, index_server);
-    // else if (request->getMethod().compare("DELETE") == 0)
-    //     DELETEresponse(request, &response, config, index_server);
-    // std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
-
-    return response;
-}
 
 // void DELETEresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
 // {
@@ -264,99 +369,62 @@ Response  response( Request *request, ParseConfig *config, int index_server)
 //     std::cout << "im doing post response\n";
 // }
 
-// void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
-// {
-//     (void)request;
-//     (void)response;
-//     (void)config;
-//     (void)index_server;
-//     /////// main process to set a good response : set mandatory headers + set path of file to send
-//     // response->set_location(get_location_url(request->geturl(),
-//     //     config->get_server_vect()[index_server]));
-//     // response->set_redirection(get_redirection_url(request->geturl(),
-//     //     config->get_server_vect()[index_server]));
-//     // if(!requested_file_in_root(request->geturl(),
-//     //     config->get_server_vect()[index_server]))
-//     // {
-//     //     response->setStatus("404 NOT FOUND");
-//     // }
-//     // else if (request->geturl().back() != '/')
-//     // {
-//     //     response->setStatus("301 MOVED PERMANENTLY");
-//     // }
-//     // else
-//     // {
-//     //     if (!file_exist(request->geturl() + "index.html"))
-//     //     {
-//     //         if (config->get_server_vect()[index_server].get_autoindex())
-//     //         {
-//     //             // get_autoindex();
-//     //             response->setStatus("200 OK");
-//     //         }
-//     //         else
-//     //         {
-//     //           response->setStatus("403 FORBIDDEN");
-//     //         }
-//     //     }
-//     //     else
-//     //     {
-//     //         if (is_file(request->geturl()))
-//     //         {
-//     //             // if (Location_have_cgi(request->geturl()))
-//     //             // {
-//     //             //     // get_cgi();
-//     //             // }
-//     //             // else
-//     //             // {
-//     //             //     response->setStatus("200 OK");
-//     //             //     // request_file
-//     //             // }
-//     //         }
-//     //     }
-//     // }
-//     // std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
-//     // if (true)
-//     // {
-//     //     std::string path ;// = (char *)malloc(sizeof(char) * (1000));
-//     //     path.reserve(10000);
-//     //     path = config->get_server_vect()[index_server].get_root();
-//     //     if (request->getPath() == "/")
-//     //         path.append("index.html");
-//     //     else
-//     //         path.append(request->getPath());
-//     //     std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
-//     //     FILE *pFile;
-//     //     pFile = fopen(path.c_str(), "r");
-//     //     char s2[50];
-//     //     if (pFile != NULL)
-//     //     {
-//     //         /////// main process to set a good response : set mandatory headers + set path of file to send
-//     //         strcpy(s2, " 200 OK\r\n");
-//     //         response->setResponseStatus(s2);
-//     //         response->setResponseHeader();
-//     //         response->setContentType((char*)path.c_str());
-//     //         response->setpath(path);
-//     //     }
-//     //     else
-//     //     {
-//     //         /////// main process to set a good response : set mandatory headers + set path of file to send
-//     //         char ss[100] = "./errorsPages/404/404.html";
-//     //         strcpy(s2, " 404 NOT FOUND\r\n");
-//     //         response->setResponseStatus(s2);
-//     //         response->setResponseHeader();
-//     //         response->setContentType(ss);
-//     //         response->setpath(ss);
-//     //     }
-//     //     fclose(pFile);
-//     // }
-// }
-
-void ERRORresponse(Request *request, Response *response)
+void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
     (void)request;
     (void)response;
-    std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
+    (void)config;
+    (void)index_server;
+    /////// main process to set a good response : set mandatory headers + set path of file to send
+
+    if(!requested_file_in_root(response->get_location()))
+    {
+        response->setStatus("404 NOT FOUND");
+    }
+    else if (!is_file(response->get_location()))
+    {
+        if (response->get_location().back() != '/')
+        {
+            response->set_redirection(response->get_location() + "/");
+            response->setStatus("301 MOVED PERMANENTLY");
+        }
+        else
+        {
+            if (!file_exist(remove_duplicate_slash(response->get_location() + "/" + "index.html")))
+            {
+                if (!config->get_server_vect()[index_server].get_autoindex())
+                {
+                    response->setStatus("403 FORBIDDEN");
+                }
+                else
+                {
+                    response->setpath(generate_auto_index(response->get_location()));
+                    response->setStatus("200 OK");
+                }
+            }
+            else
+            {
+                // if (Location_have_cgi(response->get_location()))
+                // {
+                //     // cgi_response(request, response, config, index_server);
+                // }
+                // else
+                // {
+                    response->setpath(response->get_location());
+                    response->setStatus("200 OK");
+                // }
+            }
+        }
+    }
+    
 }
+
+// void ERRORresponse(Request *request, Response *response)
+// {
+//     (void)request;
+//     (void)response;
+//     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
+// }
 
 // void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 // {
@@ -404,28 +472,28 @@ void ERRORresponse(Request *request, Response *response)
 //     }
 // }
 
-void response(int new_socket, Request *request, ParseConfig *config, int index_server)
-{
-    // Response response;
-	// response.setStatus(request, config->get_server_vect()[index_server]);
-    std::cout << blue << "********** { Response } ***********************" << def << std::endl;
-    // // if (!request->isGoodrequest())
-    // //     ERRORresponse(request, &response);
-    // if (!(request->getMethod().compare("GET")))
-    //     GETresponse(request, &response, config, index_server);
-    // else if (request->getMethod().compare("POST") == 0)
-    //     POSTresponse(request, &response, config, index_server);
-    // else if (request->getMethod().compare("DELETE") == 0)
-    //     DELETEresponse(request, &response, config, index_server);
-    // else
-    //     ERRORresponse(request, &response);
-    // // std::cout << blue << "********** {End Response } ******************" << def << std::endl
-    // //           << std::endl;
-    // std::string str = response.getResponse();
-    // size_t lenght = str.size();
-    // ssize_t size_send = send(new_socket, str.c_str(), lenght, MSG_OOB);
-    // if (size_send > 0)
-    //     std::cout << B_green << "********** data size send {" << size_send << "}******************" << B_def << std::endl;
-    // else
-    //     std::cout << B_red << "********** no data t send {" << size_send << "}******************" << B_def << std::endl;
-}
+// void response(int new_socket, Request *request, ParseConfig *config, int index_server)
+// {
+//     // Response response;
+// 	// response.setStatus(request, config->get_server_vect()[index_server]);
+//     std::cout << blue << "********** { Response } ***********************" << def << std::endl;
+//     // // if (!request->isGoodrequest())
+//     // //     ERRORresponse(request, &response);
+//     if (!(request->getMethod().compare("GET")))
+//         GETresponse(request, &response, config, index_server);
+//     // else if (request->getMethod().compare("POST") == 0)
+//     //     POSTresponse(request, &response, config, index_server);
+//     // else if (request->getMethod().compare("DELETE") == 0)
+//     //     DELETEresponse(request, &response, config, index_server);
+//     // else
+//     //     ERRORresponse(request, &response);
+//     // // std::cout << blue << "********** {End Response } ******************" << def << std::endl
+//     // //           << std::endl;
+//     // std::string str = response.getResponse();
+//     // size_t lenght = str.size();
+//     // ssize_t size_send = send(new_socket, str.c_str(), lenght, MSG_OOB);
+//     // if (size_send > 0)
+//     //     std::cout << B_green << "********** data size send {" << size_send << "}******************" << B_def << std::endl;
+//     // else
+//     //     std::cout << B_red << "********** no data t send {" << size_send << "}******************" << B_def << std::endl;
+// }

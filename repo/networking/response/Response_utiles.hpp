@@ -3,8 +3,10 @@
 
 #include <string>
 #include <vector>
-#include  <stdio.h>
-#include  <stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
+#include <sys/types.h>
 
 #include "../elements.hpp"
 
@@ -35,9 +37,9 @@ bool file_exist(std::string path);
 
 std::string get_location_url(std::string url, Server server);
 
-std::string get_redirection_url(std::string url, Server server);
+// std::string get_redirection_url(std::string url, Server server);
 
-bool	requested_file_in_root(std::string url, Server server);
+bool	requested_file_in_root(std::string url);
 
 bool is_file(std::string url);
 
@@ -48,5 +50,7 @@ char    *readAllFile(char *path);
 size_t  _getFileSize(const char *fileName);
 
 std::vector<char> read_by_vector(char *path, Response *response);
-
-#endif // !Re
+int str_matched(std::string str1, std::string str2);
+std::string remove_duplicate_slash(std::string str);
+std::string generate_auto_index(std::string url);
+#endif
