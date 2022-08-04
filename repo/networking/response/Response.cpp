@@ -84,7 +84,7 @@ void Response::setStatus(Request *request, Server server)
     else if (!get_redirection().empty())
         this->status = "301 MOVED PERMANENTLY\r\n";
     else if (!file_exist(get_location())) // NOT WORKING TRASH
-        this->status = "404 NOT FOUND\r\n";
+        this->status = " 404 NOT FOUND\r\n";
     std::cout << red << "-> Set Status : " << this->status << def  << std::endl;
 }
 
@@ -219,13 +219,15 @@ std::string Response::getHeader()
     res.append(version);
     res.append(status);
     // headers
-    res.append("Content-Type: ");
-    res.append(this->contentType);
-    res.append("\r\n");
+	if (this->contentType.length()) {
+		res.append("Content-Type: ");
+		res.append(this->contentType);
+		res.append("\r\n");
+	}
 
     size_t tt = getFileSize(body_file_path.c_str());
     std::cout << tt << " {" <<  body_file_path << std::endl;
-    if (tt > 0)
+    if (tt && tt != (size_t)-1)
     {
         res.append("Content-Length: ");
         res.append(std::to_string(tt));
@@ -238,9 +240,9 @@ std::string Response::getHeader()
         res.append("\r\n");
     }
     res.append("server: alchemist\r\n");
-    res.append("location: wonderland");
+    res.append("location: wonderland\r\n");
     // CRLF
-    res.append("\r\n\r\n");
+    res.append("\r\n");
     setHeader(res);
 
     return res;
@@ -363,14 +365,14 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
     std::string body_f = "";
     if(!requested_file_in_root(response->get_location()))
     {
-        response->setStatus("404 NOT FOUND");
+        response->setStatus(" 404 NOT FOUND\r\n");
     }
     else if (!is_file(response->get_location()))
     {
         if (response->get_location().back() != '/')
         {
             response->set_redirection(response->get_location() + "/");
-            response->setStatus("301 MOVED PERMANENTLY");
+            response->setStatus(" 301 MOVED PERMANENTLY\r\n");
         }
         else
         {
@@ -378,14 +380,14 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
             {
                 if (!config->get_server_vect()[index_server].get_autoindex())
                 {
-                    response->setStatus("403 FORBIDDEN");
+                    response->setStatus(" 403 FORBIDDEN\r\n");
                 }
                 else
                 {
                     body_f = generate_auto_index(response->get_location());
                     response->setpath(body_f);
                     response->set_redirection(remove_duplicate_slash(response->get_location() + "/" + "index.html"));
-                    response->setStatus("200 OK");
+                    response->setStatus(" 200 OK\r\n");
                 }
             }
             else
@@ -398,7 +400,7 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
                 // {
                     body_f = remove_duplicate_slash(response->get_location() + "/" + "index.html");
                     response->set_redirection(body_f);
-                    response->setStatus("200 OK");
+                    response->setStatus(" 200 OK\r\n");
                 // }
             }
         }
