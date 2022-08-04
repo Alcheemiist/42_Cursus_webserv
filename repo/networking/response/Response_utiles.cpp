@@ -25,7 +25,9 @@ bool url_is_formated(std::string url)
 bool file_exist(std::string path)
 {
 	struct stat st;
-	return (stat(path.c_str(), &st) == 0);
+	int res = stat(path.c_str(), &st);
+	println("res = ", res);
+	return (res == 0);
 }
 
 std::string remove_duplicate_slash(std::string str)
