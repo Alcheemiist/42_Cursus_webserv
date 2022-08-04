@@ -427,7 +427,7 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 			currentServer.set_error_pages(eit->attr(1), eit->attr(0));
 		}
 		ComponentList redirectDirective = it->findChildren(REDIRECT_DIRECTIVE);
-		ITERATE(ComponentList, errorPageDirective, rit) {
+		ITERATE(ComponentList, redirectDirective, rit) {
 			currentServer.set_redirections(rit->attr(0), rit->attr(1));
 		}
 		Component *rootDirective = it->findFirstChild(ROOT_DIRECTIVE);
