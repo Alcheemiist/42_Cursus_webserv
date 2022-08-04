@@ -4,7 +4,8 @@ webserv
 .gitignore
 config/conf/conf.conf
 upload/*
-testarea/
+testarea/misc
+testarea/postman/a.out
 *.o
 */.o
 */*/.o
