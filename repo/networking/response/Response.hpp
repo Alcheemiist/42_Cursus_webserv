@@ -36,7 +36,7 @@ class Response
         std::string redirection_path;
 
     public:
-        Response() : version("HXXXX "), status("! 200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""),
+        Response() : version("HTTP/1.1"), status(""), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""),
         body_file_size(0),  is_complete(false), body_file_path(""), maxBufferLenght(0), requestFuckedUp(false) {};
 
         void setVersion(std::string version) { this->version = version; };
@@ -64,7 +64,7 @@ class Response
         void    setbody_file_size(int size) { this->body_file_size = size; };
         int     getbody_file_size() { return this->body_file_size; };
         void    set_finish(bool i) { this->is_complete = i; };
-        void    setContentType(char *path);
+        void    setContentType(std::string type);
         bool    get_finish() { return this->is_complete; };
         std::vector<char> get_buffer();
         //
@@ -78,11 +78,15 @@ class Response
         std::string get_location() {  return this->requested_path; };
         std::string get_redirection()  { return this->redirection_path; };
         void init_location(std::string url, Server server);
+        void set_location(std::string url, Server server);
         void init_redirection(std::string url, Server server);
         void set_redirection(std::string url) { this->redirection_path = url; };
+        std::string get_version(){ return this->version; };
+        std::string get_status(){ return this->status; };
+        std::string get_content_type(){ return this->contentType; };
 };
 
-void GETresponse(Request *request, Response *response, ParseConfig *config, int server_index);
+std::string GETresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 void POSTresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 void PUTresponse();
 void DELETEresponse(Request *request, Response *response, ParseConfig *config, int server_index);
