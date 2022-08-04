@@ -15,6 +15,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <limits.h>
+#include <algorithm>
 
 #define BUFFERSIZE 1024
 #define DEFAULT_CONFIG_PATH "./config/conf/conf.conf"
@@ -40,6 +41,10 @@
 
 #define PRINT_VALUE(x) println(#x, " = ", x)
 #define PRINT_LINE_VALUE(x) println(__FILE__, ":", __LINE__, " ", #x, " = ", x)
+
+#define ITERATE(type, iterable, it_name) for (type::iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
+#define CONST_ITERATE(type, iterable, it_name) for (type::const_iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
+
 
 int reachedEnd(std::string::iterator &ch, char end) {
 	return *ch == end || *ch == '\0';
@@ -380,7 +385,7 @@ void validateCgiContextAttr(std::string attr, int index) {
 }
 
 void   portToParseConfigClass(Component &root, ParseConfig &config) {
-	std::vector<Component> serverComponents = root.children(0).findChildren(SERVER_CONTEXT);
+	ComponentList serverComponents = root.children(0).findChildren(SERVER_CONTEXT);
 	std::vector<Server> servers;
 	// std::vector<std::string> _name; 								done
     // int _listen_port; 											done
@@ -395,11 +400,11 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
     // bool _autoindex;												done
     // std::vector<cgi> _cgi;										done
     // std::vector<location> _location;								done
-	for (std::vector<Component>::iterator it = serverComponents.begin(); it != serverComponents.end(); it++) {
+	for (ComponentList::iterator it = serverComponents.begin(); it != serverComponents.end(); it++) {
 		Server currentServer;
-		Component *serverNamesDiretive = it->findFirstChild(SERVER_NAMES_DIRECTIVE);
-		if (serverNamesDiretive) {
-			currentServer.set_name_vect(serverNamesDiretive->attr());
+		Component *serverNamesDirective = it->findFirstChild(SERVER_NAMES_DIRECTIVE);
+		if (serverNamesDirective) {
+			currentServer.set_name_vect(serverNamesDirective->attr());
 		}
 		Component *listenDirective = it->findFirstChild(LISTEN_DIRECTIVE);
 		if (listenDirective) {
@@ -417,13 +422,13 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 		if (uploadPathDirective) {
 			currentServer.set_upload_path(uploadPathDirective->attr(0));
 		}
-		Component *errorPageDirective = it->findFirstChild(ERROR_PAGE_DIRECTIVE);
-		if (errorPageDirective) {
-			currentServer.set_error_pages(errorPageDirective->attr(1), errorPageDirective->attr(0));
+		ComponentList errorPageDirective = it->findChildren(ERROR_PAGE_DIRECTIVE);
+		ITERATE(ComponentList, errorPageDirective, eit) {
+			currentServer.set_error_pages(eit->attr(1), eit->attr(0));
 		}
-		Component *redirectDirective = it->findFirstChild(REDIRECT_DIRECTIVE);
-		if (redirectDirective) {
-			currentServer.set_redirections(redirectDirective->attr(0), redirectDirective->attr(1));
+		ComponentList redirectDirective = it->findChildren(REDIRECT_DIRECTIVE);
+		ITERATE(ComponentList, errorPageDirective, rit) {
+			currentServer.set_redirections(rit->attr(0), rit->attr(1));
 		}
 		Component *rootDirective = it->findFirstChild(ROOT_DIRECTIVE);
 		if (rootDirective) {
@@ -443,9 +448,9 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 		// std::string                 _cgi_path;					done
 		// std::vector<std::string>    _allow_methods;				done
 
-		std::vector<Component> serverCgiComponents = it->findChildren(CGI_CONTEXT);
+		ComponentList serverCgiComponents = it->findChildren(CGI_CONTEXT);
 		std::vector<Cgi> serverCgis;
-		for (std::vector<Component>::iterator scit = serverCgiComponents.begin(); scit != serverCgiComponents.end(); scit++) {
+		for (ComponentList::iterator scit = serverCgiComponents.begin(); scit != serverCgiComponents.end(); scit++) {
 			Cgi currentServerCgi;
 
 			currentServerCgi.set_cgi_name(scit->attr(0));
@@ -473,9 +478,9 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 		// std::string                 _upload_path;				done
 		// std::vector<cgi>			_cgi;							done
 
-		std::vector<Component> locationComponents = it->findChildren(LOCATION_CONTEXT);
+		ComponentList locationComponents = it->findChildren(LOCATION_CONTEXT);
 		std::vector<Location> locations;
-		for (std::vector<Component>::iterator lit = locationComponents.begin(); lit != locationComponents.end(); lit++) {
+		for (ComponentList::iterator lit = locationComponents.begin(); lit != locationComponents.end(); lit++) {
 			Location currentLocation;
 			
 
@@ -504,9 +509,9 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 			if (locationUploadPathDirective) {
 				currentLocation.set_upload_path(locationUploadPathDirective->attr(0));
 			}
-			std::vector<Component> locationCgiComponents = lit->findChildren(CGI_CONTEXT);
+			ComponentList locationCgiComponents = lit->findChildren(CGI_CONTEXT);
 			std::vector<Cgi> locationCgis;
-			for (std::vector<Component>::iterator lcit = locationCgiComponents.begin(); lcit != locationCgiComponents.end(); lcit++) {
+			for (ComponentList::iterator lcit = locationCgiComponents.begin(); lcit != locationCgiComponents.end(); lcit++) {
 				Cgi currentLocationCgi;
 
 				currentLocationCgi.set_cgi_name(lcit->attr(0));
@@ -532,10 +537,10 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 }
 
 std::string postProcessConfigFile(Component &root, std::string cfgName, std::string pName) {
-	std::vector<Component> &children = root.children(0).children();
+	ComponentList &children = root.children(0).children();
 	std::vector<int> ports;
 	std::string warning = "";
-	for (std::vector<Component>::iterator it = children.begin(); it != children.end(); it++) {
+	for (ComponentList::iterator it = children.begin(); it != children.end(); it++) {
 		if (it->name() == SERVER_CONTEXT) {
 			Component *listenDirective = it->findFirstChild(LISTEN_DIRECTIVE);
 			std::string listen = listenDirective->attr(0);
@@ -548,7 +553,7 @@ std::string postProcessConfigFile(Component &root, std::string cfgName, std::str
 			}
 			if (std::find(ports.begin(), ports.end(), port) != ports.end()) {
 				warning += BOLD + pName + ": " + BOLD_YELLOW + "warning: " + RESET + BOLD + cfgName + ":" + to_string(it->line()) + ":" + to_string(it->col()) + " port " + to_string(port) + " already in use, ignoring " SERVER_CONTEXT + '\n' + RESET;
-				std::vector<Component>::iterator tmp = it;
+				ComponentList::iterator tmp = it;
 				--it;
 				root.children(0).removeChild(tmp);
 			}
@@ -591,8 +596,8 @@ void validateConfigFile(Component &root, std::string cfgName, std::string pName)
 	allowedComponents.insert(std::make_pair(CGI_PATH_DIRECTIVE, AllowedComponent(CGI_PATH_DIRECTIVE, DIRECTIVE, list<std::string>(CGI_CONTEXT), 1, 1, validateCgiPathDirectiveAttr))); // checked
 	allowedComponents.insert(std::make_pair(UPLOAD_PATH_DIRECTIVE, AllowedComponent(UPLOAD_PATH_DIRECTIVE, DIRECTIVE, list<std::string>(SERVER_CONTEXT, LOCATION_CONTEXT), 1, 1, NULL))); // checked
 
-	std::vector<Component> allComponents = root.getAllChildrenAndSubChildren();
-	for (std::vector<Component>::iterator it = allComponents.begin(); it != allComponents.end(); it++) {
+	ComponentList allComponents = root.getAllChildrenAndSubChildren();
+	for (ComponentList::iterator it = allComponents.begin(); it != allComponents.end(); it++) {
 		std::map<std::string, AllowedComponent>::iterator found = allowedComponents.find(it->name());
 		if (found == allowedComponents.end()) {
 			throw LexicalError(std::string("Unrecognized ") + (it->isContext() ? "context" : "directive") + ": " + it->name(), pName, cfgName, it->line(), it->col(), true, *it, 0);
@@ -629,44 +634,44 @@ void validateConfigFile(Component &root, std::string cfgName, std::string pName)
 			}
 		}
 	}
-	std::vector<Component> httpContexts = root.findChildrenContext(HTTP_CONTEXT);
+	ComponentList httpContexts = root.findChildrenContext(HTTP_CONTEXT);
 	if (httpContexts.size() != 1) {
 		throw LogicalError(std::string("there should be exactly one ") + HTTP_CONTEXT + " context at the root of the file, found " + to_string(httpContexts.size()), pName, cfgName, 0, 0, false);
 	}
 	if (!httpContexts[0].findFirstChildContext(SERVER_CONTEXT)) {
 		throw LogicalError(std::string("no ") + SERVER_CONTEXT + " context inside the " + HTTP_CONTEXT + " context", pName, cfgName, 0, 0, false);
 	}
-	std::vector<Component> serverContexts = httpContexts[0].findChildrenContext(SERVER_CONTEXT);
-	for (std::vector<Component>::iterator it = serverContexts.begin(); it != serverContexts.end(); it++) {
+	ComponentList serverContexts = httpContexts[0].findChildrenContext(SERVER_CONTEXT);
+	for (ComponentList::iterator it = serverContexts.begin(); it != serverContexts.end(); it++) {
 		if (!it->findFirstChildDirective(LISTEN_DIRECTIVE)) {
 			throw LogicalError(std::string("no ") + LISTEN_DIRECTIVE + " directive inside the " + SERVER_CONTEXT + " context", pName, cfgName, it->line(), it->col(), false);
 		}
-		std::vector<Component> serverCgiContexts = it->findChildrenContext(CGI_CONTEXT);
-		for (std::vector<Component>::iterator cit = serverCgiContexts.begin(); cit != serverCgiContexts.end(); cit++) {
+		ComponentList serverCgiContexts = it->findChildrenContext(CGI_CONTEXT);
+		for (ComponentList::iterator cit = serverCgiContexts.begin(); cit != serverCgiContexts.end(); cit++) {
 			if (!cit->findFirstChildDirective(CGI_PATH_DIRECTIVE)) {
 				throw LogicalError(std::string("no ") + CGI_PATH_DIRECTIVE + " directive inside the " + CGI_CONTEXT + " context", pName, cfgName, cit->line(), cit->col(), false);
 			}
-			std::vector<Component> cgiPathDirectives = cit->findChildrenDirective(CGI_PATH_DIRECTIVE);
+			ComponentList cgiPathDirectives = cit->findChildrenDirective(CGI_PATH_DIRECTIVE);
 			if (cgiPathDirectives.size() > 1) {
 				throw LogicalError(std::string("more than one ") + CGI_PATH_DIRECTIVE + " directive inside the " + CGI_CONTEXT + " context", pName, cfgName, cgiPathDirectives[1].line(), cgiPathDirectives[1].col(), false);
 			}
 		}
-		std::vector<Component> listenDirectives = it->findChildrenDirective(LISTEN_DIRECTIVE);
+		ComponentList listenDirectives = it->findChildrenDirective(LISTEN_DIRECTIVE);
 		if (listenDirectives.size() > 1) {
 			throw LogicalError(std::string("more than one ") + LISTEN_DIRECTIVE + " directive inside the " + SERVER_CONTEXT + " context", pName, cfgName, listenDirectives[1].line(), listenDirectives[1].col(), false);
 		}
-		std::vector<Component> locationContexts = it->findChildrenContext(LOCATION_CONTEXT);
-		for (std::vector<Component>::iterator lit = locationContexts.begin(); lit != locationContexts.end(); lit++) {
-			std::vector<Component> cgiContexts = lit->findChildrenContext(CGI_CONTEXT);
-			std::vector<Component> locationRootDirectives = lit->findChildren(ROOT_DIRECTIVE);
+		ComponentList locationContexts = it->findChildrenContext(LOCATION_CONTEXT);
+		for (ComponentList::iterator lit = locationContexts.begin(); lit != locationContexts.end(); lit++) {
+			ComponentList cgiContexts = lit->findChildrenContext(CGI_CONTEXT);
+			ComponentList locationRootDirectives = lit->findChildren(ROOT_DIRECTIVE);
 			if (locationRootDirectives.size() != 1) {
 				throw LogicalError(std::string("exactly one ") + ROOT_DIRECTIVE + " direcitve is required in the " LOCATION_CONTEXT " context, got " + to_string(locationRootDirectives.size()), pName, cfgName, lit->line(), lit->col(), false);
 			}
-			for (std::vector<Component>::iterator cit = cgiContexts.begin(); cit != cgiContexts.end(); cit++) {
+			for (ComponentList::iterator cit = cgiContexts.begin(); cit != cgiContexts.end(); cit++) {
 				if (!cit->findFirstChildDirective(CGI_PATH_DIRECTIVE)) {
 					throw LogicalError(std::string("no ") + CGI_PATH_DIRECTIVE + " directive inside the " + CGI_CONTEXT + " context", pName, cfgName, cit->line(), cit->col(), false);
 				}
-				std::vector<Component> cgiPathDirectives = cit->findChildrenDirective(CGI_PATH_DIRECTIVE);
+				ComponentList cgiPathDirectives = cit->findChildrenDirective(CGI_PATH_DIRECTIVE);
 				if (cgiPathDirectives.size() > 1) {
 					throw LogicalError(std::string("more than one ") + CGI_PATH_DIRECTIVE + " directive inside the " + CGI_CONTEXT + " context", pName, cfgName, cgiPathDirectives[1].line(), cgiPathDirectives[1].col(), false);
 				}

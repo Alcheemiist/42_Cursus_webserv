@@ -7,6 +7,7 @@
 # define CONTEXT true
 # define DIRECTIVE false
 
+
 class Component {
 	private:
 		std::string _name;
@@ -55,5 +56,7 @@ class Component {
 		std::vector<Component> getAllChildrenAndSubChildren();
 		std::vector<Component> getAllChildrenAndSubChildren(std::string __name, bool __isContext);
 };
+
+typedef std::vector<Component> ComponentList;
 
 #endif

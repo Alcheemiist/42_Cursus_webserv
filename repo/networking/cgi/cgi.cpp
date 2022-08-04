@@ -7,6 +7,9 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/wait.h>
 
 typedef std::map<std::string, std::string> HeaderMap;
 typedef std::string str;

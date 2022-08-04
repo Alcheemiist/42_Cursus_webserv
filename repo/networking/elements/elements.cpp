@@ -1,4 +1,5 @@
 #include "../elements.hpp"
+#include <string.h>
 
 void init_socket(t_socket *_socket)
 {
@@ -42,8 +43,8 @@ void LaunchServer(ParseConfig *config)
     bool *first = new bool[MAX_CLIENTS];
 
     int rc, max_sd, index_client;
-    struct fd_set working_rd_set, working_wr_set, working_er_set;
-    struct fd_set backup_rd_set, backup_wr_set, backup_er_set;
+    fd_set working_rd_set, working_wr_set, working_er_set;
+    fd_set backup_rd_set, backup_wr_set, backup_er_set;
     struct timeval timeout;
 
     timeout.tv_sec  = 60000;
