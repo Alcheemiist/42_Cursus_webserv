@@ -3,68 +3,55 @@
 #include <sys/stat.h>
 #include "Response_utiles.hpp"
 
+#define DELIMITER "\r\n"
+
 Response  response(Request *request, ParseConfig *config, int index_server)
 {
+    std::string header_str = "";
     std::cout << blue << "********** { Procces Response } ***********************" << def << std::endl;
     Response response;
+    std::string s;
 
     /* is_req_well_formed() */
 
     response.setStatus(request, config->get_server_vect()[index_server]);
-    exit(0);
+    // response.setContentType(÷
     // if () there is an error status go fill the response body with the error html page
     //     ERRORresponse(request, &response);
     // if () the response is good ....
     /**/
     if (!(request->getMethod().compare("GET")))
-        GETresponse(request, &response, config, index_server);
+        s = GETresponse(request, &response, config, index_server);
     // else if (request->getMethod().compare("POST") == 0)
     //     POSTresponse(request, &response, config, index_server);
     // else if (request->getMethod().compare("DELETE") == 0)
     //     DELETEresponse(request, &response, config, index_server);
-    // std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
 
+    std::cout << "Requested path : " << response.get_location() << std::endl;
+    std::cout << "Redirection path : " << response.get_redirection() << std::endl;
+    
+    if (!response.get_redirection().empty())
+        response.setContentType(response.get_redirection());
+    else
+        response.setContentType(response.get_location());
+    std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
 
+    header_str = response.get_version() + " " + response.get_status() + DELIMITER;
+    header_str += "Content-Type: " + response.get_content_type() + DELIMITER;
+    if (!response.get_redirection().empty())
+        header_str += "Location: " + response.get_redirection() + DELIMITER;
+    header_str = header_str + DELIMITER;
+    response.setHeader(header_str);
+    std::cout << blue << "********** { Response Header } ***********************" << def << std::endl;
+    std::cout << header_str << std::endl;
+    response.setpath(s);
+    std::cout << "body_path : " << response.getpath() << std::endl;
+    std::cout << "body_path : " << s << std::endl;
 
+    std::cout << blue << "********** { End Response Header } ***********************" << def << std::endl;
 
-
-    // std::cout << B_green << "IM DOING GET REQUEST" << B_def << std::endl;
-    // if (true)
-    // {
-    //     std::string path ;// = (char *)malloc(sizeof(char) * (1000));
-    //     path.reserve(10000);
-    //     path = config->get_server_vect()[index_server].get_root();
-    //     if (request->getPath() == "/")
-    //         path.append("index.html");
-    //     else
-    //         path.append(request->getPath());
-    //     std::cout << B_blue << "GET from File: " << path << B_def << std::endl;
-    //     FILE *pFile;
-    //     pFile = fopen(path.c_str(), "r");
-    //     char s2[50];
-    //     if (pFile != NULL)
-    //     {
-    //         /////// main process to set a good response : set mandatory headers + set path of file to send
-    //         strcpy(s2, " 200 OK\r\n");
-    //         response->setResponseStatus(s2);
-    //         response->setResponseHeader();
-    //         response->setContentType((char*)path.c_str());
-    //         response->setpath(path);
-    //     }
-    //     else
-    //     {
-    //         /////// main process to set a good response : set mandatory headers + set path of file to send
-    //         char ss[100] = "./errorsPages/404/404.html";
-    //         strcpy(s2, " 404 NOT FOUND\r\n");
-    //         response->setResponseStatus(s2);
-    //         response->setResponseHeader();
-    //         response->setContentType(ss);
-    //         response->setpath(ss);
-    //     }
-    //     fclose(pFile);
-    // }
-
-
+    std::cout << blue << "********** { Response Body } ***********************" << def << std::endl;
+    //    exit(0);
     return response;
 }
 
@@ -72,8 +59,6 @@ void Response::setStatus(Request *request, Server server)
 {
     this->init_location(request->geturl(),server);
     this->init_redirection(request->geturl(), server);
-    std::cout << "Requested path : " << this->requested_path << std::endl;
-    std::cout << "Redirection path : " << this->redirection_path << std::endl;
 	if (!request->get_is_formated())
 	{
         
@@ -161,42 +146,41 @@ void	Response::init_redirection(std::string url, Server server)
 }
 
 
-// void Response::setContentType(char *path)
-// {
-//     std::string s(path);
-//     std::string s1 = s.substr(s.find_last_of(".") + 1);
-//     if (s1 == "html")
-//         this->contentType = "text/html";
-//     else if (s1 == "css")
-//         this->contentType = "text/css";
-//     else if (s1 == "js")
-//         this->contentType = "application/javascript";
-//     else if (s1 == "jpg")
-//         this->contentType = "image/jpeg";
-//     else if (s1 == "png")
-//         this->contentType = "image/png";
-//     else if (s1 == "gif")
-//         this->contentType = "image/gif";
-//     else if (s1 == "ico")
-//         this->contentType = "image/x-icon";
-//     else if (s1 == "svg")
-//         this->contentType = "image/svg+xml";
-//     else if (s1 == "mp3")
-//         this->contentType = "audio/mpeg";
-//     else if (s1 == "mp4")
-//         this->contentType = "video/mp4";
-//     else if (s1 == "ogg")
-//         this->contentType = "audio/ogg";
-//     else if (s1 == "ogv")
-//         this->contentType = "video/ogg";
-//     else if (s1 == "wav")
-//         this->contentType = "audio/wav";
-//     else if (s1 == "webm")
-//         this->contentType = "video/webm";
-//     else if (s1 == "txt")
-//         this->contentType = "text/plain";
-//     std::cout << red << "- Set Content-Type : " << s << green << " " << s1 << def << std::endl;
-// };
+void Response::setContentType(std:: string s)
+{
+    std::string s1 = s.substr(s.find_last_of(".") + 1);
+    if (s1 == "html" || s1 == "htm")
+        this->contentType = "text/html";
+    else if (s1 == "css")
+        this->contentType = "text/css";
+    else if (s1 == "js")
+        this->contentType = "application/javascript";
+    else if (s1 == "jpg")
+        this->contentType = "image/jpeg";
+    else if (s1 == "png")
+        this->contentType = "image/png";
+    else if (s1 == "gif")
+        this->contentType = "image/gif";
+    else if (s1 == "ico")
+        this->contentType = "image/x-icon";
+    else if (s1 == "svg")
+        this->contentType = "image/svg+xml";
+    else if (s1 == "mp3")
+        this->contentType = "audio/mpeg";
+    else if (s1 == "mp4")
+        this->contentType = "video/mp4";
+    else if (s1 == "ogg")
+        this->contentType = "audio/ogg";
+    else if (s1 == "ogv")
+        this->contentType = "video/ogg";
+    else if (s1 == "wav")
+        this->contentType = "audio/wav";
+    else if (s1 == "webm")
+        this->contentType = "video/webm";
+    else if (s1 == "txt")
+        this->contentType = "text/plain";
+    std::cout << red << "- Set Content-Type : " << s1 << green << " " << s1 << def << std::endl;
+};
 
 std::vector<char> Response::get_buffer()
 {
@@ -369,14 +353,14 @@ std::string Response::getHeader()
 //     std::cout << "im doing post response\n";
 // }
 
-void GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
+std::string  GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
     (void)request;
     (void)response;
     (void)config;
     (void)index_server;
     /////// main process to set a good response : set mandatory headers + set path of file to send
-
+    std::string body_f = "";
     if(!requested_file_in_root(response->get_location()))
     {
         response->setStatus("404 NOT FOUND");
@@ -398,7 +382,9 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
                 }
                 else
                 {
-                    response->setpath(generate_auto_index(response->get_location()));
+                    body_f = generate_auto_index(response->get_location());
+                    response->setpath(body_f);
+                    response->set_redirection(remove_duplicate_slash(response->get_location() + "/" + "index.html"));
                     response->setStatus("200 OK");
                 }
             }
@@ -410,13 +396,14 @@ void GETresponse(Request *request, Response *response, ParseConfig *config, int 
                 // }
                 // else
                 // {
-                    response->setpath(response->get_location());
+                    body_f = remove_duplicate_slash(response->get_location() + "/" + "index.html");
+                    response->set_redirection(body_f);
                     response->setStatus("200 OK");
                 // }
             }
         }
     }
-    
+    return body_f;
 }
 
 // void ERRORresponse(Request *request, Response *response)
