@@ -26,82 +26,76 @@ bool file_exist(std::string path)
 	return (stat(path.c_str(), &st) == 0);
 }
 
-std::string *split_url(std::string str)
+std::string remove_duplicate_slash(std::string str)
 {
-	std::string *str_array = new std::string[str.size() + 1];
-	int i = 1;
-	str_array[0] = "/";
-	str = str.substr(1);
+	std::string new_str = "";
 	for (std::string::iterator it = str.begin(); it != str.end(); ++it)
-		if (*it == '/')
-			i++;
-		else
-			str_array[i] += *it;
-	str_array[i] = "";
-	return str_array;
-}
-
-bool get_matched_location_for_request_uri(std::string url, Server server)
-{
-	std::vector<Location> location = server.get_location();
-	std::vector<Location>::const_iterator it_loc = location.begin();
-	std::string location_path = "";
-	std::string location_str;
-	int location_path_matched = 0;
-	Location location_matched;
-
-	for (; it_loc != location.end(); it_loc++)
 	{
-		location_str = it_loc->get_locations_path();
-		if (location_str.back() != '/')
-			location_str += '/';
-		if (url.substr(0, location_str.size()) == location_str && it_loc->get_root() != "")
-		{
-			if (str_matched(location_str, location_path) > location_path_matched)
-			{
-				location_path = location_str;
-				location_path_matched = str_matched(location_str, location_path);
-				location_matched = *it_loc;
-			}
-		}
+		if (*it == '/' && *(it + 1) == '/')
+			continue;
+		new_str += *it;
 	}
-	if (location_path_matched)
-		location_path = url.replace(0, location_path.size(), location_matched.get_root());
-	else
-		location_path = server.get_root() + url;
-	return (file_exist(location_path));
+	return new_str;
 }
 
-bool	url_redirected(std::string url, Server server)
+std::string generate_auto_index(std::string url)
 {
-	std::vector<std::vector<std::string> > red = server.get_redirections();
-	std::string redirection_str;
-	std::string redirection_path = "";
-	int redirection_path_matched = 0;
-
-	for(std::vector<std::vector<std::string> >::iterator it = red.begin(); it != red.end(); ++it)
+	DIR *dr;
+	struct dirent *en;
+	std::string new_url = "";
+	for (std::string::iterator it = url.begin(); it != url.end(); ++it)
 	{
-		redirection_str = it->at(0);
-		if ((*it)[1].back() != '/')
-				redirection_str += '/';
-		if (url.substr(0, redirection_str.size()) == redirection_str)
-		{
-			if (str_matched(redirection_str, redirection_path) > redirection_path_matched)
-			{
-				redirection_path = (*it)[2];
-				redirection_path_matched = str_matched(redirection_str, redirection_path);
-			}
-		}
+		if (*it != '/')
+			new_url += *it;
 	}
-	if (redirection_path_matched)
-		return (true);
-	return (false);
-		// redirection_path = url.replace(0, redirection_path.size(), redirection_path);
+	new_url = "/tmp/" +  new_url + "/" + "index.html";
+	std::cout << new_url << std::endl;
+	std::ofstream file (new_url);
+	file << "<!DOCTYPE html> <html><body>";
+	dr = opendir(url.c_str());
+	if (dr)
+	{
+		while ((en = readdir(dr)) != NULL)
+			// file << " \n"<<en->d_name;
+			file << "<a href=\"" <<en->d_name << "\">" << en->d_name << "</a><br>";
+	}
+	file << "</body></html>";
+    closedir(dr);
+	file.close();
+	return new_url;
 }
+
+// bool	url_redirected(std::string url, Server server)
+// {
+// 	std::vector<std::vector<std::string> > red = server.get_redirections();
+// 	std::string redirection_str;
+// 	std::string redirection_path = "";
+// 	int redirection_path_matched = 0;
+
+// 	for(std::vector<std::vector<std::string> >::iterator it = red.begin(); it != red.end(); ++it)
+// 	{
+// 		redirection_str = it->at(0);
+// 		if ((*it)[1].back() != '/')
+// 				redirection_str += '/';
+// 		if (url.substr(0, redirection_str.size()) == redirection_str)
+// 		{
+// 			if (str_matched(redirection_str, redirection_path) > redirection_path_matched)
+// 			{
+// 				redirection_path = (*it)[2];
+// 				redirection_path_matched = str_matched(redirection_str, redirection_path);
+// 			}
+// 		}
+// 	}
+// 	if (redirection_path_matched)
+// 		return (true);
+// 	return (false);
+// 		// redirection_path = url.replace(0, redirection_path.size(), redirection_path);
+// }
 
 bool	method_is_allowed(std::string method, std::string url ,Server server)
 {
 	bool allowed = false;
+	std::cout << "method : " << method << std::endl;
 	std::vector<std::string> _allowed_methods = server.get_allowed_methods();
 	for (std::vector<std::string>::iterator it = _allowed_methods.begin(); it != _allowed_methods.end(); ++it)
 		if (*it == method)
@@ -114,9 +108,9 @@ bool	method_is_allowed(std::string method, std::string url ,Server server)
 	std::string location_path = "";
 	std::string location_str;
 	int location_path_matched = 0;
-	Location location_matched;
+	std::vector<std::string> location_matched;
 
-	for (; it_loc != location.end(); it_loc++)
+	while (it_loc != location.end())
 	{
 		location_str = it_loc->get_locations_path();
 		if (location_str.back() != '/')
@@ -127,91 +121,60 @@ bool	method_is_allowed(std::string method, std::string url ,Server server)
 			{
 				location_path = location_str;
 				location_path_matched = str_matched(location_str, location_path);
-				location_matched = *it_loc;
+				for (std::vector<std::string>::iterator it = it_loc->get_allow_methods().begin(); it != it_loc->get_allow_methods().end(); ++it)
+				{
+					if (*it == method)
+					{
+						allowed = true;
+						break;
+					}
+					allowed = false;
+				}
 			}
 		}
+		it_loc++;
 	}
-	_allowed_methods = it_loc->get_methods();
-	for (std::vector<std::string>::iterator it = _allowed_methods.begin(); it != _allowed_methods.end(); ++it)
-		if (*it == method)
-			return true;
-	if (!allowed)
-		return (false);
-
-
-	// (void)method;
-	// (void)url;
-	// std::string path;
-	// bool		allowed = false;
-	// std::vector<Location> loc = server.get_location();
-
-	// for (std::vector<std::string>::const_iterator it_method =
-	// 	server.get_allowed_methods().begin();
-	// 	it_method != server.get_allowed_methods().end(); ++it_method)
-	// {
-	// 	if (method.compare(*it_method) == 0)
-	// 		allowed = true;
-	// }
-
-	// for (std::vector<Location>::const_iterator
-	// 		it_loc = loc.begin(); it_loc != loc.end(); ++it_loc)
-	// {
-	// 	if (url.compare(0, it_loc->get_locations_path().length(),
-	// 			it_loc->get_locations_path()) == 0)
-	// 		{
-	// 			for (std::vector<std::string>::const_iterator it_method =
-	// 				it_loc->get_allow_methods().begin();
-	// 				it_method != it_loc->get_allow_methods().end(); ++it_method)
-	// 			{
-	// 				if (method.compare(*it_method) == 0)
-	// 					allowed = true;
-	// 			}
-	// 		}
-	// }
-	// return allowed;
+	return (allowed);
 }
 
-std::string get_location_url(std::string url, Server server)
-{
-	std::string location;
-	for (std::vector<Location>::const_iterator
-			it_loc = server.get_location().begin();
-			it_loc != server.get_location().end(); ++it_loc)
-	{
-		if (url.compare(0, it_loc->get_locations_path().length(),
-				it_loc->get_locations_path()) == 0)
-			{
-				return it_loc->get_locations_path() +
-					url.substr(it_loc->get_locations_path().length());
-			}
-	}
-	return "";
-}
+// std::string get_location_url(std::string url, Server server)
+// {
+// 	std::string location;
+// 	for (std::vector<Location>::const_iterator
+// 			it_loc = server.get_location().begin();
+// 			it_loc != server.get_location().end(); ++it_loc)
+// 	{
+// 		if (url.compare(0, it_loc->get_locations_path().length(),
+// 				it_loc->get_locations_path()) == 0)
+// 			{
+// 				return it_loc->get_locations_path() +
+// 					url.substr(it_loc->get_locations_path().length());
+// 			}
+// 	}
+// 	return "";
+// }
 
-std::string get_redirection_url(std::string url, Server server)
-{
-	std::vector<std::vector<std::string> > redirections = server.get_redirections();
-	std::string location;
-	for (std::vector<std::vector<std::string> >::const_iterator
-			reds = redirections.begin();
-			reds != redirections.end(); ++reds)
-	{
-		for (std::vector<std::string>::const_iterator
-				it_red = reds->begin(); it_red != reds->end(); ++it_red)
-		{
-			if (url.compare(0, it_red->length(), *it_red) == 0)
-				return *it_red + url.substr(it_red->length());
-		}
-	}
-	return "";
-}
+// std::string get_redirection_url(std::string url, Server server)
+// {
+// 	std::vector<std::vector<std::string> > redirections = server.get_redirections();
+// 	std::string location;
+// 	for (std::vector<std::vector<std::string> >::const_iterator
+// 			reds = redirections.begin();
+// 			reds != redirections.end(); ++reds)
+// 	{
+// 		for (std::vector<std::string>::const_iterator
+// 				it_red = reds->begin(); it_red != reds->end(); ++it_red)
+// 		{
+// 			if (url.compare(0, it_red->length(), *it_red) == 0)
+// 				return *it_red + url.substr(it_red->length());
+// 		}
+// 	}
+// 	return "";
+// }
 
-bool	requested_file_in_root(std::string url, Server server)
+bool	requested_file_in_root(std::string url)
 {
-	std::string path = server.get_root() + url;
-	if (file_exist(path))
-		return (true);
-	return (false);
+	return(file_exist(url));
 }
 
 bool is_file(std::string url)
@@ -226,27 +189,27 @@ bool is_file(std::string url)
 	return (false);
 }
 
-bool Location_support_upload(std::string url, Server server)
-{
-	std::vector<Location> loc= server.get_location();
-	for (std::vector<Location>::const_iterator
-			it_loc = loc.begin(); it_loc != loc.end(); ++it_loc)
-	{
-		if (url.compare(0, it_loc->get_locations_path().length(),
-				it_loc->get_locations_path()) == 0)
-			{
-				for (std::vector<std::string>::const_iterator it_method =
-					it_loc->get_allow_methods().begin();
-					it_method != it_loc->get_allow_methods().end(); ++it_method)
-				{
-					// if (it_method->compare("POST") == 0
-					// 		&& it_loc->get_upload(url))
-					// 	return (true);
-				}
-			}
-	}
-	return (false);
-}
+// bool Location_support_upload(std::string url, Server server)
+// {
+// 	std::vector<Location> loc= server.get_location();
+// 	for (std::vector<Location>::const_iterator
+// 			it_loc = loc.begin(); it_loc != loc.end(); ++it_loc)
+// 	{
+// 		if (url.compare(0, it_loc->get_locations_path().length(),
+// 				it_loc->get_locations_path()) == 0)
+// 			{
+// 				for (std::vector<std::string>::const_iterator it_method =
+// 					it_loc->get_allow_methods().begin();
+// 					it_method != it_loc->get_allow_methods().end(); ++it_method)
+// 				{
+// 					// if (it_method->compare("POST") == 0
+// 					// 		&& it_loc->get_upload(url))
+// 					// 	return (true);
+// 				}
+// 			}
+// 	}
+// 	return (false);
+// }
 
 char    *readAllFile(char *path)
 {
@@ -303,3 +266,34 @@ std::vector<char> read_by_vector(char *path, Response *response)
     return buffer;
 }
 
+
+// std::string set_location(std::string url, Server server)
+// {
+// 	std::vector<Location> location = server.get_location();
+// 	std::vector<Location>::const_iterator it_loc = location.begin();
+// 	std::string location_path = "";
+// 	std::string location_str;
+// 	int location_path_matched = 0;
+// 	Location location_matched;
+
+// 	for (; it_loc != location.end(); it_loc++)
+// 	{
+// 		location_str = it_loc->get_locations_path();
+// 		if (location_str.back() != '/')
+// 			location_str += '/';
+// 		if (url.substr(0, location_str.size()) == location_str && it_loc->get_root() != "")
+// 		{
+// 			if (str_matched(location_str, location_path) > location_path_matched)
+// 			{
+// 				location_path = location_str;
+// 				location_path_matched = str_matched(location_str, location_path);
+// 				location_matched = *it_loc;
+// 			}
+// 		}
+// 	}
+// 	if (location_path_matched)
+// 		location_path = url.replace(0, location_path.size(), location_matched.get_root());
+// 	else
+// 		location_path = server.get_root() + url;
+// 	return (location_path);
+// }

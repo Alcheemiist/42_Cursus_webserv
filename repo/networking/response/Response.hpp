@@ -32,8 +32,8 @@ class Response
         bool        requestFuckedUp;
         //
         std::vector<std::string> status_vector;
-        std::string location;
-        std::string redirection;
+        std::string requested_path;
+        std::string redirection_path;
 
     public:
         Response() : version("HXXXX "), status("! 200 OK\r\n"), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""),
@@ -75,10 +75,11 @@ class Response
         //
         void setStatus(Request *request, Server server);
         void show() { std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;  };
-        void set_redirection(std::string url)  { this->redirection = url;  };
-        std::string get_redirection() {  return this->redirection; };
-        void set_location(std::string url) { this->location = url; };
-        std::string get_location()  { return this->location;  };
+        std::string get_location() {  return this->requested_path; };
+        std::string get_redirection()  { return this->redirection_path; };
+        void init_location(std::string url, Server server);
+        void init_redirection(std::string url, Server server);
+        void set_redirection(std::string url) { this->redirection_path = url; };
 };
 
 void GETresponse(Request *request, Response *response, ParseConfig *config, int server_index);
