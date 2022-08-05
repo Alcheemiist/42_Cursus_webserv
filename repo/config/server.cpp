@@ -217,7 +217,7 @@ void    Server::set_error_pages(std::string error_pages, std::string number_erro
     }
 }
 
-void    Server::set_redirections(std::string redirection_from, std::string redirection_to)
+void    Server::set_redirections(std::string redirection_from, std::string redirection_to, std::string code)
 {
     if (!not_predefined(redirection_from) || !not_predefined(redirection_to))
     {
@@ -229,6 +229,7 @@ void    Server::set_redirections(std::string redirection_from, std::string redir
         std::vector<std::string>    tmp;
         tmp.push_back(redirection_from);
         tmp.push_back(redirection_to);
+        tmp.push_back(code);
         _redirections.push_back(tmp);
     }
 }

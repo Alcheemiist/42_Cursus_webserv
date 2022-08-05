@@ -79,7 +79,7 @@ unsigned int ParseConfig::server_parsing(unsigned int &i)
         else if (_words[i] == "autoindex")
             i = s.fill_autoindex(_words, i);
         else if (_words[i] == "redirection")
-            s.set_redirections(_words[i + 1], _words[i + 2]);
+            s.set_redirections(_words[i + 1], _words[i + 2], "");
         else if (_words[i] == "client_max_body_size")
             s.set_client_max_body_size(_words[i + 1]);
         else if (_words[i] == "location")

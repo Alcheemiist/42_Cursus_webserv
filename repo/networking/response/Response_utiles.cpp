@@ -224,6 +224,7 @@ bool remove_all_folder_content(std::string path)
 				std::cout << "ent->d_name : " << ent->d_name << std::endl;
 				if (is_file(file_path))
 				{
+					// if (acce)
 					if (remove(file_path.c_str()) != 0)
 					{
 						ret = false;

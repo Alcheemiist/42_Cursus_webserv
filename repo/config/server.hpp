@@ -42,7 +42,7 @@ public:
 	void set_index_vect(std::vector<std::string> index);
     void set_index(std::string index);
     void set_error_pages(std::string error_pages, std::string number_error);
-    void set_redirections(std::string redirection_from, std::string redirection_to);
+    void set_redirections(std::string redirection_from, std::string redirection_to, std::string code);
     void set_root(std::string root);
     void set_upload_path(std::string upload_path);
 	void set_location_vect(std::vector<Location> location);
