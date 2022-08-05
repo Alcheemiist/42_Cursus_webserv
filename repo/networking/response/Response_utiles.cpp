@@ -186,3 +186,17 @@ std::vector<char> read_by_vector(char *path, Response *response)
     close(fd);
     return buffer;
 }
+
+std::string get_error_page(int code, Server server)
+{
+	std::vector<std::vector<std::string> > _error_pages = server.get_error_pages();
+	for (std::vector<std::vector<std::string> >::iterator it = _error_pages.begin(); it != _error_pages.end(); ++it)
+	{
+		if (it->at(0) == std::to_string(code))
+		{
+			if (file_exist(it->at(1)))
+				return (it->at(1));
+		}
+	}
+	return ("empty");
+}
