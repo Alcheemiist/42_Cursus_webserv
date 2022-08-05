@@ -4,6 +4,7 @@
 #include "Response_utiles.hpp"
 #include "../../config/print.hpp"
 #include "../../config/utils.hpp"
+#include <cstring>
 
 #define DELIMITER "\r\n"
 
@@ -542,8 +543,9 @@ std::string Response::get_index(std::string url, Server server)
 		{
 			if (str_matched(location_str, location_path) > location_path_matched)
 			{
-				for(std::vector<std::string>::iterator it = it_loc->get_index().begin();
-                        it != it_loc->get_index().end(); ++it)
+				std::vector<std::string> indexVec = it_loc->get_index();
+				for(std::vector<std::string>::iterator it = indexVec.begin();
+                        it != indexVec.end(); ++it)
 				{
 					if (file_exist(remove_duplicate_slash(url + "/" + *it)))
 					{

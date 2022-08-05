@@ -98,7 +98,8 @@ bool	method_is_allowed(std::string method, std::string url ,Server server)
 			{
 				location_path = location_str;
 				location_path_matched = str_matched(location_str, location_path);
-				for (std::vector<std::string>::iterator it = it_loc->get_allow_methods().begin(); it != it_loc->get_allow_methods().end(); ++it)
+				std::vector<std::string> allowedMethodsVec = it_loc->get_allow_methods();
+				for (std::vector<std::string>::iterator it = allowedMethodsVec.begin(); it != allowedMethodsVec.end(); ++it)
 				{
 					if (*it == method)
 					{
