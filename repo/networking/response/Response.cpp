@@ -224,7 +224,7 @@ std::string Response::getHeader()
 		res.append(this->contentType);
 		res.append("\r\n");
 	}
-    if (get_redirection().empty())
+    if (!get_redirection().empty())
         res.append("Location: " + get_redirection() + "\r\n");
     size_t tt = getFileSize(body_file_path.c_str());
     std::cout << tt << " {" <<  body_file_path << std::endl;
@@ -443,7 +443,8 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
             }
             else //uri have not a / at the end
             {
-                response->set_redirection(response->get_location() + "/");
+                // response->set_redirection(response->get_location() + "/");
+                response->set_redirection(request->getPath() + "/");
                 std::cout << "redirection to " << response->get_redirection() << std::endl;
                 response->setStatus(" 301 MOVED PERMANENTLY\r\n");
                 body_f = get_error_page(301,  config->get_server_vect()[index_server]);
