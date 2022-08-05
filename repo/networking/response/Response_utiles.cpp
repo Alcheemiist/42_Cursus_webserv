@@ -270,3 +270,29 @@ bool have_write_access_on_folder(std::string path)
 	}
 	return (false);
 }
+
+bool location_support_upload(std::string url)
+{
+	bool ret = false;
+	std::ofstream file("test");
+	if (file.is_open())
+	{
+		ret = true;
+		file.close();
+		remove("test");
+	}
+	return (ret);
+}
+
+// void upload_post(Request *request, Response *response, ParseConfig *config,  int index_server)
+// {
+// 	std::string path = config->get_server_vect()[index_server].get_upload_path() + request->getBodyFileName();
+// 	if fd_in = config->get_server_vect()[index_server].
+// 	int fd = open(request->get_path().c_str(), O_APPEND | O_CREAT |);
+// 	std::ofstream file();
+// 	if (file.is_open())
+// 	{
+		
+// 		file.close();
+// 	}
+// }

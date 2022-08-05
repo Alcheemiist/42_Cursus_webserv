@@ -93,7 +93,7 @@ class Response
 std::string ERRORresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 std::string GETresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 std::string DELETEresponse(Request *request, Response *response, ParseConfig *config, int server_index);
-void POSTresponse(Request *request, Response *response, ParseConfig *config, int server_index);
+std::string POSTresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 void PUTresponse();
 void HEADresponse();
 Response response( Request *request, ParseConfig *config, int fd_server);

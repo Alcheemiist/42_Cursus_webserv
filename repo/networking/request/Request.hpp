@@ -68,6 +68,7 @@ public:
     std::string geturl() const { return _path; };
 	const struct sockaddr_in &getRefClientAddr() const;
     void set_client_addr(struct sockaddr_in client_addr) { _client_addr = client_addr; };
+    
 };
 
 char *readFile(const char *fileName);

@@ -27,8 +27,6 @@ bool	requested_file_in_root(std::string url);
 
 bool is_file(std::string url);
 
-bool Location_support_upload(std::string url, Server server);
-
 char    *readAllFile(char *path);
 
 size_t  _getFileSize(const char *fileName);
@@ -42,5 +40,7 @@ std::string get_error_page(int code, Server server);
 bool status_code_error(std::string status);
 bool remove_all_folder_content(std::string path);
 bool have_write_access_on_folder(std::string path);
+bool location_support_upload(std::string url);
+void upload_post(Request *request, Response *response, ParseConfig *config,  int index_server);
 
 #endif
