@@ -125,6 +125,7 @@ void	Response::init_redirection(std::string url, Server server)
 	std::string redirection_str;
 	std::string _redirection_path = "";
 	int redirection_path_matched = 0;
+    std::string path_absol = "";
 
 	for(std::vector<std::vector<std::string> >::iterator it = red.begin(); it != red.end(); ++it)
 	{
@@ -135,13 +136,22 @@ void	Response::init_redirection(std::string url, Server server)
 		{
 			if (str_matched(redirection_str, _redirection_path) > redirection_path_matched)
 			{
-				_redirection_path = (*it)[2];
+				_redirection_path = (*it)[1];
 				redirection_path_matched = str_matched(redirection_str, _redirection_path);
+                if (std::strncmp(_redirection_path.c_str(), "http", 4) == 0)
+                    path_absol = _redirection_path;
+                else
+                    path_absol = server.get_root() + _redirection_path;
 			}
 		}
 	}
 	if (redirection_path_matched)
-        this->redirection_path = url.replace(0, _redirection_path.size(), _redirection_path);
+    {
+        if (path_absol.length() > 0)
+            this->redirection_path = path_absol;
+        else
+            this->redirection_path = url.replace(0, _redirection_path.size(), _redirection_path);
+    }
     else
         this->redirection_path = "";
 }
@@ -466,6 +476,7 @@ std::string Response::get_index(std::string url, Server server)
 {
 	std::vector<Location> location = server.get_location();
 	std::vector<Location>::const_iterator it_loc = location.begin();
+    std::vector<std::string> index_file = server.get_index();
 	std::string location_path = "";
 	std::string location_str;
 	int location_path_matched = 0;
@@ -494,9 +505,9 @@ std::string Response::get_index(std::string url, Server server)
 			}
 		}
 	}
-	for(std::vector<std::string>::iterator it = server.get_index().begin(); it != server.get_index().end(); ++it)
+	for(std::vector<std::string>::iterator it = index_file.begin(); it != index_file.end(); ++it)
 	{
-		if (file_exist(server.get_root() + "/" + *it))
+		if (file_exist(remove_duplicate_slash(server.get_root() + "/" + *it)))
 		{
 			return (url + "/" + *it);
 		}
