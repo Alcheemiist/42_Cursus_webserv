@@ -39,4 +39,8 @@ std::string remove_duplicate_slash(std::string str);
 std::string generate_auto_index(std::string url);
 std::string get_index_by_server(std::string url, Server server);
 std::string get_error_page(int code, Server server);
+bool status_code_error(std::string status);
+bool remove_all_folder_content(std::string path);
+bool have_write_access_on_folder(std::string path);
+
 #endif

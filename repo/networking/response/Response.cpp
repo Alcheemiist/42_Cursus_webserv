@@ -17,19 +17,15 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     /* is_req_well_formed() */
 
     response.setStatus(request, config->get_server_vect()[index_server]);
-    // response.setContentType(÷
-    // if () there is an error status go fill the response body with the error html page
-    //     ERRORresponse(request, &response);
-    // if () the response is good ....
-    /**/
-    if (!(request->getMethod().compare("GET"))) {
-        println("get request");
+    // if (status_code_error(response.get_status())) 
+    //     s = 
+    ERRORresponse(request, &response, config, index_server);
+    if (!(request->getMethod().compare("GET")))
         s = GETresponse(request, &response, config, index_server);
-    }
+    else if (request->getMethod().compare("DELETE") == 0)
+        s= DELETEresponse(request, &response, config, index_server);
     // else if (request->getMethod().compare("POST") == 0)
     //     POSTresponse(request, &response, config, index_server);
-    // else if (request->getMethod().compare("DELETE") == 0)
-    //     DELETEresponse(request, &response, config, index_server);
 
     std::cout << "Requested path : " << response.get_location() << std::endl;
     std::cout << "Redirection path : " << response.get_redirection() << std::endl;
@@ -38,14 +34,10 @@ Response  response(Request *request, ParseConfig *config, int index_server)
         response.setContentType(response.get_redirection());
     else
         response.setContentType(response.get_location());
+
     std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
 
-    header_str = response.get_version() + " " + response.get_status() + DELIMITER;
-    header_str += "Content-Type: " + response.get_content_type() + DELIMITER;
-    if (!response.get_redirection().empty())
-        header_str += "Location: " + response.get_redirection() + DELIMITER;
-    header_str = header_str + DELIMITER;
-    response.setHeader(header_str);
+    // response.setHeader(header_str);
 
 
 
@@ -75,10 +67,8 @@ void Response::setStatus(Request *request, Server server)
         
 		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked") // done 
 			this->status = "501 NOT IMPLEMENTED\r\n";
-
 		else if (!request->get_transfer_encoding().size() && request->getcontent_length() <= 0 &&  request->getMethod() == "POST") // done // 405 not allowed in nginx 
             this->status = "400 BAD REQUEST\r\n";
-
 		else if (!url_is_formated(request->geturl())) // done
             this->status = "400 BAD REQUEST\r\n";
 
@@ -97,10 +87,8 @@ void Response::setStatus(Request *request, Server server)
     else if (!get_redirection().empty())
         this->status = "301 MOVED PERMANENTLY\r\n";
 
-    else if (!file_exist(get_location())) // NOT WORKING TRASH
+    else if (!file_exist(get_location()))
         this->status = " 404 NOT FOUND\r\n";
-    // else
-    //     this->status = " 200 OK\r\n";
     std::cout << red << "-> Set Status : " << this->status << def  << std::endl;
 }
 
@@ -234,12 +222,13 @@ std::string Response::getHeader()
     res.append(version);
     res.append(status);
     // headers
-	if (this->contentType.length()) {
+	if (this->contentType.length()){
 		res.append("Content-Type: ");
 		res.append(this->contentType);
 		res.append("\r\n");
 	}
-
+    if (get_redirection().empty())
+        res.append("Location: " + get_redirection() + "\r\n");
     size_t tt = getFileSize(body_file_path.c_str());
     std::cout << tt << " {" <<  body_file_path << std::endl;
     if (tt && tt != (size_t)-1)
@@ -255,7 +244,7 @@ std::string Response::getHeader()
     //     res.append("\r\n");
     // }
     res.append("server: alchemist\r\n");
-    res.append("location: wonderland\r\n");
+    // res.append("location: wonderland\r\n");
     // CRLF
     res.append("\r\n");
     setHeader(res);
@@ -264,66 +253,71 @@ std::string Response::getHeader()
     // return this->header;
 };
 
-// void ERRORresponse(Request *request, Response *response)
-// {
-//     (void)request;
-//     (void)response;
-//     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
-// }
+std::string ERRORresponse(Request *request, Response *response, ParseConfig *config, int server_index)
+{
+    std::string body_f = "";
+    body_f = get_error_page(403,  config->get_server_vect()[server_index]);
+    response->setpath(body_f);
+    return body_f;
+}
 
 
 
-// void DELETEresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
-// {
-//     (void)request;
-//     (void)response;
-//     (void)config;
-//     (void)index_server;
-//     // std::cout << "im doing delete response\n";
-//     // response->set_location_url(get_location_url(request->geturl(),
-//     //     config->get_server_vect()[index_server]));
-//     // if(!requested_file_in_root(request->geturl(),
-//     //     config->get_server_vect()[index_server]))
-//     // {
-//     //     response->setStatus("404 NOT FOUND");
-//     // }
-//     // else if (!is_file(request->geturl()))
-//     // {
-//     //     if (request->geturl().back() != '/')
-//     //     {
-//     //         response->setStatus("409 CONFLICT");
-//     //     }
-//     //     else
-//     //     {
-//     //         if (Location_have_cgi(request->geturl()))
-//     //         {
-//     //             if (file_exist(request->geturl() + "index.html"))
-//     //                 response->setStatus("403 FORBIDDEN");
-//     //             else
-//     //                  cgi_response(request, response, config, index_server);
-//     //         }
-//     //         else
-//     //         {
-//     //             if (delete_directory(request->geturl()))
-//     //                 response->setStatus("204 NO CONTENT");
-//     //             else if (has_write_permission(request->geturl()))
-//     //                 response->setStatus("403 FORBIDDEN");
-//     //             else
-//     //                 response->setStatus("500 INTERNAL SERVER ERROR");
-//     //         }
-//     //     }
-//     // }
-//     // else
-//     // {
-//     //     if (Location_have_cgi(request->geturl()))
-//     //          cgi_response(request, response, config, index_server);
-//     //     else
-//     //     {
-//     //         if (delete_file(request->geturl()))
-//     //             response->setStatus("204 NO CONTENT");
-//     //     }
-//     // }
-// }
+std::string DELETEresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
+{
+    if(requested_file_in_root(response->get_location()))
+    {
+        if (is_file(response->get_location()))
+        {
+            // if (Location_have_cgi(response->get_location()))
+            // {
+
+            // }
+            // else
+            // {
+                    remove(response->get_location().c_str());
+                    response->setStatus(" 204 No Content\r\n"); 
+            // }
+        }
+        else
+        {
+            if (response->get_location().back() == '/')
+            {
+                // if (Location_have_cgi(response->get_location()))
+                // {
+
+                // }
+                // else
+                // {
+                    if(remove_all_folder_content(response->get_location()))
+                    {
+                        response->setStatus(" 204 No Content\r\n");
+                    }
+                    else
+                    {
+                        if (have_write_access_on_folder(response->get_location()))
+                        {
+                            response->setStatus(" 500 Internal Server Error\r\n");
+                        }
+                        else
+                        {
+                            response->setStatus(" 403 Forbidden\r\n");
+                        }
+                    }
+                // }
+            }
+            else
+            {
+                response->setStatus(" 409 Conflict\r\n");
+            }
+        }
+    }
+    else
+    {
+        response->setStatus(" 403 Forbidden\r\n");
+    }
+    return "empty";
+}
 
 // void POSTresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
 // {
@@ -374,11 +368,8 @@ std::string Response::getHeader()
 std::string  GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
     (void)request;
-    (void)response;
-    (void)config;
-    (void)index_server;
     /////// main process to set a good response : set mandatory headers + set path of file to send
-    std::string body_f = "";
+    std::string body_f = "empty";
     
     if(requested_file_in_root(response->get_location()))
     {
@@ -401,7 +392,7 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
             if (response->get_location().back() == '/') // uri have / at the end
             {
                 std::string index_path = response->get_index(response->get_location(), config->get_server_vect()[index_server]);
-                if (!index_path.empty()) //have index file
+                if (file_exist(index_path)) //have index file
                 {
                     // if (location_have_cgi()) // location have cgi
                     // {
@@ -421,7 +412,6 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
                     {
                         body_f = generate_auto_index(response->get_location());
                         response->setpath(body_f);
-                        // response->set_location(response->get_index());
                         response->setStatus(" 200 OK\r\n");
                     }
                     else
@@ -435,6 +425,7 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
             else //uri have not a / at the end
             {
                 response->set_redirection(response->get_location() + "/");
+                std::cout << "redirection to " << response->get_redirection() << std::endl;
                 response->setStatus(" 301 MOVED PERMANENTLY\r\n");
                 body_f = get_error_page(301,  config->get_server_vect()[index_server]);
                 response->setpath(body_f);
@@ -450,13 +441,6 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
 
     return body_f;
 }
-
-// void ERRORresponse(Request *request, Response *response)
-// {
-//     (void)request;
-//     (void)response;
-//     std::cout << B_red << "im doing error response status= " << request->getRequestStatus() << B_def << std::endl;
-// }
 
 std::string Response::get_index(std::string url, Server server)
 {
@@ -479,9 +463,9 @@ std::string Response::get_index(std::string url, Server server)
 				for(std::vector<std::string>::iterator it = it_loc->get_index().begin();
                         it != it_loc->get_index().end(); ++it)
 				{
-					if (file_exist(url + "/" + *it))
+					if (file_exist(remove_duplicate_slash(url + "/" + *it)))
 					{
-						return (url + "/" + *it);
+						return (remove_duplicate_slash(url + "/" + *it));
 					}
 				}
 				location_path = location_str;
@@ -499,3 +483,4 @@ std::string Response::get_index(std::string url, Server server)
 	}
 	return "";
 }
+
