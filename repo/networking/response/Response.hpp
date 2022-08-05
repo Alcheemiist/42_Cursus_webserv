@@ -80,7 +80,7 @@ class Response
         std::string get_redirection()  { return this->redirection_path; };
         void init_location(std::string url, Server server);
         void set_location(std::string url, Server server);
-        void init_redirection(std::string url, Server server);
+        void init_redirection(std::string url, Server server, std::string &ref);
         void set_redirection(std::string url) { this->redirection_path = url; };
         std::string get_version(){ return this->version; };
         std::string get_status(){ return this->status; };

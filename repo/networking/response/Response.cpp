@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include "Response_utiles.hpp"
 #include "../../config/print.hpp"
+#include "../../config/utils.hpp"
 
 #define DELIMITER "\r\n"
 
@@ -57,8 +58,9 @@ Response  response(Request *request, ParseConfig *config, int index_server)
 
 void Response::setStatus(Request *request, Server server)
 {
+    std::string code_redirection;
     this->init_location(request->geturl(),server);
-    this->init_redirection(request->geturl(), server);
+    this->init_redirection(request->geturl(), server, code_redirection);
 	if (!request->get_is_formated())
 	{
         
@@ -74,15 +76,17 @@ void Response::setStatus(Request *request, Server server)
 
         else if ( request->get_body_length() > server.get_client_max_body_size()) // almost done
         	this->status = " 413 REQUEST ENTITY TOO LARGE\r\n";
-
     }
     std::cout << "NOT WORKING AS EXCPECTED FUNCTION DOWN HERE"  << std::endl;
 
     if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
         this->status = " 405 METHOD NOT ALLOWED\r\n";
 
-    else if (!get_redirection().empty())
-        this->status = " 301 MOVED PERMANENTLY\r\n";
+    else if (!get_redirection().empty()) {
+
+        // this->status = " 301 MOVED PERMANENTLY\r\n";
+        this->status = code_redirection;
+    }
 
     else if (!file_exist(get_location()))
         this->status = " 404 NOT FOUND\r\n";
@@ -119,7 +123,39 @@ void Response::init_location(std::string url, Server server)
 		this->requested_path = remove_duplicate_slash(server.get_root() + url);
 }
 
-void	Response::init_redirection(std::string url, Server server)
+std::string get_status_code(int n)
+{
+    std::string code = "";
+    switch (n)
+    {
+        case 300:
+            code = " 300 MULTIPLE CHOICES\r\n";
+            break;
+        case 302:
+            code = " 302 FOUND\r\n";
+            break;
+        case 303:
+            code = " 303 SEE OTHER\r\n";
+            break;
+        case 304:
+            code = " 304 NOT MODIFIED\r\n";
+            break;
+        case 305:
+            code = " 305 USE PROXY\r\n";
+            break;
+        case 307:
+            code = " 307 TEMPORARY REDIRECT\r\n";
+            break;
+        case 308:
+            code = " 308 PERMANENT REDIRECT\r\n";
+            break;
+        default :
+            code = " 301 MOVED PERMANENTLY\r\n";
+    }
+    return code;
+}
+
+void	Response::init_redirection(std::string url, Server server, std::string &statusLine)
 {
 	std::vector<std::vector<std::string> > red = server.get_redirections();
 	std::string redirection_str;
@@ -136,7 +172,21 @@ void	Response::init_redirection(std::string url, Server server)
 		{
 			if (str_matched(redirection_str, _redirection_path) > redirection_path_matched)
 			{
-				_redirection_path = (*it)[1];
+                println("it02 = ", it[0][2]);
+                if (std::isdigit(it[0][2][0]))
+                {
+                    statusLine = get_status_code(to_int(it[0][2]));
+                }
+                else if (it[0][2] == "temporary")
+                {
+                    statusLine = get_status_code(307);
+                }
+                else
+                {
+                    statusLine = get_status_code(308);
+                }
+                println("status = ", statusLine);
+                _redirection_path = (*it)[1];
 				redirection_path_matched = str_matched(redirection_str, _redirection_path);
                 if (std::strncmp(_redirection_path.c_str(), "http", 4) == 0)
                     path_absol = _redirection_path;
