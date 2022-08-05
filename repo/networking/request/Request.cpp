@@ -177,7 +177,7 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
 
 void Request::fill_body(char *buffer, size_t bytes)
 {
-    int fd = open(this->bodyFileName.c_str(), O_RDWR | O_CREAT | O_APPEND, 0666);
+    int fd = open(this->bodyFileName.c_str(), O_RDWR | O_CREAT | O_APPEND, 0644);
     write(fd, buffer, bytes);
     close(fd);
     // std::cout << blue << "reading request body " << bytes  << B_def << std::endl;
