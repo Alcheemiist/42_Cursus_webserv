@@ -23,9 +23,9 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     if (!(request->getMethod().compare("GET")))
         s = GETresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("DELETE") == 0)
-        s= DELETEresponse(request, &response, config, index_server);
-    // else if (request->getMethod().compare("POST") == 0)
-    //     POSTresponse(request, &response, config, index_server);
+        s = DELETEresponse(request, &response, config, index_server);
+    else if (request->getMethod().compare("POST") == 0)
+        s = POSTresponse(request, &response, config, index_server);
 
     std::cout << "Requested path : " << response.get_location() << std::endl;
     std::cout << "Redirection path : " << response.get_redirection() << std::endl;
@@ -38,9 +38,6 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
 
     // response.setHeader(header_str);
-
-
-
 
     std::cout << blue << "********** { Response Header } ***********************" << def << std::endl;
     std::cout << header_str << std::endl;
@@ -261,8 +258,6 @@ std::string ERRORresponse(Request *request, Response *response, ParseConfig *con
     return body_f;
 }
 
-
-
 std::string DELETEresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
 {
     if(requested_file_in_root(response->get_location()))
@@ -277,6 +272,7 @@ std::string DELETEresponse(Request *request, Response *response, ParseConfig *co
             // {
                     remove(response->get_location().c_str());
                     response->setStatus(" 204 No Content\r\n"); 
+                    get_error_page(204, config->get_server_vect()[index_server]);
             // }
         }
         else
@@ -292,16 +288,19 @@ std::string DELETEresponse(Request *request, Response *response, ParseConfig *co
                     if(remove_all_folder_content(response->get_location()))
                     {
                         response->setStatus(" 204 No Content\r\n");
+                        get_error_page(204, config->get_server_vect()[index_server]);
                     }
                     else
                     {
                         if (have_write_access_on_folder(response->get_location()))
                         {
                             response->setStatus(" 500 Internal Server Error\r\n");
+                            get_error_page(500, config->get_server_vect()[index_server]);
                         }
                         else
                         {
                             response->setStatus(" 403 Forbidden\r\n");
+                            get_error_page(403, config->get_server_vect()[index_server]);
                         }
                     }
                 // }
@@ -309,61 +308,81 @@ std::string DELETEresponse(Request *request, Response *response, ParseConfig *co
             else
             {
                 response->setStatus(" 409 Conflict\r\n");
+                get_error_page(409, config->get_server_vect()[index_server]);
             }
         }
     }
     else
     {
         response->setStatus(" 403 Forbidden\r\n");
+        get_error_page(403, config->get_server_vect()[index_server]);
     }
     return "empty";
 }
 
-// void POSTresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
-// {
-//     (void)request;
-//     (void)response;
-//     (void)config;
-//     (void)index_server;
-//     // response->set_location(get_location_url(request->geturl(),
-//     //     config->get_server_vect()[index_server]));
-//     // if(Location_support_upload(request->geturl(),
-//     //         config->get_server_vect()[index_server]))
-//     // {
-//     //     // upload_response(request, response, config, index_server);
-//     // }
-//     // else
-//     // {
-//     //     if (!requested_file_in_root(request->geturl(),
-//     //         config->get_server_vect()[index_server]))
-//     //     {
-//     //         response->setStatus("404 NOT FOUND");
-//     //     }
-//     //     else
-//     //     {
-//     //         if (is_file(request->geturl()))
-//     //         {
-//     // //             if (Location_have_cgi(request->geturl()))
-//     // //                 cgi_response(request, response, config, index_server);
-//     // //             else
-//     // //                 response->setStatus("405 METHOD NOT ALLOWED");
-//     //         }
-//     //         else
-//     //         {
-//     //             if (request->geturl().back() != '/')
-//     //                 response->setStatus("301 MOVED PERMANENTLY");
-//     //             else if (!file_exist(request->geturl() + "index.html"))
-//     //                 response->setStatus("403 FORBIDDEN");
-//     // //             else
-//     // //                 if (Location_have_cgi(request->geturl()))
-//     // //                     cgi_response(request, response, config, index_server);
-//     // //                 else
-//     // //                     response->setStatus("403 FORBIDDEN");
-//     //         }
-//     //     }
-//     // }
-//     std::cout << "im doing post response\n";
-// }
+std::string  POSTresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
+{
+    (void)request;
+    (void)config;
+    std::string body_f = "empty";
+    std::string path_upload_file;
+
+
+    if(location_support_upload(config->get_server_vect()[index_server].get_upload_path()))
+    {
+        // upload_post(request, config->get_server_vect()[index_server].get_upload_path());
+        body_f = get_error_page(201, config->get_server_vect()[index_server]);
+        response->setStatus(" 201 Created\r\n");
+    }
+    else
+    {
+        if (is_file(path_upload_file))
+        {
+            // if (Location_have_cgi(response->get_location()))
+            // {
+            // }
+            // else
+            // {
+                body_f = get_error_page(403, config->get_server_vect()[index_server]);
+                response->setStatus(" 403 Created\r\n");
+            // }
+        }
+        else
+        {
+            if (response->get_location().back() == '/')
+            {
+                std::string index_path = response->get_index(response->get_location(), config->get_server_vect()[index_server]);
+                if (file_exist(index_path))
+                {
+                    // if (Location_have_cgi(response->get_location()))
+                    // {
+                    // }
+                    // else
+                    // {
+                        body_f = get_error_page(403, config->get_server_vect()[index_server]);
+                        response->setStatus(" 403 Created\r\n");
+                    // }
+                }
+                else
+                {
+                    body_f = get_error_page(403, config->get_server_vect()[index_server]);
+                    response->setStatus(" 403 Created\r\n");
+                }
+            }
+            else
+            {
+                response->set_redirection(response->get_location() + "/");
+                std::cout << "redirection to " << response->get_redirection() << std::endl;
+                response->setStatus(" 301 MOVED PERMANENTLY\r\n");
+                body_f = get_error_page(301,  config->get_server_vect()[index_server]);
+                response->setpath(body_f);
+            }
+        }
+        body_f = get_error_page(403, config->get_server_vect()[index_server]);
+    }
+    return body_f;
+    std::cout << "im doing post response\n";
+}
 
 std::string  GETresponse(Request *request, Response *response, ParseConfig *config, int index_server)
 {
