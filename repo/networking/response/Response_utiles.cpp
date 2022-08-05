@@ -26,7 +26,6 @@ bool file_exist(std::string path)
 {
 	struct stat st;
 	int res = stat(path.c_str(), &st);
-	println("res = ", res);
 	return (res == 0);
 }
 
@@ -60,7 +59,7 @@ std::string generate_auto_index(std::string url)
 	if (dr)
 	{
 		while ((en = readdir(dr)) != NULL)
-			file << "<a href=\"" <<en->d_name << "\">" << en->d_name << "</a><br>";
+			file << "<a href=\"" << en->d_name << "\">" << en->d_name << "</a><br>";
 	}
 	file << "</body></html>";
     closedir(dr);
@@ -199,4 +198,75 @@ std::string get_error_page(int code, Server server)
 		}
 	}
 	return ("empty");
+}
+
+bool status_code_error(std::string status)
+{
+    int code = std::stoi(status);
+    if (code == 501 || code == 405 || code == 400 || code == 414 || code == 404 || code == 413 || code == 405)
+        return true;
+    return false;
+}
+
+bool remove_all_folder_content(std::string path)
+{
+	DIR *dir;
+	struct dirent *ent;
+	bool ret = true;
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if (ent->d_name[0] != '.')
+			{
+				std::string file_path = path + "/" + ent->d_name;
+				std::cout << "file_path : " << file_path << std::endl;
+				std::cout << "ent->d_name : " << ent->d_name << std::endl;
+				if (is_file(file_path))
+				{
+					if (remove(file_path.c_str()) != 0)
+					{
+						ret = false;
+						continue;
+					}
+				}
+				else
+					remove_all_folder_content(file_path);
+			}
+		}
+		closedir(dir);
+		return (ret);
+	}
+	return (ret);
+}
+
+bool have_write_access_on_folder(std::string path)
+{
+	DIR *dir;
+	struct dirent *ent;
+	if ((dir = opendir(path.c_str())) != NULL)
+	{
+		while ((ent = readdir(dir)) != NULL)
+		{
+			if (ent->d_name[0] != '.')
+			{
+				std::string file_path = path + "/" + ent->d_name;
+				if (is_file(file_path))
+				{
+					if (access(file_path.c_str(), W_OK) != -1)
+						return (true);
+					else
+						return (false);
+				}
+				else
+					if (have_write_access_on_folder(file_path))
+						return (true);
+					else
+						return (false);
+			}
+		}
+		closedir(dir);
+		return (true);
+	}
+	return (false);
 }
