@@ -34,6 +34,7 @@ class Response
         std::vector<std::string> status_vector;
         std::string requested_path;
         std::string redirection_path;
+        std::string index;
 
     public:
         Response() : version("HTTP/1.1"), status(""), header(""), body(""), response(""), responseStatus(""), body_length(0), contentType(""),
@@ -84,6 +85,10 @@ class Response
         std::string get_version(){ return this->version; };
         std::string get_status(){ return this->status; };
         std::string get_content_type(){ return this->contentType; };
+        void set_index(std::string str) { index = str; };
+        std::string get_index() {return (index); }
+        std::string get_index(std::string url, Server server);
+
 };
 
 std::string GETresponse(Request *request, Response *response, ParseConfig *config, int server_index);
