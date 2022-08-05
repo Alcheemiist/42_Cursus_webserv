@@ -15,7 +15,7 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     std::string s;
 
     /* is_req_well_formed() */
-
+    response.setStatus("");
     response.setStatus(request, config->get_server_vect()[index_server]);
     // if (status_code_error(response.get_status())) 
     //     s = 
@@ -63,26 +63,26 @@ void Response::setStatus(Request *request, Server server)
 	{
         
 		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked") // done 
-			this->status = "501 NOT IMPLEMENTED\r\n";
+			this->status = " 501 NOT IMPLEMENTED\r\n";
 		else if (!request->get_transfer_encoding().size() && request->getcontent_length() <= 0 &&  request->getMethod() == "POST") // done // 405 not allowed in nginx 
-            this->status = "400 BAD REQUEST\r\n";
+            this->status = " 400 BAD REQUEST\r\n";
 		else if (!url_is_formated(request->geturl())) // done
-            this->status = "400 BAD REQUEST\r\n";
+            this->status = " 400 BAD REQUEST\r\n";
 
         else if (request->geturl().length() > MAX_URL_LENGTH)  // done // nginx accepte more than 2048 char 
-			this->status = "414 REQUEST-URI TOO LARGE\r\n";
+			this->status = " 414 REQUEST-URI TOO LARGE\r\n";
 
         else if ( request->get_body_length() > server.get_client_max_body_size()) // almost done
-        	this->status = "413 REQUEST ENTITY TOO LARGE\r\n";
+        	this->status = " 413 REQUEST ENTITY TOO LARGE\r\n";
 
     }
     std::cout << "NOT WORKING AS EXCPECTED FUNCTION DOWN HERE"  << std::endl;
 
     if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
-        this->status = "405 METHOD NOT ALLOWED\r\n";
+        this->status = " 405 METHOD NOT ALLOWED\r\n";
 
     else if (!get_redirection().empty())
-        this->status = "301 MOVED PERMANENTLY\r\n";
+        this->status = " 301 MOVED PERMANENTLY\r\n";
 
     else if (!file_exist(get_location()))
         this->status = " 404 NOT FOUND\r\n";
@@ -399,7 +399,8 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
     (void)request;
     /////// main process to set a good response : set mandatory headers + set path of file to send
     std::string body_f = "empty";
-    
+    if(!response->get_status().empty())
+        return body_f;
     if(requested_file_in_root(response->get_location()))
     {
         if (is_file(response->get_location()))
