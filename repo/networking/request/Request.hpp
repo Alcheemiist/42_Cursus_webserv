@@ -37,10 +37,11 @@ private:
     std::string transfer_encoding;
     int         _port;
 	struct sockaddr_in _client_addr;
+    size_t bodyBytesWritten;
 
 public:
     Request() : _method(""), _path(""), _version(""), _host(""), _connection(""), _accept(""), _accept_encoding(""),  _content_type(""), _content_length(-1), _headers(std::map<std::string, std::string>()),
-                bodyFileName(""), client_fd(-1), _fdBodyFile(-1), _is_complete(false), requestStatus(-1), status_message(""), bodyFileSize(0), is_formated(false), transfer_encoding(""), _port(0) {};
+                bodyFileName(""), client_fd(-1), _fdBodyFile(-1), _is_complete(false), requestStatus(-1), status_message(""), bodyFileSize(0), is_formated(false), transfer_encoding(""), _port(0), bodyBytesWritten(0) {};
     Request(char *buffer, size_t bytes, int fd);
     ~Request(){};
     int get_body_length(){  return getFileSize(bodyFileName.c_str());  }

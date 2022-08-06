@@ -278,20 +278,21 @@ bool have_write_access_on_folder(std::string path)
 bool location_support_upload(std::string url)
 {
 	bool ret = false;
-	std::ofstream file("test");
+	std::string file_name = remove_duplicate_slash(url + "/test");
+	std::cout << file_name << std::endl;
+	std::ofstream file(file_name);
 	if (file.is_open())
 	{
 		ret = true;
 		file.close();
-		remove("test");
+		remove(file_name.c_str());
 	}
 	return (ret);
 }
 
 void upload_post(Request *request, Response *response, std::string upload_path)
 {
-	std::string file_name_in = request->getBodyFileName();
-	std::cout << "file_name_in : " << file_name_in << std::endl;
+	std::string file_name_in = request->getPath();
 	for(std::string::reverse_iterator it = file_name_in.rbegin(); it != file_name_in.rend(); ++it)
 	{
 		if (*it == '/')
@@ -300,7 +301,20 @@ void upload_post(Request *request, Response *response, std::string upload_path)
 			break;
 		}
 	}
-	std::string file_name_out = remove_duplicate_slash(upload_path + "/" + request->getPath() + "/" + file_name_in);
+	if (file_name_in == "")
+	{
+		std::string file_name_in = request->getPath();
+		for(std::string::reverse_iterator it = file_name_in.rbegin(); it != file_name_in.rend(); ++it)
+		{
+			if (*it == '/')
+			{
+				file_name_in.erase(file_name_in.begin(), it.base());
+				break;
+			}
+		}
+	}
+	std::cout << "file_name_in : " << file_name_in << std::endl;
+	std::string file_name_out = remove_duplicate_slash(upload_path + "/" + file_name_in);
 	int fd_in = open(request->getBodyFileName().c_str(), O_RDWR);
 	int fd_out = open(file_name_out.c_str(), O_CREAT| O_RDWR, 0666);
 	if (fd_in < 0 || fd_out < 0)
@@ -313,7 +327,6 @@ void upload_post(Request *request, Response *response, std::string upload_path)
 	while ((n = read(fd_in, buffer, BUFFER_SIZE)) > 0)
 	{
 		buffer[n] = '\0';
-		std::cout << "\x1B[31m" << buffer << "\033[0m" << std::endl;
 		write(fd_out, buffer, n);
 	}
 	free(buffer);
