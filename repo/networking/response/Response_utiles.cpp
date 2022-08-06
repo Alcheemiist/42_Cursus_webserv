@@ -294,7 +294,6 @@ bool location_support_upload(std::string url)
 // 	std::ofstream file();
 // 	if (file.is_open())
 // 	{
-		
 // 		file.close();
 // 	}
 // }
