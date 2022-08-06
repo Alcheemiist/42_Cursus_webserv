@@ -42,5 +42,6 @@ bool remove_all_folder_content(std::string path);
 bool have_write_access_on_folder(std::string path);
 bool location_support_upload(std::string url);
 void upload_post(Request *request, Response *response, std::string upload_path);
-
+bool Location_have_cgi(std::string url);
+std::pair<std::string, std::string> _cgi_ret(std::string url);
 #endif
