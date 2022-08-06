@@ -58,6 +58,7 @@ class Response
         std::string getBody() { return body; };
         void    setbody_file_size(int size) { this->body_file_size = size; };
 		void	set_autoindex(bool ai) { this->is_autoindex = ai; };
+		bool	get_autoindex() const { return is_autoindex; };
         int     getbody_file_size() { return this->body_file_size; };
         void    set_finish(bool i) { this->is_complete = i; };
         void    setContentType(std::string type);
