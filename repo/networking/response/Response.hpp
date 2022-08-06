@@ -77,10 +77,10 @@ class Response
         void    setContentType(std::string type);
         bool    get_finish() { return this->is_complete; };
         std::vector<char> get_buffer();
+        void setCgi(bool val) { this->is_cgi = val; };
         //
         void set_maxBufferLenght(size_t size) { this->maxBufferLenght = size; };
         size_t get_maxBufferLenght() { return this->maxBufferLenght; };
-
         //
         std::string setStatus(Request *request, Server server);
         void show() { std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;  };
@@ -97,14 +97,11 @@ class Response
         std::string get_index() {return (index); }
         std::string get_index(std::string url, Server server);
 };
-
 std::string ERRORresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 std::string GETresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 std::string DELETEresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 std::string POSTresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 Response response( Request *request, ParseConfig *config, int fd_server);
 std::string URLgetFileName(std::string url);
-
-
 
 #endif
