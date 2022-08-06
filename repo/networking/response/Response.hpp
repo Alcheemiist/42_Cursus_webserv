@@ -41,7 +41,7 @@ class Response
         body_file_size(0),  is_complete(false), body_file_path(""), maxBufferLenght(0), requestFuckedUp(false) {};
 
         void setVersion(std::string version) { this->version = version; };
-        void setStatus(std::string status) { this->status = status; };
+        void  setStatus(std::string status) { this->status = status; };
         void setHeader(char *_header) { this->header = _header; };
         void setHeader(std::string header) { this->header = header; };
         void setBody(char *body)  {  this->body = body;   };
@@ -74,7 +74,7 @@ class Response
         void set_requestFuckedUp(bool i) { this->requestFuckedUp = i; };
         bool get_requestFuckedUp() { return this->requestFuckedUp; };
         //
-        void setStatus(Request *request, Server server);
+        std::string setStatus(Request *request, Server server);
         void show() { std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;  };
         std::string get_location() {  return this->requested_path; };
         std::string get_redirection()  { return this->redirection_path; };
