@@ -320,3 +320,26 @@ void upload_post(Request *request, Response *response, std::string upload_path)
 	close(fd_in);
 	close(fd_out);
 }
+
+bool Location_have_cgi(std::string url)
+{
+	for (std::string::reverse_iterator it = url.rbegin(); it != url.rend(); ++it)
+	{
+		if (*it == '.')
+		{
+			url.erase(url.begin(), it.base());
+			break;
+		}
+	}
+	if (url == "php" || url == "PHP" || url == "PY" || url == "py")
+		return (true);
+	return (false);
+}
+
+std::pair<std::string, std::string> _cgi_ret(std::string url)
+{
+	std::pair<std::string, std::string> ret;
+	ret.first = "";
+	ret.second = "";
+	return (ret);
+}

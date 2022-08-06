@@ -331,28 +331,36 @@ std::string ERRORresponse(Request *request, Response *response, ParseConfig *con
 
 std::string DELETEresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
 {
+    std::string body_f = "empty";
     if(requested_file_in_root(response->get_location()))
     {
         if (is_file(response->get_location()))
         {
             // if (Location_have_cgi(response->get_location()))
             // {
-
+            //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(response->get_location());
+            //     response->setStatus(cgi_pair.first);
+            //     response->setpath(cgi_pair.second);
+            //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
             // }
             // else
             // {
-                    remove(response->get_location().c_str());
-                    response->setStatus(" 204 No Content\r\n"); 
-                    get_error_page(204, config->get_server_vect()[index_server]);
+                remove(response->get_location().c_str());
+                response->setStatus(" 204 No Content\r\n"); 
+                get_error_page(204, config->get_server_vect()[index_server]);
             // }
         }
         else
         {
             if (response->get_location().back() == '/')
             {
-                // if (Location_have_cgi(response->get_location()))
+                std::string index_path = response->get_index(response->get_location(), config->get_server_vect()[index_server]);
+                // if (Location_have_cgi(index_path))
                 // {
-
+                //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(index_path);
+                //     response->setStatus(cgi_pair.first);
+                //     response->setpath(cgi_pair.second);
+                //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
                 // }
                 // else
                 // {
@@ -398,13 +406,6 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
     std::string body_f = "empty";
     std::string path_upload_file;
 
-    // int fd = open(request->getBodyFileName().c_str(), O_RDWR , 0666);
-    // char *s = (char *)malloc(5000);
-    // int n = read(fd, s, 5000);
-    // s[n] = 0;
-    // std::cout << s << std::endl;
-    
-
     if(location_support_upload(config->get_server_vect()[index_server].get_upload_path()))
     {
         upload_post(request, response, config->get_server_vect()[index_server].get_upload_path());
@@ -415,13 +416,18 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
     {
         if (is_file(path_upload_file))
         {
-            // if (Location_have_cgi(response->get_location()))
+            // if (Location_have_cgi(path_upload_file))
             // {
+            //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(path_upload_file);
+            //     response->setStatus(cgi_pair.first);
+            //     response->setpath(cgi_pair.second);
+            //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
             // }
             // else
             // {
                 body_f = get_error_page(403, config->get_server_vect()[index_server]);
                 response->setStatus(" 403 Created\r\n");
+                body_f = get_error_page(403, config->get_server_vect()[index_server]);
             // }
         }
         else
@@ -431,13 +437,18 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
                 std::string index_path = response->get_index(response->get_location(), config->get_server_vect()[index_server]);
                 if (file_exist(index_path))
                 {
-                    // if (Location_have_cgi(response->get_location()))
+                    // if (Location_have_cgi(index_path))
                     // {
+                    //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(index_path);
+                    //     response->setStatus(cgi_pair.first);
+                    //     response->setpath(cgi_pair.second);
+                    //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
                     // }
                     // else
                     // {
                         body_f = get_error_page(403, config->get_server_vect()[index_server]);
                         response->setStatus(" 403 Created\r\n");
+                        body_f = get_error_page(403, config->get_server_vect()[index_server]);
                     // }
                 }
                 else
@@ -474,13 +485,16 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
         {
             // if (Location_have_cgi(response->get_location())) // if location have cgi
             // {
-
+            //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(response->get_location());
+            //     response->setStatus(cgi_pair.first);
+            //     response->setpath(cgi_pair.second);
+            //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
             // }
             // else 
             // {
-                    response->setpath(response->get_location());
-                    response->setStatus(" 200 OK\r\n");
-                    body_f = response->getpath();
+                response->setpath(response->get_location());
+                response->setStatus(" 200 OK\r\n");
+                body_f = response->getpath();
             // }
                 
         }
@@ -491,9 +505,12 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
                 std::string index_path = response->get_index(response->get_location(), config->get_server_vect()[index_server]);
                 if (file_exist(index_path)) //have index file
                 {
-                    // if (location_have_cgi()) // location have cgi
+                    // if (Location_have_cgi(index_path)) // location have cgi
                     // {
-
+                    //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(index_path);
+                    //     response->setStatus(cgi_pair.first);
+                    //     response->setpath(cgi_pair.second);
+                    //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
                     // }
                     // else // location have note cgi
                     // {
@@ -521,7 +538,6 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
             }
             else //uri have not a / at the end
             {
-                // response->set_redirection(response->get_location() + "/");
                 response->set_redirection(request->getPath() + "/");
                 std::cout << "redirection to " << response->get_redirection() << std::endl;
                 response->setStatus(" 301 MOVED PERMANENTLY\r\n");
@@ -576,7 +592,7 @@ std::string Response::get_index(std::string url, Server server)
 	}
 	for(std::vector<std::string>::iterator it = index_file.begin(); it != index_file.end(); ++it)
 	{
-		if (file_exist(remove_duplicate_slash(server.get_root() + "/" + *it)))
+		if (file_exist(remove_duplicate_slash(url + "/" + *it)))
 		{
 			return (url + "/" + *it);
 		}
