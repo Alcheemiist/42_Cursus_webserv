@@ -259,12 +259,10 @@ void Response::setContentType(std:: string s)
 std::vector<char> Response::get_buffer()
 {
     std::vector <char> buffer;
-
+    std::cout << red << "read buffer dfrom : "  << body_file_path << std::endl;
     int fd = open(this->body_file_path.c_str(), O_RDONLY);
     if (fd < 0)
-    {
         std::cout << "open file error";
-    }
     int size = lseek(fd, maxBufferLenght, SEEK_SET);
     if (size < 0)
         std::cout << "lseek error";
@@ -289,7 +287,7 @@ std::string Response::getHeader()
 {
     std::string res;
 
-
+    is_cgi = false;
     if (is_cgi)
     {
         std::string tmp;
