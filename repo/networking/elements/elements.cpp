@@ -179,6 +179,9 @@ void LaunchServer(ParseConfig *config)
                             serv_response[i]++; // move on to next step
                             std::cout << green << " **********        RESPONSIYA      ****************** " << def << std::endl;
                             responses[i].show();
+							if (responses[i].get_autoindex()) {
+								remove(responses[i].getpath().c_str());
+							}
                             std::cout << B_def <<  red << " [HEADER_SIZE] : " << blue  << (responses[i].get_header().size()) << def << std::endl;
                             std::cout << B_def <<  red << " [BODY_SIZE] : " << blue  << getFileSize(responses[i].getpath().c_str()) << def << std::endl;
                             std::cout << B_def <<  red << " [FULL SIZE OF RESPONSE] : " << blue  << _send_size[i] << def << std::endl;
