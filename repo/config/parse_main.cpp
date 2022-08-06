@@ -591,7 +591,7 @@ void validateConfigFile(Component &root, std::string cfgName, std::string pName)
 												validateClientMaxBodySizeDirectiveAttr))); // checked
 	allowedComponents.insert(std::make_pair(ALLOW_METHODS_DIRECTIVE, AllowedComponent(ALLOW_METHODS_DIRECTIVE, DIRECTIVE, list<std::string>(SERVER_CONTEXT, LOCATION_CONTEXT, CGI_CONTEXT), 1, 3, validateAllowMethodsDirectiveAttr))); // checked
 	allowedComponents.insert(std::make_pair(AUTOINDEX_DIRECTIVE, AllowedComponent(AUTOINDEX_DIRECTIVE, DIRECTIVE, list<std::string>(LOCATION_CONTEXT, SERVER_CONTEXT), 1, 1, validateAutoIndexDirectiveAttr))); // checked
-	allowedComponents.insert(std::make_pair(ERROR_PAGE_DIRECTIVE, AllowedComponent(ERROR_PAGE_DIRECTIVE, DIRECTIVE, list<std::string>(LOCATION_CONTEXT, SERVER_CONTEXT), 2, 2, validateErrorPageDirectiveAttr))); // checked
+	allowedComponents.insert(std::make_pair(ERROR_PAGE_DIRECTIVE, AllowedComponent(ERROR_PAGE_DIRECTIVE, DIRECTIVE, list<std::string>( /* LOCATION_CONTEXT, */ SERVER_CONTEXT), 2, 2, validateErrorPageDirectiveAttr))); // checked
 	allowedComponents.insert(std::make_pair(REDIRECT_DIRECTIVE, AllowedComponent(REDIRECT_DIRECTIVE, DIRECTIVE, list<std::string>(LOCATION_CONTEXT, SERVER_CONTEXT), 3, 3, validateRedirectDirectiveAttr))); // checked
 	allowedComponents.insert(std::make_pair(CGI_PATH_DIRECTIVE, AllowedComponent(CGI_PATH_DIRECTIVE, DIRECTIVE, list<std::string>(CGI_CONTEXT), 1, 1, validateCgiPathDirectiveAttr))); // checked
 	allowedComponents.insert(std::make_pair(UPLOAD_PATH_DIRECTIVE, AllowedComponent(UPLOAD_PATH_DIRECTIVE, DIRECTIVE, list<std::string>(SERVER_CONTEXT, LOCATION_CONTEXT), 1, 1, NULL))); // checked
