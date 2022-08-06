@@ -2,6 +2,20 @@
 #include "../../config/print.hpp"
 #include <fstream>
 
+std::vector<std::string> split_url(std::string url) {
+	std::vector<std::string> ret;
+	if (url.length() == 0) {
+		return ret;
+	}
+	if (url[0] == '/') {
+		url = &url.c_str()[1];
+	}
+	if (url.back() == '/') {
+		url = url.substr(0, url.length() - 1);
+	}
+	return ret;
+}
+
 int str_matched(std::string str1, std::string str2)
 {
 	int i = 0;
@@ -12,9 +26,9 @@ int str_matched(std::string str1, std::string str2)
 
 bool url_is_formated(std::string url)
 {
-	std::string allowed ="ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-							abcdefghijklmnopqrstuvwxyz\
-							0123456789-._~:/?#[]@!$&'()*+,;=";
+	std::string allowed ="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+							"abcdefghijklmnopqrstuvwxyz"
+							"0123456789-._~:/?#[]@!$&'()*+,;=";
 	for(std::string::iterator it = url.begin(); it != url.end(); ++it)
 		if (allowed.find(*it) == std::string::npos)
 			return false;
@@ -50,7 +64,7 @@ std::string generate_auto_index(std::string url)
 		if (*it != '/' && *it != '.')
 			new_url += *it;
 	}
-	new_url = new_url + "index.html";
+	new_url = "./autoindex/" + new_url + "index" + to_string(rand()) + ".html";
 	std::cout << new_url << std::endl;
 	std::ofstream file (new_url);
 	file << "<!DOCTYPE html><html><body>";
