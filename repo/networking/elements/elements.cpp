@@ -204,7 +204,6 @@ void LaunchServer(ParseConfig *config)
                         first[i] = true;
                     }
                 }
-            
             }
         }
     }
