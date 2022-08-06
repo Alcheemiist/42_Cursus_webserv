@@ -211,8 +211,7 @@ void	Response::init_redirection(std::string url, Server server, std::string &sta
 				redirection_path_matched = str_matched(redirection_str, _redirection_path);
                 if (std::strncmp(_redirection_path.c_str(), "http", 4) == 0)
                     path_absol = _redirection_path;
-                else
-                    path_absol = server.get_root() + _redirection_path;
+
 			}
 		}
 	}
@@ -668,3 +667,51 @@ std::string Response::get_index(std::string url, Server server)
 	return "";
 }
 
+
+
+// copied from .hpp
+void Response::setVersion(std::string version) { this->version = version; };
+void  Response::setStatus(std::string status) {
+    size_t len = 0;
+    for (std::string::iterator it = status.begin(); it != status.end(); it++) {
+        std::string word = status.substr(len, min(len + 3, status.length()));
+        if (word.length() == 3) {
+            if (!std::isalpha(word[0]) && std::isalpha(word[1]) && std::isalpha(word[2]))
+                status[len + 1] = std::toupper((char)status[len + 1]);
+        }
+        len++;
+    }
+    this->status = status;
+};
+void    Response::setHeader(char *_header) { this->header = _header; };
+void Response::setHeader(std::string header) { this->header = header; };
+void Response::setBody(char *body)  {  this->body = body;   };
+void Response::setBody(std::vector<char> _body)
+{
+    for (std::vector<char>::iterator it = _body.begin(); it != _body.end(); ++it)
+        this->body += *it;
+};
+void Response::setpath (std::string path){ this->body_file_path = path; }
+std::string Response::getpath (){ return this->body_file_path; }
+void Response::setResponseHeader() { this->header = this->version.c_str(); std::cout << "- Set Version : " << this->version << std::endl;};
+std::string Response::get_header() { return this->header; };
+std::string Response::getBody() { return body; };
+void    Response::setbody_file_size(int size) { this->body_file_size = size; };
+void	Response::set_autoindex(bool ai) { this->is_autoindex = ai; };
+bool	Response::get_autoindex() const { return is_autoindex; };
+int     Response::getbody_file_size() { return this->body_file_size; };
+void    Response::set_finish(bool i) { this->is_complete = i; };
+bool    Response::get_finish() { return this->is_complete; };
+//
+void Response::set_maxBufferLenght(size_t size) { this->maxBufferLenght = size; };
+size_t Response::get_maxBufferLenght() { return this->maxBufferLenght; }
+//
+void Response::show() { std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;  };
+std::string Response::get_location() {  return this->requested_path; };
+std::string Response::get_redirection()  { return this->redirection_path; };
+void Response::set_redirection(std::string url) { this->redirection_path = url; };
+std::string Response::get_version(){ return this->version; };
+std::string Response::get_status(){ return this->status; };
+std::string Response::get_content_type(){ return this->contentType; };
+void Response::set_index(std::string str) { index = str; };
+std::string Response::get_index() {return (index); }
