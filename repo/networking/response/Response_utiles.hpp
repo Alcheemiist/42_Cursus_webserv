@@ -2,8 +2,9 @@
 #define Response_utiles_hpp
 
 #include "../elements.hpp"
+#include <vector>
 
-std::string *split_url(std::string str);
+std::vector<std::string> split_url(std::string str);
 
 bool url_is_formated(std::string url);
 

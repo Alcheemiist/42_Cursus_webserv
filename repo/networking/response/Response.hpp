@@ -34,10 +34,11 @@ class Response
         std::string index;
         // 
         bool is_cgi;
+		bool is_autoindex;
 
     public:
         Response() : version("HTTP/1.1"), status(""), header(""), body(""), response(""), contentType(""),
-        body_file_size(0),  is_complete(false), body_file_path(""), maxBufferLenght(0) {};
+        body_file_size(0),  is_complete(false), body_file_path(""), maxBufferLenght(0), is_autoindex(false) {};
 
         void setVersion(std::string version) { this->version = version; };
         void  setStatus(std::string status) { this->status = status; };
@@ -56,6 +57,7 @@ class Response
         std::string getHeader();
         std::string getBody() { return body; };
         void    setbody_file_size(int size) { this->body_file_size = size; };
+		void	set_autoindex(bool ai) { this->is_autoindex = ai; };
         int     getbody_file_size() { return this->body_file_size; };
         void    set_finish(bool i) { this->is_complete = i; };
         void    setContentType(std::string type);
