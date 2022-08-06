@@ -1,5 +1,4 @@
 #include "../elements.hpp"
-#include <string.h>
 
 void init_socket(t_socket *_socket)
 {
@@ -26,7 +25,7 @@ void init_socket(t_socket *_socket)
     }
     if (bind(_socket->server_fd, (struct sockaddr *)&_socket->address, sizeof(_socket->address)) < 0)
         throw std::runtime_error("bind failed");
-    if (listen(_socket->server_fd, 13) < 0)
+    if (listen(_socket->server_fd, 128) < 0)
         throw std::runtime_error("listen failed");
 }
 
@@ -73,6 +72,7 @@ void LaunchServer(ParseConfig *config)
     ssize_t size_send = 0;
     std::string str_to_send;
     size_t   *_send_size = new size_t[MAX_CLIENTS];
+    _BUFFER_SIZE = 1024 * 16;
 
     for (int index_cycle = 0;;index_cycle++)
     {
@@ -108,6 +108,7 @@ void LaunchServer(ParseConfig *config)
                     index_client++;
                 }
             
+            _BUFFER_SIZE = get_buffer(index_client);
             // only for clients
             for (int i = 0; i < index_client; i++)
             {
@@ -117,9 +118,9 @@ void LaunchServer(ParseConfig *config)
                 {
                     int bytes = -1;
                     int fd = clients[i].server_fd;
-                    char buffer[BUFER_SIZE + 1];
+                    char buffer[_BUFFER_SIZE + 1];
 
-                    if ((bytes = read(fd, buffer, BUFER_SIZE)) < 0)
+                    if ((bytes = read(fd, buffer, _BUFFER_SIZE)) < 0)
                         continue;
                     buffer[bytes] = '\0';
                     
@@ -172,7 +173,7 @@ void LaunchServer(ParseConfig *config)
                             size_send = write(requests.find(clients[i].server_fd)->first, buffer.data(), buffer.size());
                             _send_size[i] += size_send;
                             if (size_send < 0)
-                                throw std::runtime_error(" error sending buffer");
+                                std::cout << (" error sending buffer") << std::endl;
                         }
                         else if (responses[i].get_finish())
                         {
@@ -200,8 +201,6 @@ void LaunchServer(ParseConfig *config)
 
             }
         }
-        if (index_cycle > 1000)
-            break;
     }
     close_fds(_socket_server, nServers, clients);
     std::cout << green << "Shutdown Server Properly." << def << std::endl;

@@ -1,25 +1,22 @@
 #include "../elements.hpp"
 
-char *readFile(const char *fileName)
+int get_buffer(int index_clients)
 {
-    char buffer[DATA_BUFFER_SIZE];
-    char *return_buffer = (char *)malloc(sizeof(char) * 30000000);
-    int i_size = getFileSize(fileName);
-    int fd = open(fileName, O_RDWR);
-
-    if (fd < 0)
-        throw std::runtime_error("Error opening file");
-    else
-        for (int i = 0; i < i_size; i += DATA_BUFFER_SIZE)
-        {
-            int n = read(fd, buffer, DATA_BUFFER_SIZE);
-            for (int i = 0; i < n; i++)
-                return_buffer[i] = buffer[i];
-            return_buffer[n] = '\0';
-            if (n < 0)
-                throw std::runtime_error("Error reading file");
-        }
-    return return_buffer;
+    int i;
+    int unit = 1024;
+    if (index_clients <= 10)
+        i = unit * 16;
+    else if (index_clients <= 100)
+        i = unit * 12;
+    else if (index_clients <= 1000)
+        i = unit * 8;
+    else if (index_clients <= 10000)
+        i = unit * 6;
+    else if (index_clients <= 100000)
+        i = unit * 4;
+    else 
+        i = unit * 2;
+    return i;
 }
 
 void close_fds(t_socket *_socket_server, int nServers, std::map<int, t_socket> clients)
@@ -42,9 +39,4 @@ t_socket accepteConnection(t_socket *_socket)
     if ((__socket.server_fd = accept(_socket->server_fd, (struct sockaddr *)&_socket->address, (socklen_t *)&_socket->addrlen)) < 0)
         throw std::runtime_error("Error accepting connection");
     return __socket;
-}
-
-size_t readSocketBuffer(int fd, char **buffer)
-{
-    return read(fd, &buffer, BUFER_SIZE);
 }
