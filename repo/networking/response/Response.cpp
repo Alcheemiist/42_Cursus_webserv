@@ -12,12 +12,18 @@
 
 Response  response(Request *request, ParseConfig *config, int index_server)
 {
+
     std::string header_str = "";
     std::cout << blue << "********** { Procces Response } ***********************" << def << std::endl;
     Response response;
     response.setpath("empty");
     std::string s;
     std::string path = request->getPath();
+    
+    // // CGI request    
+    // if (request->is_cgi_request())
+    //    response.setCgi(true);
+
     if (!isValidURLPath(path)) {
         response.setStatus(" 400 BAD REQUEST\r\n");
         s = get_error_page(400 , config->get_server_vect()[index_server]);
@@ -297,52 +303,31 @@ std::string Response::getHeader()
     is_cgi = false;
     if (is_cgi)
     {
-        std::string tmp;
+        std::string tmp = "nothing";
         std::string path = this->body_file_path;
 
         if (path.size() > 0)
         {
             int fd = open(path.c_str(), O_RDONLY);
             if (fd < 0)
-                std::cout << "error open file cgi " << std::endl;
+                std::cout << "error: file cgi not found" << std::endl;
+            
             int size = lseek(fd, 0, SEEK_END);
             if (size < 0)
-                std::cout << "error lseek file cgi " << std::endl;
+                std::cout << "error: file cgi offset" << std::endl;
             
-            char *buf = (char *)malloc(2);
-            int max_size = read(fd, buf, 1);
-            if (max_size < 0)
-                std::cout << "error read file cgi " << std::endl;
+            // if (max_size < 0)
+            //     std::cout << "error: file cgi read" << std::endl;
+            
             int curr_size = 0, read_size = 0;
             int flag_delimiter = 0;
-            while (read_size > 0)
-            {
-                //tmp += buf;
-                read_size = read(fd, buf, 1);
-                if (read_size < 0)
-                    std::cout << "error read file cgi " << std::endl;
-                //
-                buf[read_size] = '\0';
-                curr_size += read_size;
-                //
-                if (buf[0] == '\r' && flag_delimiter == 0)
-                    flag_delimiter = 1;
-                else if (buf[0] == '\n' && flag_delimiter == 1)
-                    flag_delimiter = 2;
-                else if (flag_delimiter == 2 && buf[0] == '\r')
-                    flag_delimiter = 3;
-                else if (flag_delimiter == 3 && buf[0] == '\n')
-                    flag_delimiter = 4;
-                else 
-                    flag_delimiter = 0;
-                //     
-                if (buf)
-                    tmp.append(buf);
-                if (flag_delimiter == 4)
-                    break;
-                //
-            }
-            free(buf);
+        
+            // while (curr_size < size; curr_size++)
+            // {
+            //     curr_size = read(fd, , _BUFFER_SIZE);
+            // }
+
+            // free(buf);
             close(fd);
             std::cout << red << "- CGI Header : {" << tmp << "}" << def << std::endl;
         }
