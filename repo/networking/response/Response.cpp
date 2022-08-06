@@ -24,6 +24,7 @@ Response  response(Request *request, ParseConfig *config, int index_server)
         return response;
     }
     request->set_path(URLdecode(URLremoveQueryParams(path)));
+	println("url decoded path: ", request->getPath());
     response.setStatus("");
     s = response.setStatus(request, config->get_server_vect()[index_server]);
     if (status_code_error(response.get_status()) && request->getMethod() != "POST")
@@ -82,6 +83,7 @@ std::string Response::setStatus(Request *request, Server server)
         }
 		else if (!url_is_formated(request->geturl()))
         {
+			println("im here");
             this->status = " 400 BAD REQUEST\r\n";
             code_status_file = get_error_page(400 , server);
         }

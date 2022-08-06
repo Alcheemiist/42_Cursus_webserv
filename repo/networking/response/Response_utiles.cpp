@@ -26,12 +26,12 @@ int str_matched(std::string str1, std::string str2)
 
 bool url_is_formated(std::string url)
 {
-	std::string allowed ="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-							"abcdefghijklmnopqrstuvwxyz"
-							"0123456789-._~:/?#[]@!$&'()*+,;=";
-	for(std::string::iterator it = url.begin(); it != url.end(); ++it)
-		if (allowed.find(*it) == std::string::npos)
-			return false;
+	// std::string allowed ="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	// 						"abcdefghijklmnopqrstuvwxyz"
+	// 						"0123456789-._~:/?#[]@!$&'()*+,;=";
+	// for(std::string::iterator it = url.begin(); it != url.end(); ++it)
+	// 	if (allowed.find(*it) == std::string::npos)
+	// 		return false;
 	return (true);
 }
 
