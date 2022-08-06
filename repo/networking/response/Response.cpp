@@ -4,6 +4,7 @@
 #include "Response_utiles.hpp"
 #include "../../config/print.hpp"
 #include "../../config/utils.hpp"
+#include <cstring>
 
 #define DELIMITER "\r\n"
 
