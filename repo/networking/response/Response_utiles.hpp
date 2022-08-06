@@ -1,8 +1,6 @@
 #ifndef Response_utiles_hpp
 #define Response_utiles_hpp
 
-#include <dirent.h>
-#include <sys/types.h>
 #include "../elements.hpp"
 
 std::string *split_url(std::string str);
@@ -27,11 +25,8 @@ bool	requested_file_in_root(std::string url);
 
 bool is_file(std::string url);
 
-char    *readAllFile(char *path);
-
 size_t  _getFileSize(const char *fileName);
 
-std::vector<char> read_by_vector(char *path, Response *response);
 int str_matched(std::string str1, std::string str2);
 std::string remove_duplicate_slash(std::string str);
 std::string generate_auto_index(std::string url);

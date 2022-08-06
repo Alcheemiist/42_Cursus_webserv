@@ -4,8 +4,6 @@
 #define REQUEST_HPP
 
 #include "../elements.hpp"
-#include <map>
-#include <sys/socket.h>
 
 
 size_t getFileSize(const char *fileName);
@@ -57,7 +55,7 @@ public:
     int getcontent_length() const { return _content_length; };
     int get_port() const { return _port; };
     void parse(char *buffer);
-    char *readFile(const char *fileName);
+    //char *readFile(const char *fileName);
     void checkRequest();
     void badRequest() { requestStatus = -1; status_message = "Bad Request";_isGoodRequest = false; };
     void goodRequest() { requestStatus = 1; status_message = "Good Request";_isGoodRequest = true; };
@@ -72,7 +70,7 @@ public:
     
 };
 
-char *readFile(const char *fileName);
+//char *readFile(const char *fileName);
 long readRequest(int new_socket, Request *request);
 std::vector<std::string> split(const std::string &s, char delim);
 std::string to_Lower_case(std::string str);
