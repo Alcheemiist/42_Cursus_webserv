@@ -203,6 +203,8 @@ std::string get_error_page(int code, Server server)
 
 bool status_code_error(std::string status)
 {
+	if (status == "")
+		return (false);
     int code = std::stoi(status);
     if (code == 501 || code == 405 || code == 400 || code == 414 || code == 404 || code == 413 || code == 405)
         return true;
