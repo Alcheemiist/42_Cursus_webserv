@@ -1,7 +1,7 @@
 #include "Response_utiles.hpp"
 #include "../../config/print.hpp"
 #include <fstream>
-
+#define BUFFER_SIZE 1024
 
 int str_matched(std::string str1, std::string str2)
 {
@@ -288,14 +288,35 @@ bool location_support_upload(std::string url)
 	return (ret);
 }
 
-// void upload_post(Request *request, Response *response, ParseConfig *config,  int index_server)
-// {
-// 	std::string path = config->get_server_vect()[index_server].get_upload_path() + request->getBodyFileName();
-// 	if fd_in = config->get_server_vect()[index_server].
-// 	int fd = open(request->get_path().c_str(), O_APPEND | O_CREAT |);
-// 	std::ofstream file();
-// 	if (file.is_open())
-// 	{
-// 		file.close();
-// 	}
-// }
+void upload_post(Request *request, Response *response, std::string upload_path)
+{
+	std::string file_name_in = request->getBodyFileName();
+	std::cout << "file_name_in : " << file_name_in << std::endl;
+	for(std::string::reverse_iterator it = file_name_in.rbegin(); it != file_name_in.rend(); ++it)
+	{
+		if (*it == '/')
+		{
+			file_name_in.erase(file_name_in.begin(), it.base());
+			break;
+		}
+	}
+	std::string file_name_out = remove_duplicate_slash(upload_path + "/" + request->getPath() + "/" + file_name_in);
+	int fd_in = open(request->getBodyFileName().c_str(), O_RDWR);
+	int fd_out = open(file_name_out.c_str(), O_CREAT| O_RDWR, 0666);
+	if (fd_in < 0 || fd_out < 0)
+	{
+		response->setStatus(" 500 Internal Server Error\r\n");
+		return ;
+	}
+	char *buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	int n = -1;
+	while ((n = read(fd_in, buffer, BUFFER_SIZE)) > 0)
+	{
+		buffer[n] = '\0';
+		std::cout << "\x1B[31m" << buffer << "\033[0m" << std::endl;
+		write(fd_out, buffer, n);
+	}
+	free(buffer);
+	close(fd_in);
+	close(fd_out);
+}

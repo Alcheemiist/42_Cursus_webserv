@@ -41,6 +41,6 @@ bool status_code_error(std::string status);
 bool remove_all_folder_content(std::string path);
 bool have_write_access_on_folder(std::string path);
 bool location_support_upload(std::string url);
-void upload_post(Request *request, Response *response, ParseConfig *config,  int index_server);
+void upload_post(Request *request, Response *response, std::string upload_path);
 
 #endif
