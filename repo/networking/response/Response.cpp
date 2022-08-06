@@ -268,8 +268,8 @@ std::vector<char> Response::get_buffer()
     int size = lseek(fd, maxBufferLenght, SEEK_SET);
     if (size < 0)
         std::cout << "lseek error";
-    char *buf = (char *)malloc((1024 * 16) + 1);
-    int read_size = read(fd, buf, (1024 * 16));
+    char *buf = (char *)malloc((_BUFFER_SIZE) + 1);
+    int read_size = read(fd, buf, (_BUFFER_SIZE));
     if (read_size < 0)
         std::cout << "read error";
     maxBufferLenght += read_size;
@@ -281,43 +281,49 @@ std::vector<char> Response::get_buffer()
         this->is_complete = true;
     else 
         this->is_complete = false;
-    std::cout << red << "- Read_size  : " << read_size << " maxBuffer : " << maxBufferLenght << " file path size : " << getFileSize(body_file_path.c_str()) << def << std::endl;
+    std::cout << red << "- Read_size(" << _BUFFER_SIZE << ")  : " << read_size << " maxBuffer : " << maxBufferLenght << " file path size : " << getFileSize(body_file_path.c_str()) << def << std::endl;
     return buffer;
 };
 
 std::string Response::getHeader() 
 {
-    // /* Here to formed other headers */
-    // status line
     std::string res;
-    res.append(version);
-    res.append(status);
-    // headers
-	if (this->contentType.length()){
-		res.append("Content-Type: ");
-		res.append(this->contentType);
-		res.append("\r\n");
-	}
-    if (!get_redirection().empty())
-        res.append("Location: " + get_redirection() + "\r\n");
-    size_t tt = getFileSize(body_file_path.c_str());
-    std::cout << tt << " {" <<  body_file_path << std::endl;
-    if (tt && tt != (size_t)-1)
-    {
-        res.append("Content-Length: ");
-        res.append(std::to_string(tt));
-        res.append("\r\n");
-    }
-    // else
-    // {
-    //     res.append("Content-Length: ");
-    //     res.append(std::to_string(0));
-    //     res.append("\r\n");
-    // }
-    res.append("server: alchemist\r\n");
-    res.append("\r\n");
-    setHeader(res);
 
+
+    if (is_cgi)
+    {
+
+
+
+    }
+    else 
+    {
+
+
+        // status line
+        res.append(version);
+        res.append(status);
+        // headers
+        if (this->contentType.length()){
+            res.append("Content-Type: ");
+            res.append(this->contentType);
+            res.append("\r\n");
+        }
+        if (!get_redirection().empty())
+            res.append("Location: " + get_redirection() + "\r\n");
+        size_t tt = getFileSize(body_file_path.c_str());
+        if (tt && tt != (size_t)-1)
+        {
+            res.append("Content-Length: ");
+            res.append(std::to_string(tt));
+            res.append("\r\n");
+        }
+        res.append("server: alchemist\r\n");
+        res.append("\r\n");
+        setHeader(res);
+    
+    }
+    // 
     return res;
 };
 
