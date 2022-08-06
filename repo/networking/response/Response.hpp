@@ -7,6 +7,8 @@
 
 static int  _BUFFER_SIZE = 1024 * 16;         //
 
+#define min(x, y) (x < y ? x : y)
+
 class Request;
 
 size_t getFileSize(const char *fileName);
@@ -40,7 +42,18 @@ class Response
         body_file_size(0),  is_complete(false), body_file_path(""), maxBufferLenght(0) {};
 
         void setVersion(std::string version) { this->version = version; };
-        void  setStatus(std::string status) { this->status = status; };
+        void  setStatus(std::string status) {
+            size_t len = 0;
+            for (std::string::iterator it = status.begin(); it != status.end(); it++) {
+                std::string word = status.substr(len, min(len + 3, status.length()));
+                if (word.length() == 3) {
+                    if (!std::isalpha(word[0]) && std::isalpha(word[1]) && std::isalpha(word[2]))
+                        status[len + 1] = std::toupper((char)status[len + 1]);
+                }
+                len++;
+            }
+            this->status = status;
+        };
         void    setHeader(char *_header) { this->header = _header; };
         void setHeader(std::string header) { this->header = header; };
         void setBody(char *body)  {  this->body = body;   };

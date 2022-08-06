@@ -195,3 +195,7 @@ const std::map<std::string, std::string> &Request::getHeaders() const {
 const struct sockaddr_in &Request::getRefClientAddr() const {
 	return _client_addr;
 }
+
+void Request::set_path(std::string str) {
+    _path = str;
+}

@@ -308,3 +308,14 @@ std::pair<std::string, std::string> _cgi_ret(std::string url)
 	ret.second = "";
 	return (ret);
 }
+
+bool check_path_hierarchy(std::string root, std::string path)
+{
+	char actualpath_root [PATH_MAX+1];
+	char actualpath_req [PATH_MAX+1];
+	char* _root = realpath(root.c_str(), actualpath_root);
+	char* _path = realpath(path.c_str(), actualpath_root);
+	if (!(_root && _path))
+		return (false);
+	return (std::strncmp(actualpath_root, actualpath_root, strlen(actualpath_root)) == 0);
+}
