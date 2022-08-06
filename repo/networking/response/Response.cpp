@@ -5,6 +5,8 @@
 #include "../../config/print.hpp"
 #include "../../config/utils.hpp"
 #include <cstring>
+#include <limits.h>
+#include <stdlib.h>
 
 #define DELIMITER "\r\n"
 
@@ -15,8 +17,13 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     Response response;
     response.setpath("empty");
     std::string s;
-
-    /* is_req_well_formed() */
+    std::string path = request->getPath();
+    if (!isValidURLPath(path)) {
+        response.setStatus(" 400 BAD REQUEST\r\n");
+        s = get_error_page(400 , config->get_server_vect()[index_server]);
+        return response;
+    }
+    request->set_path(URLdecode(URLremoveQueryParams(path)));
     response.setStatus("");
     s = response.setStatus(request, config->get_server_vect()[index_server]);
     if (status_code_error(response.get_status()) && request->getMethod() != "POST")
