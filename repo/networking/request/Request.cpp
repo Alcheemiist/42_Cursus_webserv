@@ -138,31 +138,31 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
         std::string token = s.substr(0, s.find(delimiter));
         token = token.substr(0, token.find("\n"));
         this->_content_type = token;
-        if (this->_content_type == " image/jpeg")
+        if (this->_content_type == "image/jpeg")
             this->bodyFileName += ".jpeg";
-        else if (this->_content_type == " image/png")
+        else if (this->_content_type == "image/png")
             this->bodyFileName += ".png";
-        else if (this->_content_type == " text/html")
+        else if (this->_content_type == "text/html")
             this->bodyFileName += ".html";
-        else if (this->_content_type == " text/css")
+        else if (this->_content_type == "text/css")
             this->bodyFileName += ".css";
-        else if (this->_content_type == " text/javascript")
+        else if (this->_content_type == "text/javascript")
             this->bodyFileName += ".js";
-        else if (this->_content_type == " text/plain")
+        else if (this->_content_type == "text/plain")
             this->bodyFileName += ".txt";
-        else if (this->_content_type == " video/mp4")
+        else if (this->_content_type == "video/mp4")
             this->bodyFileName += ".mp4";
-        else if (this->_content_type == " application/pdf")
+        else if (this->_content_type == "application/pdf")
             this->bodyFileName += ".pdf";
-        else if (this->_content_type == " application/x-www-form-urlencoded")
+        else if (this->_content_type == "application/x-www-form-urlencoded")
             this->bodyFileName += ".txt";
-        else if (this->_content_type == " application/json")
+        else if (this->_content_type == "application/json")
             this->bodyFileName += ".json";
-        else if (this->_content_type == " application/xml")
+        else if (this->_content_type == "application/xml")
             this->bodyFileName += ".xml";
-        else if (this->_content_type == " application/octet-stream")
+        else if (this->_content_type == "application/octet-stream")
             this->bodyFileName += ".bin";
-        else if (this->_content_type == " application/zip")
+        else if (this->_content_type == "application/zip")
             this->bodyFileName += ".zip";
         else
             this->bodyFileName += ".unknown";

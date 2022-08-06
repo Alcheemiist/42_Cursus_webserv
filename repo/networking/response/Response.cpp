@@ -47,7 +47,7 @@ Response  response(Request *request, ParseConfig *config, int index_server)
 
     std::cout << blue << "********** { Response Header } ***********************" << def << std::endl;
     std::cout << header_str << std::endl;
-    response.setpath(s);
+    // response.setpath(s);
     std::cout << "body_path : " << response.getpath() << std::endl;
     std::cout << "body_path : " << s << std::endl;
 
@@ -266,12 +266,10 @@ void Response::setContentType(std:: string s)
 std::vector<char> Response::get_buffer()
 {
     std::vector <char> buffer;
-
+    std::cout << red << "read buffer dfrom : "  << body_file_path << std::endl;
     int fd = open(this->body_file_path.c_str(), O_RDONLY);
     if (fd < 0)
-    {
         std::cout << "open file error";
-    }
     int size = lseek(fd, maxBufferLenght, SEEK_SET);
     if (size < 0)
         std::cout << "lseek error";
@@ -296,7 +294,7 @@ std::string Response::getHeader()
 {
     std::string res;
 
-
+    is_cgi = false;
     if (is_cgi)
     {
         std::string tmp;
@@ -418,7 +416,7 @@ std::string DELETEresponse(Request *request, Response *response, ParseConfig *co
         {
             if (response->get_location().back() == '/')
             {
-                std::string index_path = response->get_index(response->get_location(), config->get_server_vect()[index_server]);
+                std::string index_path = response->get_index(request->getPath(), config->get_server_vect()[index_server]);
                 // if (Location_have_cgi(index_path))
                 // {
                 //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(index_path);
@@ -498,7 +496,7 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
         {
             if (response->get_location().back() == '/')
             {
-                std::string index_path = response->get_index(response->get_location(), config->get_server_vect()[index_server]);
+                std::string index_path = response->get_index(request->getPath(), config->get_server_vect()[index_server]);
                 if (file_exist(index_path))
                 {
                     // if (Location_have_cgi(index_path))
@@ -566,7 +564,7 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
         {
             if (response->get_location().back() == '/') // uri have / at the end
             {
-                std::string index_path = response->get_index(response->get_location(), config->get_server_vect()[index_server]);
+                std::string index_path = response->get_index(request->getPath(), config->get_server_vect()[index_server]);
                 if (file_exist(index_path)) //have index file
                 {
                     // if (Location_have_cgi(index_path)) // location have cgi
@@ -588,6 +586,7 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
                 {
                     if(config->get_server_vect()[index_server].get_autoindex())
                     {
+						response->set_autoindex(true);
                         body_f = generate_auto_index(response->get_location());
                         response->setpath(body_f);
                         response->setStatus(" 200 OK\r\n");
@@ -635,8 +634,11 @@ std::string Response::get_index(std::string url, Server server)
 		location_str = it_loc->get_locations_path();
 		if (location_str.back() != '/')
 			location_str += '/';
-		if (url.substr(0, location_str.size()) == location_str)
+		// if (url.substr(0, location_str.size()) == location_str)
+		if (std::strncmp(url.c_str(), location_str.c_str(), location_str.size()))
+
 		{
+			println("location_str:", location_str);
 			if (str_matched(location_str, location_path) > location_path_matched)
 			{
 				std::vector<std::string> indexVec = it_loc->get_index();
@@ -647,11 +649,13 @@ std::string Response::get_index(std::string url, Server server)
 					{
 						return (remove_duplicate_slash(url + "/" + *it));
 					}
+					// return "";
 				}
 				location_path = location_str;
 				location_path_matched = str_matched(location_str, location_path);
 				location_matched = *it_loc;
 			}
+			// return "";
 		}
 	}
 	for(std::vector<std::string>::iterator it = index_file.begin(); it != index_file.end(); ++it)
