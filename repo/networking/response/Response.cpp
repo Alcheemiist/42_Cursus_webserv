@@ -19,7 +19,7 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     /* is_req_well_formed() */
     response.setStatus("");
     s = response.setStatus(request, config->get_server_vect()[index_server]);
-    if (status_code_error(response.get_status())) 
+    if (status_code_error(response.get_status()) && request->getMethod() != "POST")
         ERRORresponse(request, &response, config, index_server);
     else if (!(request->getMethod().compare("GET")))
         s = GETresponse(request, &response, config, index_server);
@@ -398,16 +398,16 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
     std::string body_f = "empty";
     std::string path_upload_file;
 
-    int fd = open(request->getBodyFileName().c_str(), O_RDWR , 0666);
-    char *s = (char *)malloc(5000);
-    int n = read(fd, s, 5000);
-    s[n] = 0;
-    std::cout << s << std::endl;
+    // int fd = open(request->getBodyFileName().c_str(), O_RDWR , 0666);
+    // char *s = (char *)malloc(5000);
+    // int n = read(fd, s, 5000);
+    // s[n] = 0;
+    // std::cout << s << std::endl;
     
 
     if(location_support_upload(config->get_server_vect()[index_server].get_upload_path()))
     {
-        // upload_post(request, config->get_server_vect()[index_server].get_upload_path());
+        upload_post(request, response, config->get_server_vect()[index_server].get_upload_path());
         body_f = get_error_page(201, config->get_server_vect()[index_server]);
         response->setStatus(" 201 Created\r\n");
     }
