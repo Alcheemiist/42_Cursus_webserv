@@ -58,7 +58,7 @@ std::string to_Lower_case(std::string str)
     return str;
 }
 
-Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _version(""), _host(""),  _connection(""), _accept(""), _accept_encoding(""),  _content_type(""), _content_length(0), _headers(std::map<std::string, std::string>()), bodyFileName(""), client_fd(fd), _fdBodyFile(-1),  _is_complete(false), requestStatus(-1), status_message("")
+Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _version(""), _host(""),  _connection(""), _accept(""), _accept_encoding(""),  _content_type(""), _content_length(0), _headers(std::map<std::string, std::string>()), bodyFileName(""), client_fd(fd), _fdBodyFile(-1),  _is_complete(false), requestStatus(-1), status_message(""), bodyBytesWritten(0)
 {
     std::stringstream ss((std::string(buffer)));
     std::string line;
@@ -177,8 +177,11 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
 
 void Request::fill_body(char *buffer, size_t bytes)
 {
-    int fd = open(this->bodyFileName.c_str(), O_RDWR | O_CREAT | O_APPEND, 0644);
-    write(fd, buffer, bytes);
+    int fd = open(this->bodyFileName.c_str(), O_RDWR | O_CREAT | (this->bodyBytesWritten == 0 ? O_TRUNC : O_APPEND), 0644);
+    ssize_t written = write(fd, buffer, bytes);
+    if (written != -1) {
+        this->bodyBytesWritten += written;
+    }
     close(fd);
     // std::cout << blue << "reading request body " << bytes  << B_def << std::endl;
     if (this->_content_length <= getFileSize(this->bodyFileName.c_str()))
