@@ -4,7 +4,6 @@
 #include "Response_utiles.hpp"
 #include "../../config/print.hpp"
 #include "../../config/utils.hpp"
-#include <cstring>
 
 #define DELIMITER "\r\n"
 
@@ -18,20 +17,17 @@ Response  response(Request *request, ParseConfig *config, int index_server)
 
     /* is_req_well_formed() */
     response.setStatus("");
-    response.setStatus(request, config->get_server_vect()[index_server]);
-    // if (status_code_error(response.get_status())) 
-    //     s = 
-    ERRORresponse(request, &response, config, index_server);
-    if (!(request->getMethod().compare("GET")))
+    s = response.setStatus(request, config->get_server_vect()[index_server]);
+    if (status_code_error(response.get_status())) 
+        ERRORresponse(request, &response, config, index_server);
+    else if (!(request->getMethod().compare("GET")))
         s = GETresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("DELETE") == 0)
         s = DELETEresponse(request, &response, config, index_server);
     else if (request->getMethod().compare("POST") == 0)
         s = POSTresponse(request, &response, config, index_server);
-
     std::cout << "Requested path : " << response.get_location() << std::endl;
     std::cout << "Redirection path : " << response.get_redirection() << std::endl;
-    
     if (!response.get_redirection().empty())
         response.setContentType(response.get_redirection());
     else
@@ -57,41 +53,57 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     return response;
 }
 
-void Response::setStatus(Request *request, Server server)
+std::string Response::setStatus(Request *request, Server server)
 {
     std::string code_redirection;
+    std::string code_status_file;
     this->init_location(request->geturl(),server);
     this->init_redirection(request->geturl(), server, code_redirection);
 	if (!request->get_is_formated())
 	{
         
-		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked") // done 
+		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked")
+        {
 			this->status = " 501 NOT IMPLEMENTED\r\n";
-		else if (!request->get_transfer_encoding().size() && request->getcontent_length() <= 0 &&  request->getMethod() == "POST") // done // 405 not allowed in nginx 
+            code_status_file = get_error_page(501, server);
+        }
+		else if (!request->get_transfer_encoding().size() && request->getcontent_length() <= 0 &&  request->getMethod() == "POST")
+        {
             this->status = " 400 BAD REQUEST\r\n";
-		else if (!url_is_formated(request->geturl())) // done
+            code_status_file = get_error_page(400 , server);
+        }
+		else if (!url_is_formated(request->geturl()))
+        {
             this->status = " 400 BAD REQUEST\r\n";
-
-        else if (request->geturl().length() > MAX_URL_LENGTH)  // done // nginx accepte more than 2048 char 
-			this->status = " 414 REQUEST-URI TOO LARGE\r\n";
-
-        else if ( request->get_body_length() > server.get_client_max_body_size()) // almost done
+            code_status_file = get_error_page(400 , server);
+        }
+        else if (request->geturl().length() > MAX_URL_LENGTH)
+		{
+        	this->status = " 414 REQUEST-URI TOO LARGE\r\n";
+            code_status_file = get_error_page(414, server);
+        }
+        else if ( request->get_body_length() > server.get_client_max_body_size())
+        {
         	this->status = " 413 REQUEST ENTITY TOO LARGE\r\n";
+            code_status_file = get_error_page(413, server);
+        }
     }
-    std::cout << "NOT WORKING AS EXCPECTED FUNCTION DOWN HERE"  << std::endl;
-
     if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
+    {
         this->status = " 405 METHOD NOT ALLOWED\r\n";
-
-    else if (!get_redirection().empty()) {
-
-        // this->status = " 301 MOVED PERMANENTLY\r\n";
-        this->status = code_redirection;
+        code_status_file = get_error_page(413, server);
     }
-
+    else if (!get_redirection().empty())
+    {
+        this->status = code_redirection;
+        code_status_file = get_error_page(std::atoi(code_redirection.c_str()), server);
+    }
     else if (!file_exist(get_location()))
+    {
         this->status = " 404 NOT FOUND\r\n";
-    std::cout << red << "-> Set Status : " << this->status << def  << std::endl;
+        code_status_file = get_error_page(404, server);
+    }
+    return code_status_file;
 }
 
 void Response::init_location(std::string url, Server server)
@@ -302,13 +314,10 @@ std::string Response::getHeader()
     //     res.append("\r\n");
     // }
     res.append("server: alchemist\r\n");
-    // res.append("location: wonderland\r\n");
-    // CRLF
     res.append("\r\n");
     setHeader(res);
 
     return res;
-    // return this->header;
 };
 
 std::string ERRORresponse(Request *request, Response *response, ParseConfig *config, int server_index)
@@ -388,6 +397,12 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
     std::string body_f = "empty";
     std::string path_upload_file;
 
+    int fd = open(request->getBodyFileName().c_str(), O_RDWR , 0666);
+    char *s = (char *)malloc(5000);
+    int n = read(fd, s, 5000);
+    s[n] = 0;
+    std::cout << s << std::endl;
+    
 
     if(location_support_upload(config->get_server_vect()[index_server].get_upload_path()))
     {
@@ -543,9 +558,8 @@ std::string Response::get_index(std::string url, Server server)
 		{
 			if (str_matched(location_str, location_path) > location_path_matched)
 			{
-				std::vector<std::string> indexVec = it_loc->get_index();
-				for(std::vector<std::string>::iterator it = indexVec.begin();
-                        it != indexVec.end(); ++it)
+				for(std::vector<std::string>::iterator it = it_loc->get_index().begin();
+                        it != it_loc->get_index().end(); ++it)
 				{
 					if (file_exist(remove_duplicate_slash(url + "/" + *it)))
 					{
