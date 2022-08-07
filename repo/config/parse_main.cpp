@@ -43,7 +43,7 @@
 
 #define ITERATE(type, iterable, it_name) for (type::iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
 #define CONST_ITERATE(type, iterable, it_name) for (type::const_iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
-
+#define CONTAINS(iterable, value) (std::find(iterable.begin(), iterable.end(), value) != iterable.end())
 
 int reachedEnd(std::string::iterator &ch, char end) {
 	return *ch == end || *ch == '\0';
@@ -343,6 +343,23 @@ void validateAllowMethodsDirectiveAttr(std::string attr, int index) {
 	}
 }
 
+bool validIp(std::string ip) {
+	if (nOccurrence(ip, ".") != 3) {
+		return false;
+	}
+	std::vector<std::string> nums = configSplit(ip, '.');
+	ITERATE(std::vector<std::string>, nums, it) {
+		if ((*it)[0] == '-' || throwed<int>(to_int, *it)) {
+			return false;
+		}
+		int byte = to_int(*it);
+		if (byte < 0 || byte > 255) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void validateListenDirectiveAttr(std::string attr, int index) {
 	switch (index) {
 		case 0: {
@@ -351,6 +368,9 @@ void validateListenDirectiveAttr(std::string attr, int index) {
 				std::string host = attr.substr(0, colIndex);
 				if (host == "") {
 					throw std::string(LISTEN_DIRECTIVE " directive requires an attribute in the format host?:port where host can't be an empty string");
+				}
+				else if (!(host == "localhost" || validIp(host))) {
+					throw std::string(LISTEN_DIRECTIVE " directive requires an attribute in the format host?:port where host has to be localhost or a valid ip");
 				}
 				std::string port = attr.substr(colIndex + 1, attr.length());
 				attr = port;
@@ -537,30 +557,52 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 
 std::string postProcessConfigFile(Component &root, std::string cfgName, std::string pName) {
 	ComponentList &children = root.children(0).children();
-	std::vector<int> ports;
+	std::map<std::pair<std::string, int>, std::vector<std::string> > portsAndServerNames;
 	std::string warning = "";
-	// for (ComponentList::iterator it = children.begin(); it != children.end(); it++) {
-	// 	if (it->name() == SERVER_CONTEXT) {
-	// 		Component *listenDirective = it->findFirstChild(LISTEN_DIRECTIVE);
-	// 		std::string listen = listenDirective->attr(0);
-	// 		int port;
-	// 		if (listen.find(':') == (size_t)-1) {
-	// 			port = to_int(listen);
-	// 		}
-	// 		else {
-	// 			port = to_int(listen.substr(listen.find(':') + 1, listen.length()));
-	// 		}
-	// 		if (std::find(ports.begin(), ports.end(), port) != ports.end()) {
-	// 			warning += BOLD + pName + ": " + BOLD_YELLOW + "warning: " + RESET + BOLD + cfgName + ":" + to_string(it->line()) + ":" + to_string(it->col()) + " port " + to_string(port) + " already in use, ignoring " SERVER_CONTEXT + '\n' + RESET;
-	// 			ComponentList::iterator tmp = it;
-	// 			--it;
-	// 			root.children(0).removeChild(tmp);
-	// 		}
-	// 		else {
-	// 			ports.push_back(port);
-	// 		}
-	// 	}
-	// }
+	for (ComponentList::iterator it = children.begin(); it != children.end(); it++) {
+		if (it->name() == SERVER_CONTEXT) {
+			Component *serverNameDirective = it->findFirstChild(SERVER_NAMES_DIRECTIVE);
+			Component *listenDirective = it->findFirstChild(LISTEN_DIRECTIVE);
+			std::string listen = listenDirective->attr(0);
+			int port;
+			std::string ip;
+			if (listen.find(':') == (size_t)-1) {
+				port = to_int(listen);
+				ip = "0.0.0.0";
+			}
+			else {
+				port = to_int(listen.substr(listen.find(':') + 1, listen.length()));
+				ip = listen.substr(0, listen.find(':'));
+			}
+			std::pair<std::string, int> ipAndPort = std::make_pair(ip, port);
+			if (serverNameDirective) {
+				CONST_ITERATE(std::vector<std::string>, serverNameDirective->attr(), snattr_it) {
+					if (!CONTAINS(portsAndServerNames[ipAndPort], *snattr_it)) {
+						portsAndServerNames[ipAndPort].push_back(*snattr_it);
+					}
+					else {
+						// warning += BOLD + pName + ": " + BOLD_YELLOW + "warning: " + RESET + BOLD + cfgName + ":" + to_string(serverNameDirective->line())
+						// + ":" + to_string(serverNameDirective->col()) + " server_name \"" + *snattr_it + "\" conflict, ignored" + '\n' + RESET;
+						throw LogicalError(
+							"server_name \"" + *snattr_it + "\" conflict",
+							pName,
+							cfgName,
+							serverNameDirective->line(),
+							serverNameDirective->col(),
+							false);
+					}
+				}
+			}
+			// if (std::find(ports.begin(), ports.end(), port) != ports.end()) {
+			// 	ComponentList::iterator tmp = it;
+			// 	--it;
+			// 	root.children(0).removeChild(tmp);
+			// }
+			// else {
+			// 	ports.push_back(port);
+			// }
+		}
+	}
 	return warning;
 }
 
@@ -828,7 +870,7 @@ int parse_main(int ac, char **av, ParseConfig &config) {
 		std::string warnings = postProcessConfigFile(root, configFileName, av[0]);
 		portToParseConfigClass(root, config);
 		printComponentRecursively(root, configFileName);
-		errorln(warnings);
+		error(warnings);
 	}
 	catch (const std::exception &e) {
 		errorln(e.what());
