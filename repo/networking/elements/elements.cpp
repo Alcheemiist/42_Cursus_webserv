@@ -1,6 +1,6 @@
 #include "../elements.hpp"
 
-void init_socket(t_socket *_socket)
+void init_socket(t_socket *_socket, std::vector <int> &ports)
 {
     int on = 1;
 
@@ -8,7 +8,8 @@ void init_socket(t_socket *_socket)
     _socket->new_socket = -1;
     _socket->address.sin_family = AF_INET;
     _socket->address.sin_addr.s_addr = INADDR_ANY;
-    _socket->address.sin_port = htons(_socket->port);
+	_socket->address.sin_port = htons(_socket->port);
+
     memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
     _socket->addrlen = sizeof(_socket->address);
     if ((_socket->server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -23,8 +24,24 @@ void init_socket(t_socket *_socket)
         close(_socket->server_fd);
         throw std::runtime_error("fcntl failed");
     }
-    if (bind(_socket->server_fd, (struct sockaddr *)&_socket->address, sizeof(_socket->address)) < 0)
-        throw std::runtime_error("bind failed");
+
+
+	// std::vector::iterator it = ports.begin();
+
+	if (bind(_socket->server_fd, (struct sockaddr *)&_socket->address, sizeof(_socket->address)) < 0) {
+		if (std::find(ports.begin(), ports.end(), _socket->port) == ports.end()) {
+			throw std::runtime_error("bind failed");
+		}
+		else {
+			ports.push_back(_socket->port);
+		}
+	}
+	else {
+		ports.push_back(_socket->port);
+	}
+
+
+
     if (listen(_socket->server_fd, 128) < 0)
         throw std::runtime_error("listen failed");
 }
@@ -57,6 +74,9 @@ void LaunchServer(ParseConfig *config)
     FD_ZERO(&backup_rd_set);
     FD_ZERO(&backup_wr_set);
     //
+
+	std::vector <int> ports;
+
     std::cout << "Launching " << nServers << " server..." << std::endl;
     for (int  i = 0; i < nServers; ++i)
     {
@@ -64,8 +84,12 @@ void LaunchServer(ParseConfig *config)
         serv_response[i] = 1;
         first[i] = true;
         _socket_server[i].port = config->get_server_vect()[i].get_listen_port();
-        init_socket(&_socket_server[i]);
-        FD_SET(_socket_server[i].server_fd, &backup_rd_set);
+        
+		
+		init_socket(&_socket_server[i], ports);
+        
+		
+		FD_SET(_socket_server[i].server_fd, &backup_rd_set);
         if (_socket_server[i].server_fd > max_sd)
             max_sd = _socket_server[i].server_fd;
     }
@@ -110,7 +134,8 @@ void LaunchServer(ParseConfig *config)
                     serv_response[index_client]++;
                     index_client++;
                 }
-            // try to assigne a dynamically value to buffer_size for I/O depends on clients number
+            
+			// try to assigne a dynamically value to buffer_size for I/O depends on clients number
             // _BUFFER_SIZE = get_buffer(index_client);
             // only for clients to handle reading requests and sending responses
             for (int i = 0; i < index_client; i++)

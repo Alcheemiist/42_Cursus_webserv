@@ -218,7 +218,7 @@ void	Response::init_redirection(std::string url, Server server, std::string &sta
 			}
 		}
 	}
-	PRINT_LINE_VALUE(this->redirection_path);
+	// PRINT_LINE_VALUE(this->redirection_path);
 	// if (redirection_path_matched)
     // {
     //     if (path_absol.length() > 0)

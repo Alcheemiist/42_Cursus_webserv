@@ -539,28 +539,28 @@ std::string postProcessConfigFile(Component &root, std::string cfgName, std::str
 	ComponentList &children = root.children(0).children();
 	std::vector<int> ports;
 	std::string warning = "";
-	for (ComponentList::iterator it = children.begin(); it != children.end(); it++) {
-		if (it->name() == SERVER_CONTEXT) {
-			Component *listenDirective = it->findFirstChild(LISTEN_DIRECTIVE);
-			std::string listen = listenDirective->attr(0);
-			int port;
-			if (listen.find(':') == (size_t)-1) {
-				port = to_int(listen);
-			}
-			else {
-				port = to_int(listen.substr(listen.find(':') + 1, listen.length()));
-			}
-			if (std::find(ports.begin(), ports.end(), port) != ports.end()) {
-				warning += BOLD + pName + ": " + BOLD_YELLOW + "warning: " + RESET + BOLD + cfgName + ":" + to_string(it->line()) + ":" + to_string(it->col()) + " port " + to_string(port) + " already in use, ignoring " SERVER_CONTEXT + '\n' + RESET;
-				ComponentList::iterator tmp = it;
-				--it;
-				root.children(0).removeChild(tmp);
-			}
-			else {
-				ports.push_back(port);
-			}
-		}
-	}
+	// for (ComponentList::iterator it = children.begin(); it != children.end(); it++) {
+	// 	if (it->name() == SERVER_CONTEXT) {
+	// 		Component *listenDirective = it->findFirstChild(LISTEN_DIRECTIVE);
+	// 		std::string listen = listenDirective->attr(0);
+	// 		int port;
+	// 		if (listen.find(':') == (size_t)-1) {
+	// 			port = to_int(listen);
+	// 		}
+	// 		else {
+	// 			port = to_int(listen.substr(listen.find(':') + 1, listen.length()));
+	// 		}
+	// 		if (std::find(ports.begin(), ports.end(), port) != ports.end()) {
+	// 			warning += BOLD + pName + ": " + BOLD_YELLOW + "warning: " + RESET + BOLD + cfgName + ":" + to_string(it->line()) + ":" + to_string(it->col()) + " port " + to_string(port) + " already in use, ignoring " SERVER_CONTEXT + '\n' + RESET;
+	// 			ComponentList::iterator tmp = it;
+	// 			--it;
+	// 			root.children(0).removeChild(tmp);
+	// 		}
+	// 		else {
+	// 			ports.push_back(port);
+	// 		}
+	// 	}
+	// }
 	return warning;
 }
 
