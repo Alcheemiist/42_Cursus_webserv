@@ -8,6 +8,7 @@
 #include "location.hpp"
 #include "cgi.hpp"
 #include <cstring>
+#include "utils.hpp"
 
 //-------------constructor--------------
 Server::Server():
@@ -126,53 +127,66 @@ void    Server::check_host(std::string listen_host)
         }
     }
 }
+
 void    Server::set_listen(std::string listen)
 {
-    if (!_listen_host.empty() || _listen_port != -1)
-    {
-        std::cout << "Error: listen already set" << std::endl;
-        exit(1);
-    }
-    std::size_t found=listen.find(':');
-    if (found != std::string::npos)
-    {
-        if (found == 0 && (listen.size() - found != 1))
-        {
-            std::string tmp;
-            _listen_host = "0.0.0.0";
-            tmp = listen.substr(1, listen.size());
-            if (is_number(tmp))
-                _listen_port = std::stoi(tmp);
-            else
-            {
-                std::cout << "Error: port should be a number" << std::endl;
-                exit(1);
-            }
-        }
-        else if (found == 0 && (listen.size() - found == 1))
-        {
-            _listen_host = "0.0.0.0" ;
-            _listen_port = 80;
-        }
-        else
-        {
-            check_host(listen.substr(0, found));
-            _listen_host = listen.substr(0, found);
-            std::string tmp;
-            _listen_host = listen.substr(0, found);
-            tmp = listen.substr(found+1, listen.size());
-            if (is_number(tmp))
-                _listen_port = std::stoi(tmp);
-            else
-                std::cout << "Error: port should be a number" << std::endl;
-        }
-    }
-    else
-    {
-        check_host(listen);
-        _listen_host = listen;
-        _listen_port = 80;
-    }
+	std::cout << "listen = " << listen << std::endl;
+	if (listen.find(':') == (size_t)-1) {
+		_listen_host = "0.0.0.0";
+		_listen_port = to_int(listen);
+	}
+	else {
+		_listen_host = listen.substr(0, listen.find(':'));
+		if (_listen_host == "localhost") {
+			_listen_host = "127.0.0.1";
+		}
+		_listen_port = to_int(listen.substr(listen.find(':') + 1, listen.length()));
+	}
+    // if (!_listen_host.empty() || _listen_port != -1)
+    // {
+    //     std::cout << "Error: listen already set" << std::endl;
+    //     exit(1);
+    // }
+    // std::size_t found=listen.find(':');
+    // if (found != std::string::npos)
+    // {
+    //     if (found == 0 && (listen.size() - found != 1))
+    //     {
+    //         std::string tmp;
+    //         _listen_host = "0.0.0.0";
+    //         tmp = listen.substr(1, listen.size());
+    //         if (is_number(tmp))
+    //             _listen_port = std::stoi(tmp);
+    //         else
+    //         {
+    //             std::cout << "Error: port should be a number" << std::endl;
+    //             exit(1);
+    //         }
+    //     }
+    //     else if (found == 0 && (listen.size() - found == 1))
+    //     {
+    //         _listen_host = "0.0.0.0" ;
+    //         _listen_port = 80;
+    //     }
+    //     else
+    //     {
+    //         // check_host(listen.substr(0, found));
+    //         _listen_host = listen.substr(0, found);
+    //         std::string tmp;
+    //         _listen_host = listen.substr(0, found);
+    //         tmp = listen.substr(found+1, listen.size());
+    //         if (is_number(tmp))
+    //             _listen_port = std::stoi(tmp);
+    //         else
+    //             std::cout << "Error: port should be a number" << std::endl;
+    //     }
+    // }
+    // else
+    // {
+    //     // check_host(listen);
+    //     _listen_host = listen;
+    //     _listen_port = 80;
+    // }
 }
 
 void    Server::set_allowed_methods_vect(std::vector<std::string> allowed_methods)
