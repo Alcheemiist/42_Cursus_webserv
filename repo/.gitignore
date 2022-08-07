@@ -3,7 +3,7 @@ webserv
 .phpcgi
 .gitignore
 config/conf/conf.conf
-upload/*.unknown
+upload/*
 testarea/misc
 testarea/postman/a.out
 *.o
