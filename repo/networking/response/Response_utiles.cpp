@@ -18,9 +18,6 @@ std::vector<std::string> split_url(std::string url) {
 
 int str_matched(std::string str1, std::string str2)
 {
-	// PRINT_LINE_VALUE(str1);
-	// PRINT_LINE_VALUE(str2);
-	
 	int i = 0;
 	for (i = 0; i < str1.length() || i < str2.length() ||
 			str1[i] != str2[i] ; i++);
@@ -249,38 +246,32 @@ bool location_support_upload(std::string url)
 	return (ret);
 }
 
-void upload_post(Request *request, Response *response, std::string upload_path)
+bool upload_post(Request *request, Response *response, std::string upload_path)
 {
-	std::string file_name_in = request->getPath();
-	for(std::string::reverse_iterator it = file_name_in.rbegin(); it != file_name_in.rend(); ++it)
+	std::string file_name_out = request->getPath();
+	std::string folder_out = response->get_upload_path();
+	for(std::string::reverse_iterator it = file_name_out.rbegin(); it != file_name_out.rend(); ++it)
 	{
 		if (*it == '/')
 		{
-			file_name_in.erase(file_name_in.begin(), it.base());
+			file_name_out.erase(file_name_out.begin(), it.base());
 			break;
 		}
 	}
-	if (file_name_in == "")
+	for(std::string::reverse_iterator it = folder_out.rbegin(); it != folder_out.rend(); ++it)
 	{
-		std::string file_name_in = request->getPath();
-		for(std::string::reverse_iterator it = file_name_in.rbegin(); it != file_name_in.rend(); ++it)
+		if (*it == '/')
 		{
-			if (*it == '/')
-			{
-				file_name_in.erase(file_name_in.begin(), it.base());
-				break;
-			}
+			folder_out.erase(it.base(), folder_out.end());
+			break;
 		}
 	}
-	std::cout << "file_name_in : " << file_name_in << std::endl;
-	std::string file_name_out = remove_duplicate_slash(upload_path + "/" + file_name_in);
+	file_name_out = remove_duplicate_slash(folder_out + "/" + file_name_out);
+	std::cout << "file_name_out : " << file_name_out << std::endl;
 	int fd_in = open(request->getBodyFileName().c_str(), O_RDWR);
 	int fd_out = open(file_name_out.c_str(), O_CREAT| O_RDWR, 0666);
 	if (fd_in < 0 || fd_out < 0)
-	{
-		response->setStatus(" 500 Internal Server Error\r\n");
-		return ;
-	}
+		return false;
 	char *buffer = (char *)malloc(sizeof(char) * (_BUFFER_SIZE + 1));
 	int n = -1;
 	while ((n = read(fd_in, buffer, _BUFFER_SIZE)) > 0)
@@ -288,9 +279,12 @@ void upload_post(Request *request, Response *response, std::string upload_path)
 		buffer[n] = '\0';
 		write(fd_out, buffer, n);
 	}
+	if (n < 0)
+		return false;
 	free(buffer);
 	close(fd_in);
 	close(fd_out);
+	return true;
 }
 
 bool Location_have_cgi(std::string url)
@@ -330,13 +324,13 @@ bool check_path_hierarchy(std::string root, std::string path)
 bool check_auto_index(std::string url, Server server)
 {
 	std::vector<Location> location = server.get_location();
-
 	std::vector<Location>::const_iterator it_loc = location.begin();
 	std::string location_path = "";
 	std::string location_str;
 	int location_path_matched = 0;
 	Location location_matched;
 	bool auto_index = false;
+	bool was_matched;
 
 	for (; it_loc != location.end(); it_loc++)
 	{
@@ -345,11 +339,12 @@ bool check_auto_index(std::string url, Server server)
 			location_str += '/';
 		if (!std::strncmp(url.c_str(), location_str.c_str(), location_str.size()))
 		{
+			was_matched = true;
 			if (str_matched(location_str, location_path) > location_path_matched)
 				auto_index = it_loc->get_autoindex();
 		}
 	}
-	// if (location_path.empty())
-	// 	return (server.get_autoindex());
+	if (!was_matched)
+		auto_index = server.get_autoindex();
 	return auto_index;
 }

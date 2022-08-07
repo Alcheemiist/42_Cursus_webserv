@@ -33,6 +33,7 @@ class Response
         std::vector<std::string> status_vector;
         std::string requested_path;
         std::string redirection_path;
+        std::string upload_path;
         std::string index;
         // 
         bool is_cgi;
@@ -65,7 +66,6 @@ class Response
         //
         void set_maxBufferLenght(size_t size);
         size_t get_maxBufferLenght();
-
         //
         std::string setStatus(Request *request, Server server);
         void show();
@@ -81,6 +81,9 @@ class Response
         void set_index(std::string str);
         std::string get_index();
         std::string get_index(std::string url, Server server);
+        std::string get_upload_path();
+        void set_upload_path(std::string path);
+        void init_location_for_upload(std::string url, Server server);
 };
 
 std::string ERRORresponse(Request *request, Response *response, ParseConfig *config, int server_index);
