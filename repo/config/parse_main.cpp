@@ -39,8 +39,7 @@
 #define GLOBAL_CONTEXT "__root"
 #define PARENT_GLOBAL_CONTEXT "__proot"
 
-#define PRINT_VALUE(x) println(#x, " = ", x)
-#define PRINT_LINE_VALUE(x) println(__FILE__, ":", __LINE__, " ", #x, " = ", x)
+
 
 #define ITERATE(type, iterable, it_name) for (type::iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
 #define CONST_ITERATE(type, iterable, it_name) for (type::const_iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
