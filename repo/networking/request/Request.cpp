@@ -1,5 +1,15 @@
 #include "../elements.hpp"
 
+bool extensionCgi(std::string path)
+{
+    size_t pos = path.find('.');
+    if (pos == std::string::npos)
+        return false;
+    std::string extension = path.substr(pos + 1);
+    if (extension == "php" || extension == "cgi" || extension == "py")
+        return true;
+    return false;
+}
 
 std::vector<std::string> split(const std::string &s, char delim)
 {
@@ -77,7 +87,9 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
             
             this->_method = (tmp[0]);
             this->_path = tmp[1];
-            
+
+            isCgiRequest(this->_path);
+
             if (strncmp(tmp[2].c_str(), "HTTP/1.1", strlen("HTTP/1.1") ) == 0)
                 this->_version = (tmp[2].substr(0, tmp[2].find_first_of("\r\n")));
             else 
