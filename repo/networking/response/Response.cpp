@@ -455,49 +455,25 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
     }
     else
     {
-        if (is_file(path_upload_file))
-        {
-            // if (Location_have_cgi(path_upload_file))
-            // {
-            //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(path_upload_file);
-            //     response->setStatus(cgi_pair.first);
-            //     response->setpath(cgi_pair.second);
-            //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
-            // }
-            // else
-            // {
-                body_f = get_error_page(403, config->get_server_vect()[index_server]);
-                response->setStatus(" 403 Created\r\n");
-                body_f = get_error_page(403, config->get_server_vect()[index_server]);
-            // }
-        }
-        else
-        {
-            if (response->get_location().back() == '/')
+		if (is_file(path_upload_file)) {
+
+			body_f = get_error_page(403, config->get_server_vect()[index_server]);
+			response->setStatus(" 403 Created\r\n");
+			body_f = get_error_page(403, config->get_server_vect()[index_server]);
+
+		} else {
+			if (response->get_location().back() == '/')
             {
                 std::string index_path = response->get_index(request->getPath(), config->get_server_vect()[index_server]);
-                if (file_exist(index_path))
-                {
-                    // if (Location_have_cgi(index_path))
-                    // {
-                    //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(index_path);
-                    //     response->setStatus(cgi_pair.first);
-                    //     response->setpath(cgi_pair.second);
-                    //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
-                    // }
-                    // else
-                    // {
-                        body_f = get_error_page(403, config->get_server_vect()[index_server]);
-                        response->setStatus(" 403 Created\r\n");
-                        body_f = get_error_page(403, config->get_server_vect()[index_server]);
-                    // }
-                }
-                else
-                {
-                    body_f = get_error_page(403, config->get_server_vect()[index_server]);
+				if (file_exist(index_path)) {
+					body_f = get_error_page(403, config->get_server_vect()[index_server]);
+					response->setStatus(" 403 Created\r\n");
+					body_f = get_error_page(403, config->get_server_vect()[index_server]);
+				} else {
+					body_f = get_error_page(403, config->get_server_vect()[index_server]);
                     response->setStatus(" 403 Created\r\n");
-                }
-            }
+				}
+			}
             else
             {
                 response->set_redirection(response->get_location() + "/");
@@ -506,8 +482,8 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
                 body_f = get_error_page(301,  config->get_server_vect()[index_server]);
                 response->setpath(body_f);
             }
-        }
-        body_f = get_error_page(403, config->get_server_vect()[index_server]);
+		}
+		body_f = get_error_page(403, config->get_server_vect()[index_server]);
     }
     return body_f;
     std::cout << "im doing post response\n";
@@ -639,9 +615,6 @@ std::string Response::get_index(std::string url, Server server)
 	return "";
 }
 
-
-
-// copied from .hpp
 void Response::setVersion(std::string version) { this->version = version; };
 void  Response::setStatus(std::string status) {
     size_t len = 0;
