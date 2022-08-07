@@ -130,7 +130,6 @@ void    Server::check_host(std::string listen_host)
 
 void    Server::set_listen(std::string listen)
 {
-	std::cout << "listen = " << listen << std::endl;
 	if (listen.find(':') == (size_t)-1) {
 		_listen_host = "0.0.0.0";
 		_listen_port = to_int(listen);

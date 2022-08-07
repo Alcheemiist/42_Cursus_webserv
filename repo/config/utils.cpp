@@ -227,3 +227,25 @@ std::string getFileContents(std::string path) {
 	strStream << bodyFile.rdbuf();
 	return strStream.str();
 }
+
+int nOccurrence(std::string heap, std::string needle) {
+	int occurrences = 0;
+	std::string::size_type pos = 0;
+	while ((pos = heap.find(needle, pos)) != std::string::npos) {
+		++occurrences;
+		pos += needle.length();
+	}
+	return occurrences;
+}
+
+std::vector<std::string> configSplit(const std::string &s, char seperator) {
+	std::vector<std::string> output;
+	std::string::size_type prev_pos = 0, pos = 0;
+	while ((pos = s.find(seperator, pos)) != std::string::npos) {
+		std::string substring(s.substr(prev_pos, pos - prev_pos));
+		output.push_back(substring);
+		prev_pos = ++pos;
+	}
+	output.push_back(s.substr(prev_pos, pos - prev_pos));
+	return output;
+}
