@@ -17,6 +17,13 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     response.setpath("empty");
     std::string s;
     std::string path = request->getPath();
+    
+    if (request->isCgiRequest())
+    {
+        // CGI EXECUTION
+        std::cout << "CGI RESPONSE" << std::endl;
+    }
+
     if (!isValidURLPath(path)) {
         response.setStatus(" 400 BAD REQUEST\r\n");
         s = get_error_page(400 , config->get_server_vect()[index_server]);
