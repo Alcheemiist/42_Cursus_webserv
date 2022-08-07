@@ -7,7 +7,7 @@ void init_socket(t_socket *_socket, std::vector <int> &ports)
     _socket->server_fd = 0;
     _socket->new_socket = -1;
     _socket->address.sin_family = AF_INET;
-    _socket->address.sin_addr.s_addr = INADDR_ANY;
+    _socket->address.sin_addr.s_addr = inet_addr(_socket->host.c_str());
 	_socket->address.sin_port = htons(_socket->port);
 
     memset(_socket->address.sin_zero, '\0', sizeof(_socket->address.sin_zero));
@@ -83,8 +83,9 @@ void LaunchServer(ParseConfig *config)
         std::cout << green << "init server " << config->get_server_vect()[i].get_name(0) << " on port: " << config->get_server_vect()[i].get_listen_port() << " path root :" << config->get_server_vect()[i].get_root() << def << std::endl;
         serv_response[i] = 1;
         first[i] = true;
+
+		_socket_server[i].host = config->get_server_vect()[i].get_listen_host();
         _socket_server[i].port = config->get_server_vect()[i].get_listen_port();
-        
 		
 		init_socket(&_socket_server[i], ports);
         
