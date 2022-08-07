@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 
+#define PRINT_VALUE(x) println(#x, " = ", x)
+#define PRINT_LINE_VALUE(x) println(__FILE__, ":", __LINE__, " ", #x, " = ", x)
+
 template <class A>
 void print(const A &a) {
 	std::cout << a;

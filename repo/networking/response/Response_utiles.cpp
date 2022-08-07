@@ -18,10 +18,14 @@ std::vector<std::string> split_url(std::string url) {
 
 int str_matched(std::string str1, std::string str2)
 {
+	// PRINT_LINE_VALUE(str1);
+	// PRINT_LINE_VALUE(str2);
+	
 	int i = 0;
 	for (i = 0; i < str1.length() || i < str2.length() ||
 			str1[i] != str2[i] ; i++);
 	return i;
+
 }
 
 bool url_is_formated(std::string url)
@@ -37,8 +41,10 @@ bool url_is_formated(std::string url)
 
 bool file_exist(std::string path)
 {
+	// println("file_exists path = ", path);
 	struct stat st;
 	int res = stat(path.c_str(), &st);
+	// println("file_exists res = ", res);
 	return (res == 0);
 }
 
@@ -84,48 +90,35 @@ std::string generate_auto_index(std::string url)
 
 bool	method_is_allowed(std::string method, std::string url ,Server server)
 {
-	bool allowed = false;
-	std::cout << "method : " << method << std::endl;
-	std::vector<std::string> _allowed_methods = server.get_allowed_methods();
-	for (std::vector<std::string>::iterator it = _allowed_methods.begin(); it != _allowed_methods.end(); ++it)
-		if (*it == method)
-			allowed = true;
-	if (!allowed)
-		return (false);
-
+	bool was_matched = false;
 	std::vector<Location> location = server.get_location();
 	std::vector<Location>::const_iterator it_loc = location.begin();
 	std::string location_path = "";
 	std::string location_str;
 	int location_path_matched = 0;
-	std::vector<std::string> location_matched;
+	Location location_matched;
+	int allowed_method = 0;
 
-	while (it_loc != location.end())
+	for (; it_loc != location.end(); it_loc++)
 	{
 		location_str = it_loc->get_locations_path();
 		if (location_str.back() != '/')
 			location_str += '/';
-		if (url.substr(0, location_str.size()) == location_str && it_loc->get_root() != "")
-		{
-			if (str_matched(location_str, location_path) > location_path_matched)
-			{
-				location_path = location_str;
-				location_path_matched = str_matched(location_str, location_path);
-				std::vector<std::string> allowedMethodsVec = it_loc->get_allow_methods();
-				for (std::vector<std::string>::iterator it = allowedMethodsVec.begin(); it != allowedMethodsVec.end(); ++it)
-				{
-					if (*it == method)
-					{
-						allowed = true;
-						break;
-					}
-					allowed = false;
-				}
-			}
+		if (!std::strncmp(url.c_str(), location_str.c_str(), location_str.size())){
+			was_matched = true;
+			std::vector<std::string> location_meth = it_loc->get_allow_methods();
+			for (std::vector<std::string>::iterator it = location_meth.begin(); it != location_meth.end(); it++)
+				if (*it == method)
+					allowed_method = true;
 		}
-		it_loc++;
 	}
-	return (allowed);
+	if (!was_matched){
+		std::vector<std::string> location_meth = server.get_allowed_methods();
+			for (std::vector<std::string>::iterator it = location_meth.begin(); it != location_meth.end(); it++)
+				if (*it == method)
+					allowed_method = true;
+	}
+	return (allowed_method);
 }
 
 bool	requested_file_in_root(std::string url)
@@ -332,4 +325,31 @@ bool check_path_hierarchy(std::string root, std::string path)
 	if (!(_root && _path))
 		return (false);
 	return (std::strncmp(actualpath_root, actualpath_root, strlen(actualpath_root)) == 0);
+}
+
+bool check_auto_index(std::string url, Server server)
+{
+	std::vector<Location> location = server.get_location();
+
+	std::vector<Location>::const_iterator it_loc = location.begin();
+	std::string location_path = "";
+	std::string location_str;
+	int location_path_matched = 0;
+	Location location_matched;
+	bool auto_index = false;
+
+	for (; it_loc != location.end(); it_loc++)
+	{
+		location_str = it_loc->get_locations_path();
+		if (location_str.back() != '/')
+			location_str += '/';
+		if (!std::strncmp(url.c_str(), location_str.c_str(), location_str.size()))
+		{
+			if (str_matched(location_str, location_path) > location_path_matched)
+				auto_index = it_loc->get_autoindex();
+		}
+	}
+	// if (location_path.empty())
+	// 	return (server.get_autoindex());
+	return auto_index;
 }

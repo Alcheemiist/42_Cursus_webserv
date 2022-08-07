@@ -13,7 +13,6 @@
 Response  response(Request *request, ParseConfig *config, int index_server)
 {
     std::string header_str = "";
-    std::cout << blue << "********** { Procces Response } ***********************" << def << std::endl;
     Response response;
     response.setpath("empty");
     std::string s;
@@ -41,20 +40,13 @@ Response  response(Request *request, ParseConfig *config, int index_server)
         response.setContentType(response.get_redirection());
     else
         response.setContentType(response.get_location());
-
-    std::cout << blue << "********** {End Procces Response } ******************" << def << std::endl ;
-
     // response.setHeader(header_str);
 
-    std::cout << blue << "********** { Response Header } ***********************" << def << std::endl;
     std::cout << header_str << std::endl;
     // response.setpath(s);
     std::cout << "body_path : " << response.getpath() << std::endl;
     std::cout << "body_path : " << s << std::endl;
 
-    std::cout << blue << "********** { End Response Header } ***********************" << def << std::endl;
-
-    std::cout << blue << "********** { Response Body } ***********************" << def << std::endl;
     println("file = ", response.getpath());
     // if (response.get_status() != " 200 OK\r\n")
     //     response.setpath("empty");
@@ -101,7 +93,7 @@ std::string Response::setStatus(Request *request, Server server)
     if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
     {
         this->status = " 405 METHOD NOT ALLOWED\r\n";
-        code_status_file = get_error_page(413, server);
+        code_status_file = get_error_page(405, server);
     }
     else if (!get_redirection().empty())
     {
@@ -123,26 +115,29 @@ void Response::init_location(std::string url, Server server)
 	std::string location_path = "";
 	std::string location_str;
 	int location_path_matched = 0;
-	Location location_matched;
+	// Location location_matched;
+	this->requested_path = "";
 
 	for (; it_loc != location.end(); it_loc++)
 	{
 		location_str = it_loc->get_locations_path();
 		if (location_str.back() != '/')
 			location_str += '/';
-		if (url.substr(0, location_str.size()) == location_str && it_loc->get_root() != "")
+		if (!std::strncmp(url.c_str(), location_str.c_str(), location_str.size()))
 		{
+			std::string url_copy;
 			if (str_matched(location_str, location_path) > location_path_matched)
 			{
+				url_copy = url.substr(location_str.size());
+				// PRINT_LINE_VALUE(url_copy);
 				location_path = location_str;
 				location_path_matched = str_matched(location_str, location_path);
-				location_matched = *it_loc;
+				// location_matched = *it_loc;
+				this->requested_path = remove_duplicate_slash(it_loc->get_root() + "/" + url_copy);
 			}
 		}
 	}
-	if (location_path_matched)
-		this->requested_path = remove_duplicate_slash(url.replace(0, location_path.size(), location_matched.get_root()));
-	else
+	if (this->requested_path.empty())
 		this->requested_path = remove_duplicate_slash(server.get_root() + url);
 }
 
@@ -186,46 +181,69 @@ void	Response::init_redirection(std::string url, Server server, std::string &sta
 	int redirection_path_matched = 0;
     std::string path_absol = "";
 
-	for(std::vector<std::vector<std::string> >::iterator it = red.begin(); it != red.end(); ++it)
-	{
+	for(std::vector<std::vector<std::string> >::iterator it = red.begin(); it != red.end(); ++it) {
 		redirection_str = it->at(0);
-		if (redirection_str.back() == '/')
-				redirection_str.pop_back();
-		if (url.substr(0, redirection_str.size()) == redirection_str)
-		{
-			if (str_matched(redirection_str, _redirection_path) > redirection_path_matched)
-			{
-                println("it02 = ", it[0][2]);
-                if (std::isdigit(it[0][2][0]))
-                {
-                    statusLine = get_status_code(to_int(it[0][2]));
-                }
-                else if (it[0][2] == "temporary")
-                {
-                    statusLine = get_status_code(307);
-                }
-                else
-                {
-                    statusLine = get_status_code(308);
-                }
-                println("status = ", statusLine);
-                _redirection_path = (*it)[1];
-				redirection_path_matched = str_matched(redirection_str, _redirection_path);
-                if (std::strncmp(_redirection_path.c_str(), "http", 4) == 0)
-                    path_absol = _redirection_path;
-
+		if (redirection_str.front() != '/')
+			redirection_str = "/" + redirection_str;
+		if (redirection_str == url){
+			this->redirection_path = it->at(1);
+			if (std::isdigit(it[0][2][0])) {
+				statusLine = get_status_code(to_int(it[0][2]));
+			} else if (it[0][2] == "temporary") {
+				statusLine = get_status_code(307);
+			} else {
+				statusLine = get_status_code(308);
 			}
 		}
 	}
-	if (redirection_path_matched)
-    {
-        if (path_absol.length() > 0)
-            this->redirection_path = path_absol;
-        else
-            this->redirection_path = url.replace(0, _redirection_path.size(), _redirection_path);
-    }
-    else
-        this->redirection_path = "";
+	if (url.back() != '/') {
+		std::vector<Location> locs = server.get_location();
+		std::string urlplusslash = url + "/";
+		for (std::vector<Location>::iterator lit = locs.begin(); lit != locs.end(); lit++) {
+			std::string loc_path = lit->get_locations_path();
+			if (loc_path.back() != '/') {
+				loc_path += '/';
+			}
+			if (urlplusslash == loc_path) {
+				this->redirection_path = loc_path;
+				statusLine = get_status_code(301);
+				break;
+			}
+		}
+	}
+	PRINT_LINE_VALUE(this->redirection_path);
+	// if (redirection_path_matched)
+    // {
+    //     if (path_absol.length() > 0)
+    //         this->redirection_path = path_absol;
+    //     else
+    //         this->redirection_path = url.replace(0, _redirection_path.size(), _redirection_path);
+    // }
+    // else
+    //     this->redirection_path = "";
+
+		// if (redirection_str.back() != '/')
+		// 		redirection_str += "/";
+	// 	if (url.substr(0, redirection_str.size()) == redirection_str) {
+	// 		if (str_matched(redirection_str, _redirection_path) > redirection_path_matched) {
+    //             println("it02 = ", it[0][2]);
+    //             if (std::isdigit(it[0][2][0])) {
+    //                 statusLine = get_status_code(to_int(it[0][2]));
+    //             }
+    //             else if (it[0][2] == "temporary") {
+    //                 statusLine = get_status_code(307);
+    //             }
+    //             else {
+    //                 statusLine = get_status_code(308);
+    //             }
+    //             println("status = ", statusLine);
+    //             _redirection_path = (*it)[1];
+	// 			redirection_path_matched = str_matched(redirection_str, _redirection_path);
+    //             if (std::strncmp(_redirection_path.c_str(), "http", 4) == 0)
+    //                 path_absol = _redirection_path;
+
+	// 		}
+	// 	}
 }
 
 void Response::setContentType(std:: string s)
@@ -387,7 +405,7 @@ std::string Response::getHeader()
 std::string ERRORresponse(Request *request, Response *response, ParseConfig *config, int server_index)
 {
     std::string body_f = "";
-    body_f = get_error_page(403,  config->get_server_vect()[server_index]);
+    body_f = get_error_page(std::atoi(response->get_status().c_str()),  config->get_server_vect()[server_index]);
     response->setpath(body_f);
     return body_f;
 }
@@ -408,9 +426,19 @@ std::string DELETEresponse(Request *request, Response *response, ParseConfig *co
             // }
             // else
             // {
-                remove(response->get_location().c_str());
-                response->setStatus(" 204 No Content\r\n"); 
-                get_error_page(204, config->get_server_vect()[index_server]);
+				PRINT_LINE_VALUE(response->get_location().c_str());
+				PRINT_LINE_VALUE(access(response->get_location().c_str(), W_OK));
+				if (!access(response->get_location().c_str(), W_OK))
+				{
+                	remove(response->get_location().c_str());
+                	response->setStatus(" 204 No Content\r\n"); 
+                	get_error_page(204, config->get_server_vect()[index_server]);
+				}
+				else
+				{
+					response->setStatus(" 403 Forbidden\r\n");
+                    get_error_page(403, config->get_server_vect()[index_server]);
+				}
             // }
         }
         else
@@ -542,50 +570,32 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
     std::string body_f = "empty";
     if(!response->get_status().empty())
         return body_f;
+	PRINT_LINE_VALUE(response->get_location());
     if(requested_file_in_root(response->get_location()))
     {
         if (is_file(response->get_location()))
         {
-            // if (Location_have_cgi(response->get_location())) // if location have cgi
-            // {
-            //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(response->get_location());
-            //     response->setStatus(cgi_pair.first);
-            //     response->setpath(cgi_pair.second);
-            //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
-            // }
-            // else 
-            // {
-                response->setpath(response->get_location());
-                response->setStatus(" 200 OK\r\n");
-                body_f = response->getpath();
-            // }
-                
+			response->setpath(response->get_location());
+			response->setStatus(" 200 OK\r\n");
+			body_f = response->getpath();
+            
         }
         else // if you request a directory
         {
+
             if (response->get_location().back() == '/') // uri have / at the end
             {
                 std::string index_path = response->get_index(request->getPath(), config->get_server_vect()[index_server]);
                 if (file_exist(index_path)) //have index file
                 {
-                    // if (Location_have_cgi(index_path)) // location have cgi
-                    // {
-                    //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(index_path);
-                    //     response->setStatus(cgi_pair.first);
-                    //     response->setpath(cgi_pair.second);
-                    //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
-                    // }
-                    // else // location have note cgi
-                    // {
-                        response->set_index(index_path);
-                        response->setpath(response->get_index());
-                        response->setStatus(" 200 OK\r\n");
-                        body_f = index_path;
-                    // }
+					response->set_index(index_path);
+					response->setpath(response->get_index());
+					response->setStatus(" 200 OK\r\n");
+					body_f = index_path;
                 }
                 else
                 {
-                    if(config->get_server_vect()[index_server].get_autoindex())
+					if (check_auto_index(request->getPath(), config->get_server_vect()[index_server]))
                     {
 						response->set_autoindex(true);
                         body_f = generate_auto_index(response->get_location());
@@ -613,7 +623,7 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
     else // requested resource not in root
     {
         response->setStatus(" 404 NOT FOUND\r\n");  //requested resource not found
-        body_f = get_error_page(301,  config->get_server_vect()[index_server]);
+        body_f = get_error_page(404,  config->get_server_vect()[index_server]);
         response->setpath(body_f);
     }
 
@@ -623,6 +633,7 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
 std::string Response::get_index(std::string url, Server server)
 {
 	std::vector<Location> location = server.get_location();
+
 	std::vector<Location>::const_iterator it_loc = location.begin();
     std::vector<std::string> index_file = server.get_index();
 	std::string location_path = "";
@@ -630,25 +641,32 @@ std::string Response::get_index(std::string url, Server server)
 	int location_path_matched = 0;
 	Location location_matched;
 
+	// PRINT_LINE_VALUE("here");
 	for (; it_loc != location.end(); it_loc++)
 	{
+		// PRINT_LINE_VALUE("here");
 		location_str = it_loc->get_locations_path();
 		if (location_str.back() != '/')
 			location_str += '/';
 		// if (url.substr(0, location_str.size()) == location_str)
-		if (std::strncmp(url.c_str(), location_str.c_str(), location_str.size()))
-
+		// PRINT_LINE_VALUE("here");
+		// PRINT_LINE_VALUE(std::strncmp(url.c_str(), location_str.c_str(), location_str.size()));
+		if (!std::strncmp(url.c_str(), location_str.c_str(), location_str.size()))
 		{
-			println("location_str:", location_str);
+			// PRINT_LINE_VALUE("here");
+			// println("location_str:", location_str);
 			if (str_matched(location_str, location_path) > location_path_matched)
 			{
+				// PRINT_LINE_VALUE("here");
 				std::vector<std::string> indexVec = it_loc->get_index();
-				for(std::vector<std::string>::iterator it = indexVec.begin();
-                        it != indexVec.end(); ++it)
+				for (std::vector<std::string>::iterator it = indexVec.begin();it != indexVec.end(); ++it)
 				{
-					if (file_exist(remove_duplicate_slash(url + "/" + *it)))
+					std::string url_copy;
+					url_copy = url.substr(location_str.size());
+					// PRINT_LINE_VALUE(remove_duplicate_slash(it_loc->get_root() + "/" + url_copy + "/" + *it));
+					if (file_exist(remove_duplicate_slash(it_loc->get_root() + "/" + url_copy + "/" + *it)))
 					{
-						return (remove_duplicate_slash(url + "/" + *it));
+						return (remove_duplicate_slash(it_loc->get_root() + "/" + url_copy + "/" + *it));
 					}
 					// return "";
 				}
@@ -659,11 +677,13 @@ std::string Response::get_index(std::string url, Server server)
 			// return "";
 		}
 	}
-	for(std::vector<std::string>::iterator it = index_file.begin(); it != index_file.end(); ++it)
-	{
-		if (file_exist(remove_duplicate_slash(url + "/" + *it)))
-		{
-			return (url + "/" + *it);
+	// PRINT_LINE_VALUE(location_path);
+	if (location_path.empty()) {
+		for (std::vector<std::string>::iterator it = index_file.begin(); it != index_file.end(); ++it) {
+			PRINT_LINE_VALUE(remove_duplicate_slash(server.get_root() + url + "/" + *it));
+			if (file_exist(remove_duplicate_slash(server.get_root() + url + "/" + *it))) {
+				return (remove_duplicate_slash(server.get_root() + url + "/" + *it));
+			}
 		}
 	}
 	return "";
@@ -708,7 +728,9 @@ bool    Response::get_finish() { return this->is_complete; };
 void Response::set_maxBufferLenght(size_t size) { this->maxBufferLenght = size; };
 size_t Response::get_maxBufferLenght() { return this->maxBufferLenght; }
 //
-void Response::show() { std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;  };
+void Response::show() {
+	// std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;
+};
 std::string Response::get_location() {  return this->requested_path; };
 std::string Response::get_redirection()  { return this->redirection_path; };
 void Response::set_redirection(std::string url) { this->redirection_path = url; };
