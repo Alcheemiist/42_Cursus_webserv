@@ -312,93 +312,36 @@ std::vector<char> Response::get_buffer()
 std::string Response::getHeader() 
 {
     std::string res;
-
-    is_cgi = false;
+    
     if (is_cgi)
     {
-        // std::string tmp;
-        // std::string path = this->body_file_path;
-
-        // if (path.size() > 0)
-        // {
-            // int fd = open(path.c_str(), O_RDONLY);
-            // if (fd < 0)
-            //     std::cout << "error open file cgi " << std::endl;
-            // int size = lseek(fd, 0, SEEK_END);
-            // if (size < 0)
-            //     std::cout << "error lseek file cgi " << std::endl;
-            
-            // char *buf = (char *)malloc(2);
-            // int max_size = read(fd, buf, 1);
-            // if (max_size < 0)
-            //     std::cout << "error read file cgi " << std::endl;
-            // int curr_size = 0, read_size = 0;
-            // int flag_delimiter = 0;
-            // while (read_size > 0)
-            // {
-            //     //tmp += buf;
-            //     read_size = read(fd, buf, 1);
-            //     if (read_size < 0)
-            //         std::cout << "error read file cgi " << std::endl;
-            //     //
-            //     buf[read_size] = '\0';
-            //     curr_size += read_size;
-            //     //
-            //     if (buf[0] == '\r' && flag_delimiter == 0)
-            //         flag_delimiter = 1;
-            //     else if (buf[0] == '\n' && flag_delimiter == 1)
-            //         flag_delimiter = 2;
-            //     else if (flag_delimiter == 2 && buf[0] == '\r')
-            //         flag_delimiter = 3;
-            //     else if (flag_delimiter == 3 && buf[0] == '\n')
-            //         flag_delimiter = 4;
-            //     else 
-            //         flag_delimiter = 0;
-            //     //     
-            //     if (buf)
-            //         tmp.append(buf);
-            //     if (flag_delimiter == 4)
-            //         break;
-            //     //
-            // }
-            // free(buf);
-            // close(fd);
-            // std::cout << red << "- CGI Header : {" << tmp << "}" << def << std::endl;
-        // }
-        // else 
-        // {
-        //     // path not found
-        // }
-
-    }
-    else 
+        // TODO: check if path is set and headedrs exist
+    }; 
+    // status line
+    res.append(version);
+    res.append(status);
+    // HEADERS : 
+    if (this->contentType.length())
     {
-
-
-        // status line
-        res.append(version);
-        res.append(status);
-        // headers
-        if (this->contentType.length()){
-            res.append("Content-Type: ");
-            res.append(this->contentType);
-            res.append("\r\n");
-        }
-        if (!get_redirection().empty())
-            res.append("Location: " + get_redirection() + "\r\n");
-        size_t tt = getFileSize(body_file_path.c_str());
-        if (tt && tt != (size_t)-1)
-        {
-            res.append("Content-Length: ");
-            res.append(std::to_string(tt));
-            res.append("\r\n");
-        }
-        res.append("server: alchemist\r\n");
+        res.append("Content-Type: ");
+        res.append(this->contentType);
         res.append("\r\n");
-        setHeader(res);
-    
     }
-    // 
+    // LOCATION
+    if (!get_redirection().empty())
+        res.append("Location: " + get_redirection() + "\r\n");
+    size_t tt = getFileSize(body_file_path.c_str());
+    //C_Lenght
+    if (tt && tt != (size_t)-1)
+    {
+        res.append("Content-Length: ");
+        res.append(std::to_string(tt));
+        res.append("\r\n");
+    }
+    res.append((is_cgi) ? "server: alchemist\r\n":"server: alchemist_CGI\r\n");
+    res.append("\r\n");
+    setHeader(res);
+    //
     return res;
 };
 
