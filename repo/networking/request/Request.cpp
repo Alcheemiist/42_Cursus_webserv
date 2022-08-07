@@ -65,7 +65,24 @@ std::string to_Lower_case(std::string str)
     return str;
 }
 
-Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _version(""), _host(""),  _connection(""), _accept(""), _accept_encoding(""),  _content_type(""), _content_length(0), _headers(std::map<std::string, std::string>()), bodyFileName(""), client_fd(fd), _fdBodyFile(-1),  _is_complete(false), requestStatus(-1), status_message(""), bodyBytesWritten(0)
+Request::Request(char *buffer, size_t bytes, int fd) :	_method(""),
+														_path(""),
+														_version(""),
+														_host(""),
+														 _connection(""),
+														_accept(""),
+														_accept_encoding(""),
+														 _content_type(""),
+														_content_length(0),
+														_headers(std::map<std::string,
+														std::string>()),
+														bodyFileName(""),
+														client_fd(fd),
+														_fdBodyFile(-1),
+														 _is_complete(false),
+														requestStatus(0),
+														status_message(""),
+														bodyBytesWritten(0)
 {
     std::stringstream ss((std::string(buffer)));
     std::string line;
@@ -82,7 +99,7 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
             if (tmp.size() != 3)
             {
                 badRequest();
-                throw std::runtime_error("invalid request");
+                // throw std::runtime_error("invalid request");
             }
             
             this->_method = (tmp[0]);
@@ -92,8 +109,10 @@ Request::Request(char *buffer, size_t bytes, int fd) : _method(""), _path(""), _
 
             if (strncmp(tmp[2].c_str(), "HTTP/1.1", strlen("HTTP/1.1") ) == 0)
                 this->_version = (tmp[2].substr(0, tmp[2].find_first_of("\r\n")));
-            else 
-                throw std::runtime_error("invalid version");
+            else {
+				httpVersionNotSupported();
+                // throw std::runtime_error("invalid version");
+			}
             
             is_first = false;
         }

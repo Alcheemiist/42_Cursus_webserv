@@ -41,7 +41,7 @@ private:
 
 public:
     Request() : _method(""), _path(""), _version(""), _host(""), _connection(""), _accept(""), _accept_encoding(""),  _content_type(""), _content_length(-1), _headers(std::map<std::string, std::string>()),
-                bodyFileName(""), client_fd(-1), _fdBodyFile(-1), _is_complete(false), requestStatus(-1), status_message(""), bodyFileSize(0), is_formated(false), transfer_encoding(""), _port(0), bodyBytesWritten(0) {};
+                bodyFileName(""), client_fd(-1), _fdBodyFile(-1), _is_complete(false), requestStatus(0), status_message(""), bodyFileSize(0), is_formated(false), transfer_encoding(""), _port(0), bodyBytesWritten(0) {};
     Request(char *buffer, size_t bytes, int fd);
     ~Request(){};
     void isCgiRequest(std::string path) { is_cgi_request = extensionCgi(path);}
@@ -61,8 +61,10 @@ public:
     void parse(char *buffer);
     //char *readFile(const char *fileName);
     void checkRequest();
-    void badRequest() { requestStatus = -1; status_message = "Bad Request";_isGoodRequest = false; };
-    void goodRequest() { requestStatus = 1; status_message = "Good Request";_isGoodRequest = true; };
+    void badRequest() { requestStatus = 400; status_message = "Bad Request";_isGoodRequest = false; };
+    void httpVersionNotSupported() { requestStatus = 505; status_message = "HTTP Version Not Supported";_isGoodRequest = false; };
+    void goodRequest() { requestStatus = 0; status_message = "Good Request";_isGoodRequest = true; };
+	std::string getStatusMessage() const { return status_message; };
     bool isGoodrequest() { return (true); };
     void show();
     // Here to add methods to be reviewed

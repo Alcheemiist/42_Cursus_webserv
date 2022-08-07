@@ -18,6 +18,12 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     std::string s;
     std::string path = request->getPath();
     
+	if (request->getRequestStatus() != 0) { // request error
+		response.setStatus(std::string(" ") + to_string(request->getRequestStatus()) + " " + request->getStatusMessage() + "\r\n");
+		response.setpath(get_error_page(request->getRequestStatus() , config->get_server_vect()[index_server]));
+        return response;
+	}
+
     if (request->isCgiRequest())
     {
         // CGI EXECUTION
@@ -26,7 +32,7 @@ Response  response(Request *request, ParseConfig *config, int index_server)
 
     if (!isValidURLPath(path)) {
         response.setStatus(" 400 BAD REQUEST\r\n");
-        s = get_error_page(400 , config->get_server_vect()[index_server]);
+        response.setpath(get_error_page(400 , config->get_server_vect()[index_server]));
         return response;
     }
     request->set_path(URLdecode(URLremoveQueryParams(path)));
@@ -345,7 +351,7 @@ std::string Response::getHeader()
         res.append(std::to_string(tt));
         res.append("\r\n");
     }
-    res.append((is_cgi) ? "server: alchemist\r\n":"server: alchemist_CGI\r\n");
+    res.append((!is_cgi) ? "Server: alchemist\r\n":"Server: alchemist_CGI\r\n");
     res.append("\r\n");
     setHeader(res);
     //
