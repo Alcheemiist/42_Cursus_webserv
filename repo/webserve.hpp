@@ -58,6 +58,7 @@ typedef struct s_socket
     struct sockaddr_in address;
     int addrlen;
     long valread;
+	std::string host;
     int port;
     int index_server;
 } t_socket;

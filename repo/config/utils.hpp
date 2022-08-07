@@ -32,7 +32,8 @@ std::string URLremoveQueryParams(std::string url);
 std::string URLgetQueryParams(std::string url);
 bool isValidURLPath(std::string url);
 std::string getFileContents(std::string path);
-
+int nOccurrence(std::string heap, std::string needle);
+std::vector<std::string> configSplit(const std::string &s, char seperator);
 
 # define FILE_LINE getFileAndLine(__FILE__, __LINE__)
 
