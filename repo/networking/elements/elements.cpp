@@ -111,7 +111,7 @@ void LaunchServer(ParseConfig *config)
                     index_client++;
                 }
             // try to assigne a dynamically value to buffer_size for I/O depends on clients number
-            _BUFFER_SIZE = get_buffer(index_client);
+            // _BUFFER_SIZE = get_buffer(index_client);
             // only for clients to handle reading requests and sending responses
             for (int i = 0; i < index_client; i++)
             {
