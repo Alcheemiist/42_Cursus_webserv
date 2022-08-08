@@ -73,11 +73,24 @@ bool Location::is_number(const std::string &str)
     return true;
 }
 
+int getMul(char c) {
+	switch (c) {
+		case 'K':
+			return 1024;
+		case 'M':
+			return 1024 * 1024;
+		case 'G':
+			return 1024 * 1024 * 1024;
+		default:
+			return 1;
+	}
+}
+
 void Location::set_client_max_body_size(std::string client_max_body_size)
 {
     // std::cout << "inside location " << client_max_body_size << std::endl;
-    if (not_predefined(client_max_body_size) && is_number(client_max_body_size))
-        this->_client_max_body_size = std::stoi(client_max_body_size);
+    if (not_predefined(client_max_body_size))
+        this->_client_max_body_size = std::stoi(client_max_body_size) * getMul(client_max_body_size.back());
     else
     {
         std::cout << "Error: client max body size should be number" << std::endl;

@@ -47,7 +47,7 @@ public:
     Request(char *buffer, size_t bytes, int fd, size_t cl = 0);
     ~Request(){};
     // void isCgiRequest(std::string path) { is_cgi_request = extensionCgi(path);}
-    bool isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res);
+    bool isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res, std::string query);
     int get_body_length(){  return getFileSize(bodyFileName.c_str());  }
     std::string getMethod() const { return _method; };
     std::string getPath() const { return _path; };

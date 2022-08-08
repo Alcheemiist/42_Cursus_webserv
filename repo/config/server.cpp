@@ -270,10 +270,12 @@ bool Server::is_number(const std::string& str)
 	return true;
 }
 
+int getMul(char c);
+
 void    Server::set_client_max_body_size(std::string client_max_body_size)
 {
-    if (not_predefined(client_max_body_size) && is_number(client_max_body_size))
-        _client_max_body_size =std::stoi(client_max_body_size);
+    if (not_predefined(client_max_body_size))
+        _client_max_body_size =std::stoi(client_max_body_size) * getMul(client_max_body_size.back());
     else
     {
         std::cout << "Error: client_max_body_size not well defined" << std::endl;

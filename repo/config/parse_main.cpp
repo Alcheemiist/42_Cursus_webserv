@@ -449,7 +449,7 @@ void   portToParseConfigClass(Component &root, ParseConfig &config) {
 		}
 		Component *clientMaxBodySizeDirective = it->findFirstChild(CLIENT_MAX_BODY_SIZE_DIRECTIVE);
 		if (clientMaxBodySizeDirective) {
-			currentServer.set_client_max_body_size(to_int(clientMaxBodySizeDirective->attr(0)));
+			currentServer.set_client_max_body_size(clientMaxBodySizeDirective->attr(0));
 		}
 		Component *autoIndexDirective = it->findFirstChild(AUTOINDEX_DIRECTIVE);
 		if (autoIndexDirective) {
