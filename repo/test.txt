@@ -1,0 +1,68 @@
+ep[i] = Apple_PubSub_Socket_Render=/private/tmp/com.apple.launchd.8DIvjybDJY/Render
+ep[i] = COLORTERM=truecolor
+ep[i] = COMMAND_MODE=unix2003
+ep[i] = GATEWAY_INTERFACE=CGI/1.1
+ep[i] = GIT_ASKPASS=/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh
+ep[i] = HOME=/Users/isaadi
+ep[i] = LANG=en_US.UTF-8
+ep[i] = LOGNAME=isaadi
+ep[i] = MallocNanoZone=0
+ep[i] = ORIGINAL_XDG_CURRENT_DESKTOP=undefined
+ep[i] = PATH=/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/Library/Python/3.9/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/munki:/Users/isaadi/Desktop/scripts:/Users/isaadi/.scripts
+ep[i] = PWD=/Users/isaadi/Desktop/cursus/webserv/webservo/repo
+ep[i] = QUERY_STRING=
+ep[i] = REDIRECT_STATUS=200
+ep[i] = REMOTE_ADDR=173.127.0.0
+ep[i] = REMOTE_HOST=173.127.0.0
+ep[i] = REMOTE_IDENT=
+ep[i] = REQUEST_METHOD=GET
+ep[i] = SCRIPT_NAME=test.php
+ep[i] = SECURITYSESSIONID=1876e
+ep[i] = SERVER_NAME=localhost
+ep[i] = SERVER_PORT=8081
+ep[i] = SERVER_PROTOCOL=HTTP/1.1
+ep[i] = SERVER_SOFTWARE=webserv
+ep[i] = SHELL=/bin/bash
+ep[i] = SHLVL=3
+ep[i] = SSH_AUTH_SOCK=/private/tmp/com.apple.launchd.drS5QrKNtC/Listeners
+ep[i] = TERM=xterm-256color
+ep[i] = TERM_PROGRAM=vscode
+ep[i] = TERM_PROGRAM_VERSION=1.69.1
+ep[i] = TMPDIR=/var/folders/zz/zyxvpxvq6csfxvn_n00006pc0001nl/T/
+ep[i] = USER=isaadi
+ep[i] = VSCODE_GIT_ASKPASS_EXTRA_ARGS=--ms-enable-electron-run-as-node
+ep[i] = VSCODE_GIT_ASKPASS_MAIN=/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js
+ep[i] = VSCODE_GIT_ASKPASS_NODE=/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper
+ep[i] = VSCODE_GIT_IPC_HANDLE=/var/folders/zz/zyxvpxvq6csfxvn_n00006pc0001nl/T/vscode-git-0651e03be4.sock
+ep[i] = XPC_FLAGS=0x0
+ep[i] = XPC_SERVICE_NAME=0
+ep[i] = _=./webserv
+ep[i] = __CF_USER_TEXT_ENCODING=0x6B3:0x0:0x0
+ep[i] = TERM_PROGRAM=vscode
+ep[i] = SHELL=/bin/bash
+ep[i] = TERM=xterm-256color
+ep[i] = TMPDIR=/var/folders/zz/zyxvpxvq6csfxvn_n00006pc0001nl/T/
+ep[i] = Apple_PubSub_Socket_Render=/private/tmp/com.apple.launchd.8DIvjybDJY/Render
+ep[i] = TERM_PROGRAM_VERSION=1.69.1
+ep[i] = MallocNanoZone=0
+ep[i] = ORIGINAL_XDG_CURRENT_DESKTOP=undefined
+ep[i] = USER=isaadi
+ep[i] = COMMAND_MODE=unix2003
+ep[i] = SSH_AUTH_SOCK=/private/tmp/com.apple.launchd.drS5QrKNtC/Listeners
+ep[i] = __CF_USER_TEXT_ENCODING=0x6B3:0x0:0x0
+ep[i] = PATH=/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/Library/Python/3.9/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/munki:/Users/isaadi/Desktop/scripts:/Users/isaadi/.scripts
+ep[i] = PWD=/Users/isaadi/Desktop/cursus/webserv/webservo/repo
+ep[i] = LANG=en_US.UTF-8
+ep[i] = XPC_FLAGS=0x0
+ep[i] = VSCODE_GIT_ASKPASS_EXTRA_ARGS=--ms-enable-electron-run-as-node
+ep[i] = XPC_SERVICE_NAME=0
+ep[i] = HOME=/Users/isaadi
+ep[i] = SHLVL=3
+ep[i] = VSCODE_GIT_ASKPASS_MAIN=/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js
+ep[i] = LOGNAME=isaadi
+ep[i] = VSCODE_GIT_IPC_HANDLE=/var/folders/zz/zyxvpxvq6csfxvn_n00006pc0001nl/T/vscode-git-0651e03be4.sock
+ep[i] = GIT_ASKPASS=/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh
+ep[i] = VSCODE_GIT_ASKPASS_NODE=/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper
+ep[i] = SECURITYSESSIONID=1876e
+ep[i] = COLORTERM=truecolor
+ep[i] = _=./webserv

@@ -273,3 +273,20 @@ std::vector<std::string> configSplit(const std::string &s, char seperator) {
 	output.push_back(s.substr(prev_pos, pos - prev_pos));
 	return output;
 }
+
+std::string capitalize(std::string status) {
+	size_t len = 0;
+	for (std::string::iterator it = status.begin(); it != status.end(); it++) {
+		*it = std::tolower(*it);
+	}
+	for (std::string::iterator it = status.begin(); it != status.end(); it++) {
+		std::string word = status.substr(len, 3);
+		if (word.length() == 3) {
+			if (!std::isalpha(word[0]) && std::isalpha(word[1]) && std::isalpha(word[2])) {
+				status[len + 1] = std::toupper((char)status[len + 1]);
+			}
+		}
+		len++;
+	}
+	return status;
+}

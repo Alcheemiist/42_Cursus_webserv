@@ -252,7 +252,7 @@ bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Resp
 				locationPath = '/' + locationPath;
 			}
 			if (locationPath.back() != '/') {
-				locationPath = '/' + locationPath;
+				locationPath += '/';
 			}
 			if (locationPath == reqPath.substr(0, locationPath.length())) {
 				bestMatch = &(*lit);
@@ -294,14 +294,18 @@ bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Resp
 		if (locPath.back() != '/') {
 			locPath += '/';
 		}
+		if (rootPath.back() != '/') {
+			rootPath += '/';
+		}
 		std::string fileExtension = fname.substr(fname.find('.'), fname.length());
+
 		ITERATE(std::vector<Cgi>, cgiVec, lcit) {
 			if (lcit->get_cgi_name() == fileExtension) {
 				// cgi matched
 				if (CONTAINS(lcit->get_cgi_methods(), reqMethod)) {
 					std::string cgiResponseFileName;
 					try {
-						reqPath = reqPath.substr(locPath.length(), reqPath.length());
+						reqPath = rootPath + reqPath.substr(locPath.length(), reqPath.length());
 						cgiResponseFileName = formulateResponseFromCGI(*req, lcit->get_cgi_path(), serv, conf->getEnv(), reqPath, query);
 						int fd = open(cgiResponseFileName.c_str(), O_RDONLY);
 						std::ifstream resFile;
@@ -310,7 +314,6 @@ bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Resp
 						if (!(!resFile.is_open() || !(stat(cgiResponseFileName.c_str(), &sb) == 0 && S_ISREG(sb.st_mode)))) {
 							close(fd);
 							std::pair<char *, size_t> dataplussize = getFileContentsCstring(cgiResponseFileName);
-							// PRINT_LINE_VALUE(dataplussize.first);
 							if (dataplussize.first) {
 								size_t contentLength;
 								char *crlf2 = strstr(dataplussize.first, "\r\n\r\n"); 
@@ -340,21 +343,17 @@ bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Resp
 								}
 								res->set_autoindex(true);
 							} else {
-								PRINT_LINE_VALUE("testtestt");
 								res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
 								res->setpath(get_error_page(500, serv));
 							}
 						} else {
-							PRINT_LINE_VALUE("testtestt");
 							res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
 							res->setpath(get_error_page(500, serv));
 						}
 					} catch (const char *err) {
-						PRINT_LINE_VALUE(err);
 						res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
 						res->setpath(get_error_page(500, serv));
 					} catch (int err) {
-						PRINT_LINE_VALUE(err);
 						res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
 						res->setpath(get_error_page(500, serv));
 					}

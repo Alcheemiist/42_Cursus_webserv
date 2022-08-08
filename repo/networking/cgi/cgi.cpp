@@ -32,6 +32,7 @@ typedef std::string str;
 #define REMOTE_USER_ENV "REMOTE_USER"
 #define REQUEST_METHOD_ENV "REQUEST_METHOD"
 #define SCRIPT_NAME_ENV "SCRIPT_NAME"
+#define SCRIPT_FILENAME_ENV "SCRIPT_FILENAME"
 #define SERVER_NAME_ENV "SERVER_NAME"
 #define SERVER_PORT_ENV "SERVER_PORT"
 #define SERVER_PROTOCOL_ENV "SERVER_PROTOCOL"
@@ -100,20 +101,27 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 	ADD_ENV_HEADER(CONTENT_LENGTH);
 	// CONTENT_TYPE
 	ADD_ENV_HEADER(CONTENT_TYPE);
-	// GATEWAY_INTERFACE
-	env[GATEWAY_INTERFACE_ENV] = "CGI/1.1";
+	// REDIRECT_STATUS
+	env[REDIRECT_STATUS_ENV] = "200";
 	// PATH_INFO
 	env[PATH_INFO_ENV] = URLremoveQueryParams(req.getPath());
 	// PATH_TRANSLATED && 
 	// SERVER_NAME
 	ADD_ENV_HEADER_CUSTOM(HOST, {
-			env[PATH_TRANSLATED_ENV] = str(SCHEME) + "://" + hit->second + env[PATH_INFO_ENV];
 			std::string hostname = hit->second;
+			while (std::iswspace(hostname.back())) {
+				hostname = hostname.substr(0, hostname.length() - 1);
+			}
+			while (std::iswspace(hostname.front())) {
+				hostname = hostname.substr(1, hostname.length());
+			}
+			env[PATH_TRANSLATED_ENV] = str(SCHEME) + "://" + hostname + env[PATH_INFO_ENV];
 			if (hostname.find(':') != (size_t)-1)
 				hostname = hostname.substr(0, hostname.find(':'));
 			env[SERVER_NAME_ENV] = hostname;	
 		}
 	);
+
 	// QUERY_STRING
 	env[QUERY_STRING_ENV] = query;
 	// REMOTE_ADDR
@@ -132,14 +140,16 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 	env[REQUEST_METHOD_ENV] = req.getMethod();
 	// SCRIPT_NAME
 	env[SCRIPT_NAME_ENV] = URLgetFileName(req.getPath()).substr(1, req.getPath().length());
+	// SCRIPT_FILENAME
+	env[SCRIPT_FILENAME_ENV] = URLgetFileName(req.getPath()).substr(1, req.getPath().length());
 	// SERVER_PORT
 	env[SERVER_PORT_ENV] = to_string(serv.get_listen_port());
 	// SERVER_PROTOCOL
 	env[SERVER_PROTOCOL_ENV] = "HTTP/1.1";
 	// SERVER_SOFTWARE
 	env[SERVER_SOFTWARE_ENV] = "webserv";
-	// REDIRECT_STATUS
-	env[REDIRECT_STATUS_ENV] = "200";
+	// GATEWAY_INTERFACE
+	env[GATEWAY_INTERFACE_ENV] = "CGI/1.1";
 	int bFd = 0;
 	if (env[REQUEST_METHOD_ENV] == "POST") {
 		std::string bodyFname = req.getBodyFileName();
@@ -189,7 +199,7 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 		}
 		// ERROR_LINE_VALUE("here");
 		char *av[3];
-		std::string av0 = "." + URLgetFileName(cgiPath);
+		std::string av0 = cgiPath;
 		av[0] = strdup(av0.c_str());
 		av[1] = strdup(env[SCRIPT_NAME_ENV].c_str());
 		av[2] = NULL;
@@ -204,7 +214,8 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 		std::string cdhere = requestedFile.substr(0, requestedFile.find_last_of("/"));
 		chdir(cdhere.c_str());
 		execve(cgiPath.c_str(), av, ep);
-		ERROR_LINE_VALUE("here");
+		// ERROR_LINE_VALUE("here");
+		// perror("test");
 		exit(1);
 	}
 	else {
