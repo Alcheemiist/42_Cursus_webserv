@@ -80,7 +80,7 @@ if (hit != headers.end()) { env[header ## _ENV] = hit->second; } }
 
 static size_t fileCount;
 
-std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, char **oenv) {
+std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Server &serv, char **oenv) {
 	(void)cgiPath;
 	HeaderMap env;
 	const HeaderMap &headers = req.getHeaders();
@@ -133,7 +133,7 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, ch
 	// SCRIPT_NAME
 	env[SCRIPT_NAME_ENV] = URLgetFileName(req.getPath()).substr(1, req.getPath().length());
 	// SERVER_PORT
-	env[SERVER_PORT_ENV] = to_string(ntohs(adr->sin_port));
+	env[SERVER_PORT_ENV] = to_string(serv.get_listen_port());
 	// SERVER_PROTOCOL
 	env[SERVER_PROTOCOL_ENV] = "HTTP/1.1";
 	// SERVER_SOFTWARE
@@ -147,7 +147,7 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, ch
 		bFd = open(bodyFname.c_str(), O_RDONLY);
 		struct stat sb;
 		if (bFd == -1 || !(stat(bodyFname.c_str(), &sb) == 0 && S_ISREG(sb.st_mode))) {
-			throw "request body file error";
+			throw CGI_ERROR_REQ_BODY;
 		}
 	}
 
@@ -160,18 +160,22 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, ch
 	// errorln("resfd = ", resFd, ", WRITE RET = ", write(resFd, "test", 4), ", errno = ", errno);
 	struct stat sb;
 	if (resFd == -1 || !(stat(ret.c_str(), &sb) == 0 && S_ISREG(sb.st_mode))) {
-		throw "response body file creation error";
+		throw CGI_ERROR_RES_BODY;
 	}
 
 	pid_t pid = fork();
 
 
 	if (pid == -1) {
-		throw "fork error";
+		throw CGI_ERROR_FORK_FAILED;
 	}
 	else if (!pid) {
-		dup2(bFd, 0);
-		dup2(resFd, 1);
+		if (dup2(bFd, 0) < 0) {
+			exit(errno + 255 - 102);
+		}
+		if (dup2(resFd, 1) < 0) {
+			exit(errno + 255 - 102);
+		}
 		char *av[3];
 		std::string av0 = "." + URLgetFileName(cgiPath);
 		av[0] = strdup(av0.c_str());
@@ -185,29 +189,18 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, ch
 			ep_i++;
 		}
 		ep[ep_i] = NULL;
-
-		// errorln("BISMILLAH ", cgiPath);
-		// for (int i = 0; av[i]; i++) {
-		// 	errorln("av ", i, " = |", av[i], "|");
-		// }
-		// for (int i = 0; ep[i]; i++) {
-		// 	errorln("ep ", i, " = ", ep[i]);
-		// }
 		std::string cdhere = cgiPath.substr(0, cgiPath.find_last_of("/"));
-		// errorln("chdir ", cdhere);
-		// errorln("chdir ret = ", 
-		chdir(cdhere.c_str())
-		// )
-		;
-		// errorln("fcontent = ", getFileContents(av[1]));
+		chdir(cdhere.c_str());
 		execve(URLgetFileName(cgiPath).substr(1, cgiPath.length()).c_str(), av, oenv);
-		// errorln("ERROR EXECUTING CGI");
-		exit(255);
+		exit(errno + 255 - 102);
 	}
 	else {
-		wait(NULL);
+		int processReturn;
+		wait(&processReturn);
+		int exitStatus = WEXITSTATUS(processReturn);
+		if (exitStatus > 255 - 102) {
+			throw (exitStatus - (255 - 102));
+		}
 	}
-
-	// throw "remove this throw statement when cgi is done";
 	return ret;
 }

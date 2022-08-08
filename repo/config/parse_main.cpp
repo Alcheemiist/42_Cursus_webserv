@@ -39,12 +39,6 @@
 #define GLOBAL_CONTEXT "__root"
 #define PARENT_GLOBAL_CONTEXT "__proot"
 
-
-
-#define ITERATE(type, iterable, it_name) for (type::iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
-#define CONST_ITERATE(type, iterable, it_name) for (type::const_iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
-#define CONTAINS(iterable, value) (std::find(iterable.begin(), iterable.end(), value) != iterable.end())
-
 int reachedEnd(std::string::iterator &ch, char end) {
 	return *ch == end || *ch == '\0';
 }
@@ -839,7 +833,7 @@ void printComponentRecursively(Component &current, std::string cfg, int tabs = 0
 	}
 }
 
-int parse_main(int ac, char **av, ParseConfig &config) {
+int parse_main(int ac, char **av, char **ep, ParseConfig &config) {
 	(void)ac;
 	(void)av;
 
@@ -868,6 +862,7 @@ int parse_main(int ac, char **av, ParseConfig &config) {
 		parseConfigFile(configFileContents, configFileName, root, av[0]);
 		validateConfigFile(root, configFileName, av[0]);
 		std::string warnings = postProcessConfigFile(root, configFileName, av[0]);
+		config.setEnv(ep);
 		portToParseConfigClass(root, config);
 		printComponentRecursively(root, configFileName);
 		error(warnings);

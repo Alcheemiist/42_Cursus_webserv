@@ -105,7 +105,7 @@ Request::Request(char *buffer, size_t bytes, int fd) :	_method(""),
             this->_method = (tmp[0]);
             this->_path = tmp[1];
 
-            isCgiRequest(this->_path);
+            // isCgiRequest(this->_path);
 
             if (strncmp(tmp[2].c_str(), "HTTP/1.1", strlen("HTTP/1.1") ) == 0)
                 this->_version = (tmp[2].substr(0, tmp[2].find_first_of("\r\n")));
@@ -229,4 +229,98 @@ const struct sockaddr_in &Request::getRefClientAddr() const {
 
 void Request::set_path(std::string str) {
     _path = str;
+}
+
+std::pair<char *, size_t> getFileContentsCstring(std::string path);
+
+std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Server &serv, char **oenv);
+
+std::string get_error_page(int code, Server server);
+
+bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res) {
+	std::string reqPath = req->getPath();
+	std::string fname = URLgetFileName(reqPath);
+	if (reqPath.back() != '/' && fname.find('.') != (size_t)-1 && fname.find('.') != (fname.length() - 1)) {
+		Location *bestMatch = NULL;
+		Server serv = conf->get_server_vect()[serv_index];
+		std::vector<Location> locs = serv.get_location();
+		// for loop
+		ITERATE(std::vector<Location>, locs, lit) {
+			std::string locationPath = lit->get_locations_path();
+			if (locationPath.front() != '/') {
+				locationPath = '/' + locationPath;
+			}
+			if (locationPath.back() != '/') {
+				locationPath = '/' + locationPath;
+			}
+			if (locationPath == reqPath.substr(0, locationPath.length())) {
+				bestMatch = &(*lit);
+			}
+		}
+		std::vector<Cgi> cgiVec;
+		if (bestMatch) {
+			cgiVec = bestMatch->get_cgi();
+		}
+		else {
+			cgiVec = serv.get_cgi();
+		}
+		std::string fileExtension = fname.substr(fname.find('.'), fname.length());
+		std::string reqMethod = req->getMethod();
+		ITERATE(std::vector<Cgi>, cgiVec, lcit) {
+			if (lcit->get_cgi_name() == fileExtension) {
+				// cgi matched
+				if (CONTAINS(lcit->get_cgi_methods(), reqMethod)) {
+					std::string cgiResponseFileName;
+					try {
+						cgiResponseFileName = formulateResponseFromCGI(*req, lcit->get_cgi_path(), serv, conf->getEnv());
+						int fd = open(cgiResponseFileName.c_str(), O_RDONLY);
+						std::ifstream resFile;
+						resFile.open(cgiResponseFileName.c_str(), std::ios::in);
+						struct stat sb;
+						if (!resFile.is_open() || !(stat(cgiResponseFileName.c_str(), &sb) == 0 && S_ISREG(sb.st_mode))) {
+							res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
+							res->setpath(get_error_page(500, serv));
+						}
+						else {
+							std::pair<char *, size_t> dataplussize = getFileContentsCstring(cgiResponseFileName);
+							if (dataplussize.first) {
+								std::pair<char *, size_t> mockReqRaw;
+								mockReqRaw = strjoin("GET / HTTP/1.1", )
+								Request mockReq(dataplussize.first, dataplussize.second, 0);
+								mockReq.getHeaders();
+								mockReq.getBodyFileName();
+							}
+							// if (fileExtension == ".php") {
+							// 	char status[sizeof("Status:")];
+							// 	if (resFile.readsome(status, sizeof(status)) == sizeof(status) && status == std::string("Status:")) {
+							// 		char code[100];
+							// 		resFile.readsome(code, sizeof(code));
+							// 		std::string codeString = code;
+							// 		if (codeString.find("\r\n") != (size_t)-1) {
+							// 			codeString = codeString.substr(0, codeString.find("\r\n") + 2);
+							// 			if (codeString.front() != ' ') {
+							// 				codeString = ' ' + codeString;
+							// 			}
+							// 			res->setStatus(codeString);
+							// 			res
+							// 		}
+							// 	}
+							// 	else {
+									
+							// 	}
+							// }
+						}
+					} catch (...) {
+						res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
+						res->setpath(get_error_page(500, serv));
+					}
+				} else {
+					res->setStatus(" 405 METHOD NOT ALLOWED\r\n");
+					res->setpath(get_error_page(405, serv));
+				}
+				return true;
+			}
+		}
+	}
+	return false;
 }

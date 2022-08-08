@@ -5,7 +5,8 @@
 #include "utils.hpp"
 #include "throwed.hpp"
 #include <algorithm>
-
+#include <fcntl.h>
+#include <unistd.h>
 
 int to_int(std::string _s) {
 	const char *s = _s.c_str();
@@ -226,6 +227,25 @@ std::string getFileContents(std::string path) {
 	std::stringstream strStream;
 	strStream << bodyFile.rdbuf();
 	return strStream.str();
+}
+
+size_t getFileSize(const char *fileName);
+
+std::pair<char *, size_t> getFileContentsCstring(std::string path) {
+	std::pair<char *, size_t> nullpair = std::make_pair<char *, size_t>(NULL, 0);
+	int fd = open(path.c_str(), O_RDONLY);
+	size_t fsize = getFileSize(path.c_str());
+	if (fd == -1 || fsize == (size_t)-1) {
+		return nullpair;
+	}
+	char *ret = new char[fsize];
+	if (read(fd, ret, fsize) != fsize) {
+		delete ret;
+		return nullpair;
+	}
+	nullpair.first = ret;
+	nullpair.second = fsize;
+	return nullpair;
 }
 
 int nOccurrence(std::string heap, std::string needle) {

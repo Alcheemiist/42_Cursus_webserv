@@ -6,6 +6,8 @@
 #include "../elements.hpp"
 
 
+class Response;
+
 size_t getFileSize(const char *fileName);
 bool extensionCgi(std::string path);
 
@@ -44,8 +46,8 @@ public:
                 bodyFileName(""), client_fd(-1), _fdBodyFile(-1), _is_complete(false), requestStatus(0), status_message(""), bodyFileSize(0), is_formated(false), transfer_encoding(""), _port(0), bodyBytesWritten(0) {};
     Request(char *buffer, size_t bytes, int fd);
     ~Request(){};
-    void isCgiRequest(std::string path) { is_cgi_request = extensionCgi(path);}
-    bool isCgiRequest() { return is_cgi_request; }
+    // void isCgiRequest(std::string path) { is_cgi_request = extensionCgi(path);}
+    bool isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res);
     int get_body_length(){  return getFileSize(bodyFileName.c_str());  }
     std::string getMethod() const { return _method; };
     std::string getPath() const { return _path; };

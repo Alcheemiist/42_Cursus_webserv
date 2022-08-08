@@ -36,5 +36,19 @@ int nOccurrence(std::string heap, std::string needle);
 std::vector<std::string> configSplit(const std::string &s, char seperator);
 
 # define FILE_LINE getFileAndLine(__FILE__, __LINE__)
+# define ITERATE(type, iterable, it_name) for (type::iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
+# define CONST_ITERATE(type, iterable, it_name) for (type::const_iterator it_name = iterable.begin(); it_name != iterable.end(); it_name++)
+// # define CONTAINS(iterable, value) (std::find(iterable.begin(), iterable.end(), value) != iterable.end())
+# define CONTAINS(iterable, value) (_contains(iterable, value))
+
+template <class Iterable, class Value>
+bool _contains(const Iterable &ref, const Value &val) {
+	return std::find(ref.begin(), ref.end(), val) != ref.end();
+}
+
+#define CGI_ERROR_REQ_BODY "request body file error"
+#define CGI_ERROR_RES_BODY "response body file creation error"
+#define CGI_ERROR_FORK_FAILED "fork failed"
+
 
 #endif
