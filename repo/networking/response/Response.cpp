@@ -15,7 +15,7 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     std::string header_str = "";
     Response response;
     response.setpath("empty");
-    std::string s;
+    // std::string s;
     std::string path = request->getPath();
     
     if (request->isCgiRequest())
@@ -26,45 +26,41 @@ Response  response(Request *request, ParseConfig *config, int index_server)
 
     if (!isValidURLPath(path)) {
         response.setStatus(" 400 BAD REQUEST\r\n");
-        s = get_error_page(400 , config->get_server_vect()[index_server]);
+        response.setpath(get_error_page(400 , config->get_server_vect()[index_server]));
         return response;
     }
     request->set_path(URLdecode(URLremoveQueryParams(path)));
 	println("url decoded path: ", request->getPath());
-    response.setStatus("");
-    s = response.setStatus(request, config->get_server_vect()[index_server]);
-    if (status_code_error(response.get_status()) && request->getMethod() != "POST")
-        ERRORresponse(request, &response, config, index_server);
+    response.setpath(response.setStatus(request, config->get_server_vect()[index_server]));
+    if (!response.get_status().empty())
+        return response;
     else if (!(request->getMethod().compare("GET")))
-        s = GETresponse(request, &response, config, index_server);
+        response.setpath(GETresponse(request, &response, config, index_server));
     else if (request->getMethod().compare("DELETE") == 0)
-        s = DELETEresponse(request, &response, config, index_server);
+        response.setpath(DELETEresponse(request, &response, config, index_server));
     else if (request->getMethod().compare("POST") == 0)
-        s = POSTresponse(request, &response, config, index_server);
+        response.setpath(POSTresponse(request, &response, config, index_server));
     std::cout << "Requested path : " << response.get_location() << std::endl;
     std::cout << "Redirection path : " << response.get_redirection() << std::endl;
     if (!response.get_redirection().empty())
         response.setContentType(response.get_redirection());
     else
         response.setContentType(response.get_location());
-    // response.setHeader(header_str);
-
     std::cout << header_str << std::endl;
     // response.setpath(s);
     std::cout << "body_path : " << response.getpath() << std::endl;
-    std::cout << "body_path : " << s << std::endl;
+    std::cout << "body_path : " << response.getpath() << std::endl;
 
     println("file = ", response.getpath());
-    // if (response.get_status() != " 200 OK\r\n")
-    //     response.setpath("empty");
-    //    exit(0);
     return response;
 }
 
 std::string Response::setStatus(Request *request, Server server)
 {
     std::string code_redirection;
-    std::string code_status_file;
+    // std::string code_status_file;
+
+    size_t max_body_size = get_max_body_size(request->getPath(), server);
     this->init_location(request->geturl(),server);
     this->init_redirection(request->geturl(), server, code_redirection);
     init_location_for_upload(request->geturl(), server);
@@ -73,50 +69,50 @@ std::string Response::setStatus(Request *request, Server server)
 		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked")
         {
 			this->status = " 501 NOT IMPLEMENTED\r\n";
-            code_status_file = get_error_page(501, server);
+            return get_error_page(501, server);
         }
 		else if (!request->get_transfer_encoding().size() && request->getcontent_length() <= 0 &&  request->getMethod() == "POST")
         {
             this->status = " 400 BAD REQUEST\r\n";
-            code_status_file = get_error_page(400 , server);
+            return get_error_page(400 , server);
         }
 		else if (!url_is_formated(request->geturl()))
         {
             this->status = " 400 BAD REQUEST\r\n";
-            code_status_file = get_error_page(400 , server);
+            return get_error_page(400 , server);
         }
         else if (request->geturl().length() > MAX_URL_LENGTH)
 		{
         	this->status = " 414 REQUEST-URI TOO LARGE\r\n";
-            code_status_file = get_error_page(414, server);
+            return get_error_page(414, server);
         }
-        // else if ( request->get_body_length() > server.get_client_max_body_size())
-        // {
-        // 	this->status = " 413 REQUEST ENTITY TOO LARGE\r\n";
-        //     code_status_file = get_error_page(413, server);
-        // }
+        else if (request->getMethod() == "POST" && max_body_size != -1 && request->get_body_length() > max_body_size)
+        {
+        	this->status = " 413 REQUEST ENTITY TOO LARGE\r\n";
+            return get_error_page(413, server);
+        }
     }
     if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
     {
         this->status = " 405 METHOD NOT ALLOWED\r\n";
-        code_status_file = get_error_page(405, server);
+        return get_error_page(405, server);
     }
     else if (!get_redirection().empty())
     {
         this->status = code_redirection;
-        code_status_file = get_error_page(std::atoi(code_redirection.c_str()), server);
+        return get_error_page(std::atoi(code_redirection.c_str()), server);
     }
     else if (!file_exist(get_location()) && request->getMethod() != "POST")
     {
         this->status = " 404 NOT FOUND\r\n";
-        code_status_file = get_error_page(404, server);
+        return get_error_page(404, server);
     }
     else if (request->getMethod() == "POST" && file_exist(get_upload_path()))
     {
         this->status = " 404 NOT FOUND\r\n";
-        code_status_file = get_error_page(404, server);
+        return get_error_page(404, server);
     }
-    return code_status_file;
+    return "";
 }
 
 void Response::init_location(std::string url, Server server)
@@ -356,13 +352,13 @@ std::string Response::getHeader()
     return res;
 };
 
-std::string ERRORresponse(Request *request, Response *response, ParseConfig *config, int server_index)
-{
-    std::string body_f = "";
-    body_f = get_error_page(std::atoi(response->get_status().c_str()),  config->get_server_vect()[server_index]);
-    response->setpath(body_f);
-    return body_f;
-}
+// std::string ERRORresponse(Request *request, Response *response, ParseConfig *config, int server_index)
+// {
+//     std::string body_f = "";
+//     body_f = get_error_page(std::atoi(response->get_status().c_str()),  config->get_server_vect()[server_index]);
+//     response->setpath(body_f);
+//     return body_f;
+// }
 
 std::string DELETEresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
 {
@@ -532,43 +528,31 @@ std::string Response::get_index(std::string url, Server server)
 	int location_path_matched = 0;
 	Location location_matched;
 
-	// PRINT_LINE_VALUE("here");
 	for (; it_loc != location.end(); it_loc++)
 	{
-		// PRINT_LINE_VALUE("here");
 		location_str = it_loc->get_locations_path();
 		if (location_str.back() != '/')
 			location_str += '/';
-		// if (url.substr(0, location_str.size()) == location_str)
-		// PRINT_LINE_VALUE("here");
-		// PRINT_LINE_VALUE(std::strncmp(url.c_str(), location_str.c_str(), location_str.size()));
 		if (!std::strncmp(url.c_str(), location_str.c_str(), location_str.size()))
 		{
-			// PRINT_LINE_VALUE("here");
-			// println("location_str:", location_str);
 			if (str_matched(location_str, location_path) > location_path_matched)
 			{
-				// PRINT_LINE_VALUE("here");
 				std::vector<std::string> indexVec = it_loc->get_index();
 				for (std::vector<std::string>::iterator it = indexVec.begin();it != indexVec.end(); ++it)
 				{
 					std::string url_copy;
 					url_copy = url.substr(location_str.size());
-					// PRINT_LINE_VALUE(remove_duplicate_slash(it_loc->get_root() + "/" + url_copy + "/" + *it));
 					if (file_exist(remove_duplicate_slash(it_loc->get_root() + "/" + url_copy + "/" + *it)))
 					{
 						return (remove_duplicate_slash(it_loc->get_root() + "/" + url_copy + "/" + *it));
 					}
-					// return "";
 				}
 				location_path = location_str;
 				location_path_matched = str_matched(location_str, location_path);
 				location_matched = *it_loc;
 			}
-			// return "";
 		}
 	}
-	// PRINT_LINE_VALUE(location_path);
 	if (location_path.empty()) {
 		for (std::vector<std::string>::iterator it = index_file.begin(); it != index_file.end(); ++it) {
 			PRINT_LINE_VALUE(remove_duplicate_slash(server.get_root() + url + "/" + *it));

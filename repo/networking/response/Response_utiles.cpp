@@ -16,13 +16,12 @@ std::vector<std::string> split_url(std::string url) {
 	return ret;
 }
 
-int str_matched1(std::string str1, std::string str2)
+int str_matched(std::string str1, std::string str2)
 {
 	int i = 0;
 	for (i = 0; i < str1.length() || i < str2.length() ||
 			str1[i] != str2[i] ; i++);
 	return i;
-
 }
 
 bool url_is_formated(std::string url)
@@ -32,10 +31,8 @@ bool url_is_formated(std::string url)
 
 bool file_exist(std::string path)
 {
-	// println("file_exists path = ", path);
 	struct stat st;
 	int res = stat(path.c_str(), &st);
-	// println("file_exists res = ", res);
 	return (res == 0);
 }
 
@@ -341,4 +338,32 @@ bool check_auto_index(std::string url, Server server)
 	if (!was_matched)
 		auto_index = server.get_autoindex();
 	return auto_index;
+}
+
+int get_max_body_size(std::string url, Server server)
+{
+	std::vector<Location> location = server.get_location();
+	std::vector<Location>::const_iterator it_loc = location.begin();
+	std::string location_path = "";
+	std::string location_str;
+	int location_path_matched = 0;
+	Location location_matched;
+	int max_body_size = -1;
+	bool was_matched;
+
+	for (; it_loc != location.end(); it_loc++)
+	{
+		location_str = it_loc->get_locations_path();
+		if (location_str.back() != '/')
+			location_str += '/';
+		if (!std::strncmp(url.c_str(), location_str.c_str(), location_str.size()))
+		{
+			was_matched = true;
+			if (str_matched(location_str, location_path) > location_path_matched)
+				max_body_size = it_loc->get_client_max_body_size();
+		}
+	}
+	if (!was_matched)
+		max_body_size = server.get_client_max_body_size();
+	return max_body_size;
 }
