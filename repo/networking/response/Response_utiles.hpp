@@ -42,4 +42,5 @@ bool Location_have_cgi(std::string url);
 std::pair<std::string, std::string> _cgi_ret(std::string url);
 bool check_auto_index(std::string url, Server server);
 bool location_for_upload(bool location_for_upload(std::string url, Server server));
+int get_max_body_size(std::string url, Server server);
 #endif
