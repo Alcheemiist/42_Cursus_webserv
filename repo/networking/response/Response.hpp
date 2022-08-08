@@ -90,7 +90,7 @@ std::string ERRORresponse(Request *request, Response *response, ParseConfig *con
 std::string GETresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 std::string DELETEresponse(Request *request, Response *response, ParseConfig *config, int server_index);
 std::string POSTresponse(Request *request, Response *response, ParseConfig *config, int server_index);
-Response response( Request *request, ParseConfig *config, int fd_server);
+Response response( Request *request, ParseConfig *config, int fd_server, std::vector<int > ports);
 std::string URLgetFileName(std::string url);
 
 

@@ -26,21 +26,21 @@ void init_socket(t_socket *_socket, std::vector <int> &ports)
     }
 
 
-	// std::vector::iterator it = ports.begin();
-
-	if (bind(_socket->server_fd, (struct sockaddr *)&_socket->address, sizeof(_socket->address)) < 0) {
-		if (std::find(ports.begin(), ports.end(), _socket->port) == ports.end()) {
+	if (bind(_socket->server_fd, (struct sockaddr *)&_socket->address, sizeof(_socket->address)) < 0)
+    {
+		if (std::find(ports.begin(), ports.end(), _socket->port) == ports.end()) 
+        {
 			throw std::runtime_error("bind failed");
 		}
-		else {
+		else 
+        {
 			ports.push_back(_socket->port);
 		}
 	}
-	else {
+	else
+    {
 		ports.push_back(_socket->port);
 	}
-
-
 
     if (listen(_socket->server_fd, 128) < 0)
         throw std::runtime_error("listen failed");
@@ -89,7 +89,6 @@ void LaunchServer(ParseConfig *config)
 		
 		init_socket(&_socket_server[i], ports);
         
-		
 		FD_SET(_socket_server[i].server_fd, &backup_rd_set);
         if (_socket_server[i].server_fd > max_sd)
             max_sd = _socket_server[i].server_fd;
@@ -179,7 +178,7 @@ void LaunchServer(ParseConfig *config)
                     // serv response is a flag to ensure the sequence steps of the response
                     if (serv_response[i] == 3) 
                     {
-                        responses.insert(std::pair<int, Response>(i,response(&requests.find(clients[i].server_fd)->second, config, clients[i].index_server))); // create a response object
+                        responses.insert(std::pair<int, Response>(i,response(&requests.find(clients[i].server_fd)->second, config, clients[i].index_server, ports))); // create a response object
                         // get the headers to be sent first // BUFFER_SIZE 
                         std::string header = responses[i].getHeader();
                         // show headers 

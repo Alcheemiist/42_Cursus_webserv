@@ -315,9 +315,9 @@ void    Server::set_cgi(Cgi cgi)
 }
 
 //-------------geters------------------
-
 std::string    Server::get_name(unsigned int i) const
 {
+    // alchemist tag
 	if (i < _name.size())
 		return _name[i];
 	return "OUT OF BOUND INDEX";
