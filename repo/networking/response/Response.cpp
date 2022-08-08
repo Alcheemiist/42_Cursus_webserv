@@ -72,9 +72,9 @@ std::string Response::setStatus(Request *request, Server server)
     std::string code_status_file;
     this->init_location(request->geturl(),server);
     this->init_redirection(request->geturl(), server, code_redirection);
+    init_location_for_upload(request->geturl(), server);
 	if (!request->get_is_formated())
 	{
-        
 		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked")
         {
 			this->status = " 501 NOT IMPLEMENTED\r\n";
@@ -87,7 +87,6 @@ std::string Response::setStatus(Request *request, Server server)
         }
 		else if (!url_is_formated(request->geturl()))
         {
-			println("im here");
             this->status = " 400 BAD REQUEST\r\n";
             code_status_file = get_error_page(400 , server);
         }
@@ -96,11 +95,11 @@ std::string Response::setStatus(Request *request, Server server)
         	this->status = " 414 REQUEST-URI TOO LARGE\r\n";
             code_status_file = get_error_page(414, server);
         }
-        else if ( request->get_body_length() > server.get_client_max_body_size())
-        {
-        	this->status = " 413 REQUEST ENTITY TOO LARGE\r\n";
-            code_status_file = get_error_page(413, server);
-        }
+        // else if ( request->get_body_length() > server.get_client_max_body_size())
+        // {
+        // 	this->status = " 413 REQUEST ENTITY TOO LARGE\r\n";
+        //     code_status_file = get_error_page(413, server);
+        // }
     }
     if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
     {
@@ -112,7 +111,12 @@ std::string Response::setStatus(Request *request, Server server)
         this->status = code_redirection;
         code_status_file = get_error_page(std::atoi(code_redirection.c_str()), server);
     }
-    else if (!file_exist(get_location()))
+    else if (!file_exist(get_location()) && request->getMethod() != "POST")
+    {
+        this->status = " 404 NOT FOUND\r\n";
+        code_status_file = get_error_page(404, server);
+    }
+    else if (request->getMethod() == "POST" && file_exist(get_upload_path()))
     {
         this->status = " 404 NOT FOUND\r\n";
         code_status_file = get_error_page(404, server);
@@ -350,7 +354,7 @@ std::string Response::getHeader()
         res.append(std::to_string(tt));
         res.append("\r\n");
     }
-    res.append((!is_cgi) ? "Server: alchemist\r\n":"Server: alchemist_CGI\r\n");
+    res.append((is_cgi) ? "server: alchemist\r\n":"server: alchemist_CGI\r\n");
     res.append("\r\n");
     setHeader(res);
     //
@@ -372,15 +376,6 @@ std::string DELETEresponse(Request *request, Response *response, ParseConfig *co
     {
         if (is_file(response->get_location()))
         {
-            // if (Location_have_cgi(response->get_location()))
-            // {
-            //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(response->get_location());
-            //     response->setStatus(cgi_pair.first);
-            //     response->setpath(cgi_pair.second);
-            //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
-            // }
-            // else
-            // {
 				PRINT_LINE_VALUE(response->get_location().c_str());
 				PRINT_LINE_VALUE(access(response->get_location().c_str(), W_OK));
 				if (!access(response->get_location().c_str(), W_OK))
@@ -394,22 +389,12 @@ std::string DELETEresponse(Request *request, Response *response, ParseConfig *co
 					response->setStatus(" 403 Forbidden\r\n");
                     get_error_page(403, config->get_server_vect()[index_server]);
 				}
-            // }
         }
         else
         {
             if (response->get_location().back() == '/')
             {
                 std::string index_path = response->get_index(request->getPath(), config->get_server_vect()[index_server]);
-                // if (Location_have_cgi(index_path))
-                // {
-                //     std::pair<std::string, std::string> cgi_pair = _cgi_ret(index_path);
-                //     response->setStatus(cgi_pair.first);
-                //     response->setpath(cgi_pair.second);
-                //     body_f = get_error_page(std::atoi(cgi_pair.first.c_str()), config->get_server_vect()[index_server]);
-                // }
-                // else
-                // {
                     if(remove_all_folder_content(response->get_location()))
                     {
                         response->setStatus(" 204 No Content\r\n");
@@ -428,7 +413,6 @@ std::string DELETEresponse(Request *request, Response *response, ParseConfig *co
                             get_error_page(403, config->get_server_vect()[index_server]);
                         }
                     }
-                // }
             }
             else
             {
@@ -452,43 +436,24 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
     std::string body_f = "empty";
     std::string path_upload_file;
 
-    if(location_support_upload(config->get_server_vect()[index_server].get_upload_path()))
+    if(!response->get_upload_path().empty())
     {
-        upload_post(request, response, config->get_server_vect()[index_server].get_upload_path());
-        body_f = get_error_page(201, config->get_server_vect()[index_server]);
-        response->setStatus(" 201 Created\r\n");
+        if (upload_post(request, response, config->get_server_vect()[index_server].get_upload_path()))
+        {
+            body_f = get_error_page(201, config->get_server_vect()[index_server]);
+            response->setStatus(" 201 Created\r\n");
+        }
+        else
+        {
+			body_f = get_error_page(500, config->get_server_vect()[index_server]);
+			response->setStatus(" 500 Internal Error\r\n");
+		}
+		body_f = get_error_page(403, config->get_server_vect()[index_server]);
     }
     else
     {
-		if (is_file(path_upload_file)) {
-
-			body_f = get_error_page(403, config->get_server_vect()[index_server]);
-			response->setStatus(" 403 Created\r\n");
-			body_f = get_error_page(403, config->get_server_vect()[index_server]);
-
-		} else {
-			if (response->get_location().back() == '/')
-            {
-                std::string index_path = response->get_index(request->getPath(), config->get_server_vect()[index_server]);
-				if (file_exist(index_path)) {
-					body_f = get_error_page(403, config->get_server_vect()[index_server]);
-					response->setStatus(" 403 Created\r\n");
-					body_f = get_error_page(403, config->get_server_vect()[index_server]);
-				} else {
-					body_f = get_error_page(403, config->get_server_vect()[index_server]);
-                    response->setStatus(" 403 Created\r\n");
-				}
-			}
-            else
-            {
-                response->set_redirection(response->get_location() + "/");
-                std::cout << "redirection to " << response->get_redirection() << std::endl;
-                response->setStatus(" 301 MOVED PERMANENTLY\r\n");
-                body_f = get_error_page(301,  config->get_server_vect()[index_server]);
-                response->setpath(body_f);
-            }
-		}
-		body_f = get_error_page(403, config->get_server_vect()[index_server]);
+        body_f = get_error_page(403, config->get_server_vect()[index_server]);
+        response->setStatus(" 403 Forbidden\r\n");
     }
     return body_f;
     std::cout << "im doing post response\n";
@@ -620,8 +585,8 @@ std::string Response::get_index(std::string url, Server server)
 	return "";
 }
 
-void Response::setVersion(std::string version) { this->version = version; };
-void  Response::setStatus(std::string status) {
+void        Response::setVersion(std::string version) { this->version = version; };
+void        Response::setStatus(std::string status) {
     size_t len = 0;
     for (std::string::iterator it = status.begin(); it != status.end(); it++) {
 		*it = std::tolower(*it);
@@ -637,32 +602,71 @@ void  Response::setStatus(std::string status) {
     }
     this->status = status;
 };
-void    Response::setHeader(char *_header) { this->header = _header; };
-void Response::setHeader(std::string header) { this->header = header; };
-void Response::setBody(char *body)  {  this->body = body;   };
-void Response::setBody(std::vector<char> _body)
+void        Response::setHeader(char *_header) { this->header = _header; };
+void        Response::setHeader(std::string header) { this->header = header; };
+void        Response::setBody(char *body)  {  this->body = body;   };
+void        Response::setBody(std::vector<char> _body)
 {
     for (std::vector<char>::iterator it = _body.begin(); it != _body.end(); ++it)
         this->body += *it;
-};
-void Response::setpath (std::string path){ this->body_file_path = path; }
+}
+void        Response::init_location_for_upload(std::string url, Server server)
+{
+	std::vector<Location> location = server.get_location();
+	std::vector<Location>::const_iterator it_loc = location.begin();
+	std::string location_path = "";
+	std::string location_str;
+	int upload_path_matched = 0;
+	this->upload_path = "";
+
+	for (; it_loc != location.end(); it_loc++)
+	{
+		location_str = it_loc->get_locations_path();
+		if (location_str.back() != '/')
+			location_str += '/';
+		if (!std::strncmp(url.c_str(), location_str.c_str(), location_str.size()))
+		{
+			std::string url_copy;
+			if (str_matched(location_str, location_path) > upload_path_matched)
+			{
+				url_copy = url.substr(location_str.size());
+				location_path = location_str;
+				upload_path_matched = str_matched(location_str, location_path);
+				this->upload_path = remove_duplicate_slash(it_loc->get_root() + "/" + url_copy);
+			}
+		}
+	}
+	if (upload_path.empty() && !server.get_upload_path().empty())
+		upload_path = remove_duplicate_slash(server.get_upload_path() + "/" + url);
+    if (!upload_path.empty())
+    {
+        for(std::string::reverse_iterator it = upload_path.rbegin(); it != upload_path.rend(); ++it)
+	    {
+	    	if (*it == '/')
+	    	{
+	    		upload_path.erase(it.base(), upload_path.end());
+	    		break;
+	    	}
+	    }
+    }
+}
+void        Response::show() {
+	// std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;
+}
+std::string Response::get_upload_path() { return this->upload_path; };
+void        Response::setpath (std::string path){ this->body_file_path = path; }
 std::string Response::getpath (){ return this->body_file_path; }
-void Response::setResponseHeader() { this->header = this->version.c_str(); std::cout << "- Set Version : " << this->version << std::endl;};
+void        Response::setResponseHeader() { this->header = this->version.c_str(); std::cout << "- Set Version : " << this->version << std::endl;};
 std::string Response::get_header() { return this->header; };
 std::string Response::getBody() { return body; };
 void    Response::setbody_file_size(int size) { this->body_file_size = size; };
-void	Response::set_autoindex(bool ai) { this->is_autoindex = ai; };
-bool	Response::get_autoindex() const { return is_autoindex; };
+void    Response::set_autoindex(bool ai) { this->is_autoindex = ai; };
+bool    Response::get_autoindex() const { return is_autoindex; };
 int     Response::getbody_file_size() { return this->body_file_size; };
 void    Response::set_finish(bool i) { this->is_complete = i; };
 bool    Response::get_finish() { return this->is_complete; };
-//
 void Response::set_maxBufferLenght(size_t size) { this->maxBufferLenght = size; };
 size_t Response::get_maxBufferLenght() { return this->maxBufferLenght; }
-//
-void Response::show() {
-	// std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;
-};
 std::string Response::get_location() {  return this->requested_path; };
 std::string Response::get_redirection()  { return this->redirection_path; };
 void Response::set_redirection(std::string url) { this->redirection_path = url; };
