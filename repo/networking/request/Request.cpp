@@ -65,7 +65,7 @@ std::string to_Lower_case(std::string str)
     return str;
 }
 
-Request::Request(char *buffer, size_t bytes, int fd) :	_method(""),
+Request::Request(char *buffer, size_t bytes, int fd, size_t cl) :	_method(""),
 														_path(""),
 														_version(""),
 														_host(""),
@@ -73,7 +73,7 @@ Request::Request(char *buffer, size_t bytes, int fd) :	_method(""),
 														_accept(""),
 														_accept_encoding(""),
 														 _content_type(""),
-														_content_length(0),
+														_content_length(cl),
 														_headers(std::map<std::string,
 														std::string>()),
 														bodyFileName(""),
@@ -105,7 +105,7 @@ Request::Request(char *buffer, size_t bytes, int fd) :	_method(""),
             this->_method = (tmp[0]);
             this->_path = tmp[1];
 
-            isCgiRequest(this->_path);
+            // isCgiRequest(this->_path);
 
             if (strncmp(tmp[2].c_str(), "HTTP/1.1", strlen("HTTP/1.1") ) == 0)
                 this->_version = (tmp[2].substr(0, tmp[2].find_first_of("\r\n")));
@@ -126,26 +126,27 @@ Request::Request(char *buffer, size_t bytes, int fd) :	_method(""),
 			if (line.find(':') != (size_t)-1)
             {
 				header.first = line.substr(0, line.find(':'));
+				header.first = to_Lower_case(header.first);
 				header.second = line.substr(line.find(':') + 2, line.length());
                 //
-                if (header.first == "Host")
+				this->_headers.insert(std::pair<std::string, std::string>( header.first , header.second));
+                if (header.first == "host")
                     this->_host = header.second;
-                else if (header.first == "Connection")
+                else if (header.first == "connection")
                     this->_connection = header.second;
-                else if (header.first == "Accept")
+                else if (header.first == "accept")
                     this->_accept = header.second;
-                else if (header.first == "Accept-Encoding")
+                else if (header.first == "accept-encoding")
                     this->_accept_encoding = header.second;
-                else if (header.first == "Accept-Language")
+                else if (header.first == "accept-language")
                     this->_accept_language = header.second;
-                else if (header.first == "Content-Length")
+                else if (header.first == "content-length")
                     this->_content_length = std::stoi(header.second);
-                else if (header.first == "Content-Type")
+                else if (header.first == "content-type")
                     this->_content_type = header.second;
-                else if (header.first == "Transfer-Encoding")
+                else if (header.first == "transfer-encoding")
                     this->transfer_encoding = header.second;
-                else if (header.first == "Referer")
-                    this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(header.first) , header.second));
+                // else if (header.first == "referer")
 			}
             else 
             {
@@ -229,4 +230,118 @@ const struct sockaddr_in &Request::getRefClientAddr() const {
 
 void Request::set_path(std::string str) {
     _path = str;
+}
+
+std::pair<char *, size_t> getFileContentsCstring(std::string path);
+
+std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Server &serv, char **oenv);
+
+std::string get_error_page(int code, Server server);
+
+bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res) {
+	std::string reqPath = req->getPath();
+	std::string fname = URLgetFileName(reqPath);
+	if (reqPath.back() != '/' && fname.find('.') != (size_t)-1 && fname.find('.') != (fname.length() - 1)) {
+		Location *bestMatch = NULL;
+		Server serv = conf->get_server_vect()[serv_index];
+		std::vector<Location> locs = serv.get_location();
+		// for loop
+		ITERATE(std::vector<Location>, locs, lit) {
+			std::string locationPath = lit->get_locations_path();
+			if (locationPath.front() != '/') {
+				locationPath = '/' + locationPath;
+			}
+			if (locationPath.back() != '/') {
+				locationPath = '/' + locationPath;
+			}
+			if (locationPath == reqPath.substr(0, locationPath.length())) {
+				bestMatch = &(*lit);
+			}
+		}
+		std::vector<Cgi> cgiVec;
+		if (bestMatch) {
+			cgiVec = bestMatch->get_cgi();
+		}
+		else {
+			cgiVec = serv.get_cgi();
+		}
+		std::string fileExtension = fname.substr(fname.find('.'), fname.length());
+		std::string reqMethod = req->getMethod();
+		ITERATE(std::vector<Cgi>, cgiVec, lcit) {
+			if (lcit->get_cgi_name() == fileExtension) {
+				// cgi matched
+				if (CONTAINS(lcit->get_cgi_methods(), reqMethod)) {
+					std::string cgiResponseFileName;
+					try {
+						cgiResponseFileName = formulateResponseFromCGI(*req, lcit->get_cgi_path(), serv, conf->getEnv());
+						int fd = open(cgiResponseFileName.c_str(), O_RDONLY);
+						std::ifstream resFile;
+						resFile.open(cgiResponseFileName.c_str(), std::ios::in);
+						struct stat sb;
+						if (!(!resFile.is_open() || !(stat(cgiResponseFileName.c_str(), &sb) == 0 && S_ISREG(sb.st_mode)))) {
+							close(fd);
+							std::pair<char *, size_t> dataplussize = getFileContentsCstring(cgiResponseFileName);
+							// PRINT_LINE_VALUE(dataplussize.first);
+							if (dataplussize.first) {
+								size_t contentLength;
+								char *crlf2 = strstr(dataplussize.first, "\r\n\r\n"); 
+								if (crlf2) {
+									contentLength = dataplussize.second - (crlf2 + 4 - dataplussize.first);
+								}
+								else {
+									crlf2 = strstr(dataplussize.first, "\r\n");
+									contentLength = dataplussize.second - (crlf2 + 2 - dataplussize.first);
+								}
+								Request mockReq(dataplussize.first, dataplussize.second, 0, contentLength);
+								delete dataplussize.first;
+								std::map<std::string, std::string> headers = mockReq.getHeaders();
+								// PRINT_LINE_VALUE("testtestt");
+								// ITERATE(SELF(std::map<std::string,std::string>), headers, ittt) {
+								// 	PRINT_LINE_VALUE(ittt->first);
+								// 	PRINT_LINE_VALUE(ittt->second);
+								// }
+								// PRINT_LINE_VALUE(dataplussize.first);
+								if (headers.find("status") != headers.end()) {
+									std::string statusCode = headers["status"];
+									if (statusCode.front() != ' ') {
+										statusCode = ' ' + statusCode;
+									}
+									while (!std::isalnum(statusCode.back())) {
+										statusCode = statusCode.substr(0, statusCode.length() - 1);
+									}
+									res->setStatus(statusCode + "\r\n");
+									res->setpath(mockReq.getBodyFileName());
+								} else {
+									res->setStatus(" 200 OK\r\n");
+									res->setpath(mockReq.getBodyFileName());
+								}
+								res->set_autoindex(true);
+							} else {
+								PRINT_LINE_VALUE("testtestt");
+								res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
+								res->setpath(get_error_page(500, serv));
+							}
+						} else {
+							PRINT_LINE_VALUE("testtestt");
+							res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
+							res->setpath(get_error_page(500, serv));
+						}
+					} catch (const char *err) {
+						PRINT_LINE_VALUE(err);
+						res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
+						res->setpath(get_error_page(500, serv));
+					} catch (int err) {
+						PRINT_LINE_VALUE(err);
+						res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
+						res->setpath(get_error_page(500, serv));
+					}
+				} else {
+					res->setStatus(" 405 METHOD NOT ALLOWED\r\n");
+					res->setpath(get_error_page(405, serv));
+				}
+				return true;
+			}
+		}
+	}
+	return false;
 }
