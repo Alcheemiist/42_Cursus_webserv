@@ -10,14 +10,62 @@
 
 #define DELIMITER "\r\n"
 
-Response  response(Request *request, ParseConfig *config, int index_server)
+bool isDuplicate(std::vector<int> ports, int port)
 {
+    int compteur = 0;
+
+    for (int i = 0; i < ports.size(); i++)
+    {
+        if (ports[i] == port)
+            compteur++;
+        if (compteur >= 2)
+            return true;
+    }
+    return false;
+
+}
+
+Response  response(Request *request, ParseConfig *config, int index_server, std::vector<int> ports)
+{
+    std::vector<Server> servers = config->get_server_vect();
+    
+    // if there is multiple servers that share same ports, we need to chose the specific server
+    // depend on hostname == server.name .
+    bool flag = isDuplicate(ports, servers[index_server].get_listen_port());
+    if (servers.size() >= 2 && flag)
+    {
+        std::string hostname = request->getHost().substr(0, request->getHost().find(':'));
+        // std::cout << "-->Hostname: " << hostname << std::endl;
+        for (int i = 0; i < servers.size(); i++)
+        {
+            if (servers[i].get_listen_port() == servers[index_server].get_listen_port())
+            {
+                if (strcmp(config->get_server_vect()[i].get_name(0).c_str() , hostname.c_str()) == 0)
+                {
+                    index_server = i; // switch index to the specific server
+                    break;
+                }
+            }
+        }
+        // check if the choosen server have a friend shared port with other servers 
+        std::cout << "---------------------------------------" << std::endl;
+        std::cout << "my request HOST : " << request->getHost() << std::endl;
+        std::cout << "my servers size : " << servers.size() << std::endl;
+        std::cout << "---------------------------------------" << std::endl;
+        std::cout << "choseen server name : " << config->get_server_vect()[index_server].get_name(0) << std::endl;
+        std::cout << "choseen server root : " << config->get_server_vect()[index_server].get_root() << std::endl;
+        std::cout << "choseen server port : " << config->get_server_vect()[index_server].get_listen_port() << std::endl;
+        std::cout << "choseen server host : " << config->get_server_vect()[index_server].get_listen_host() << std::endl;
+        std::cout << "---------------------------------------" << std::endl;
+    }
+
     std::string header_str = "";
     Response response;
     response.setpath("empty");
     // std::string s;
     std::string path = request->getPath();
     
+
 	if (request->getRequestStatus() != 0) { // request error
 		response.setStatus(std::string(" ") + to_string(request->getRequestStatus()) + " " + request->getStatusMessage() + "\r\n");
 		response.setpath(get_error_page(request->getRequestStatus() , config->get_server_vect()[index_server]));
@@ -320,6 +368,7 @@ std::string Response::getHeader()
 {
     std::string res;
     
+    is_cgi = false;
     if (is_cgi)
     {
         // TODO: check if path is set and headedrs exist
