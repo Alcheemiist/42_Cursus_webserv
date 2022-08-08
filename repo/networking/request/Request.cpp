@@ -234,11 +234,11 @@ void Request::set_path(std::string str) {
 
 std::pair<char *, size_t> getFileContentsCstring(std::string path);
 
-std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Server &serv, char **oenv);
+std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Server &serv, char **oenv, std::string requestedFile, std::string query);
 
 std::string get_error_page(int code, Server server);
 
-bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res) {
+bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res, std::string query) {
 	std::string reqPath = req->getPath();
 	std::string fname = URLgetFileName(reqPath);
 	if (reqPath.back() != '/' && fname.find('.') != (size_t)-1 && fname.find('.') != (fname.length() - 1)) {
@@ -258,22 +258,51 @@ bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Resp
 				bestMatch = &(*lit);
 			}
 		}
+		std::string reqMethod = req->getMethod();
+		std::string rootPath;
+		std::string locPath;
 		std::vector<Cgi> cgiVec;
 		if (bestMatch) {
 			cgiVec = bestMatch->get_cgi();
+			locPath = bestMatch->get_locations_path();
+			if (reqMethod == "POST" && !bestMatch->get_upload_path().empty()) {
+				rootPath = bestMatch->get_upload_path();
+			}
+			else {
+				if (reqMethod == "POST") {
+					reqMethod = "GET";
+				}
+				rootPath = bestMatch->get_root();
+			}
 		}
 		else {
 			cgiVec = serv.get_cgi();
+			if (reqMethod == "POST" && !serv.get_upload_path().empty()) {
+				rootPath = serv.get_upload_path();
+			}
+			else {
+				if (reqMethod == "POST") {
+					reqMethod = "GET";
+				}
+				rootPath = serv.get_root();
+			}
+			locPath = "./";
+		}
+		if (locPath.front() != '/') {
+			locPath = '/' + locPath;
+		}
+		if (locPath.back() != '/') {
+			locPath += '/';
 		}
 		std::string fileExtension = fname.substr(fname.find('.'), fname.length());
-		std::string reqMethod = req->getMethod();
 		ITERATE(std::vector<Cgi>, cgiVec, lcit) {
 			if (lcit->get_cgi_name() == fileExtension) {
 				// cgi matched
 				if (CONTAINS(lcit->get_cgi_methods(), reqMethod)) {
 					std::string cgiResponseFileName;
 					try {
-						cgiResponseFileName = formulateResponseFromCGI(*req, lcit->get_cgi_path(), serv, conf->getEnv());
+						reqPath = reqPath.substr(locPath.length(), reqPath.length());
+						cgiResponseFileName = formulateResponseFromCGI(*req, lcit->get_cgi_path(), serv, conf->getEnv(), reqPath, query);
 						int fd = open(cgiResponseFileName.c_str(), O_RDONLY);
 						std::ifstream resFile;
 						resFile.open(cgiResponseFileName.c_str(), std::ios::in);
@@ -295,12 +324,6 @@ bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Resp
 								Request mockReq(dataplussize.first, dataplussize.second, 0, contentLength);
 								delete dataplussize.first;
 								std::map<std::string, std::string> headers = mockReq.getHeaders();
-								// PRINT_LINE_VALUE("testtestt");
-								// ITERATE(SELF(std::map<std::string,std::string>), headers, ittt) {
-								// 	PRINT_LINE_VALUE(ittt->first);
-								// 	PRINT_LINE_VALUE(ittt->second);
-								// }
-								// PRINT_LINE_VALUE(dataplussize.first);
 								if (headers.find("status") != headers.end()) {
 									std::string statusCode = headers["status"];
 									if (statusCode.front() != ' ') {

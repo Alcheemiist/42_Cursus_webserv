@@ -80,7 +80,7 @@ if (hit != headers.end()) { env[header ## _ENV] = hit->second; } }
 
 static size_t fileCount;
 
-std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Server &serv, char **oenv) {
+std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Server &serv, char **oenv, std::string requestedFile, std::string query) {
 	(void)cgiPath;
 	HeaderMap env;
 	const HeaderMap &headers = req.getHeaders();
@@ -115,7 +115,7 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 		}
 	);
 	// QUERY_STRING
-	env[QUERY_STRING_ENV] = URLgetQueryParams(req.getPath());
+	env[QUERY_STRING_ENV] = query;
 	// REMOTE_ADDR
 	const struct sockaddr_in* adr = (const struct sockaddr_in*)&req.getRefClientAddr();
 	char remoteAddr[INET_ADDRSTRLEN];
@@ -201,9 +201,9 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 			ep_i++;
 		}
 		ep[ep_i] = NULL;
-		std::string cdhere = cgiPath.substr(0, cgiPath.find_last_of("/"));
+		std::string cdhere = requestedFile.substr(0, requestedFile.find_last_of("/"));
 		chdir(cdhere.c_str());
-		execve(URLgetFileName(cgiPath).substr(1, cgiPath.length()).c_str(), av, oenv);
+		execve(cgiPath.c_str(), av, ep);
 		ERROR_LINE_VALUE("here");
 		exit(1);
 	}

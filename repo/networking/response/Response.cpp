@@ -29,11 +29,12 @@ Response  response(Request *request, ParseConfig *config, int index_server)
         response.setpath(get_error_page(400 , config->get_server_vect()[index_server]));
         return response;
     }
+	std::string queryParams = URLgetQueryParams(path);
     request->set_path(URLdecode(URLremoveQueryParams(path)));
 	println("url decoded path: ", request->getPath());
     response.setStatus("");
 
-    if (request->isCgiRequest(request, config, index_server, &response)) {
+    if (request->isCgiRequest(request, config, index_server, &response, queryParams)) {
 		return response;
     }
 
