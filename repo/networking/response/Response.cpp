@@ -79,6 +79,11 @@ Response  response(Request *request, ParseConfig *config, int index_server, std:
     }
 	std::string queryParams = URLgetQueryParams(path);
     request->set_path(URLdecode(URLremoveQueryParams(path)));
+
+	if (request->isCgiRequest(request, config, index_server, &response, queryParams)) {
+		return response;
+	}
+
 	println("url decoded path: ", request->getPath());
     response.setpath(response.setStatus(request, config->get_server_vect()[index_server]));
     if (!response.get_status().empty())
@@ -135,7 +140,7 @@ std::string Response::setStatus(Request *request, Server server)
         	this->status = " 414 REQUEST-URI TOO LARGE\r\n";
             return get_error_page(414, server);
         }
-        else if (request->getMethod() == "POST" && max_body_size != -1 && request->get_body_length() > max_body_size)
+        else if (max_body_size != (size_t)-1 && request->get_body_length() != (size_t)-1 && request->get_body_length() > max_body_size)
         {
         	this->status = " 413 REQUEST ENTITY TOO LARGE\r\n";
             return get_error_page(413, server);
@@ -661,7 +666,7 @@ void        Response::init_location_for_upload(std::string url, Server server)
 				url_copy = url.substr(location_str.size());
 				location_path = location_str;
 				upload_path_matched = str_matched(location_str, location_path);
-				this->upload_path = remove_duplicate_slash(it_loc->get_root() + "/" + url_copy);
+				this->upload_path = remove_duplicate_slash(it_loc->get_upload_path() + "/" + url_copy);
 			}
 		}
 	}

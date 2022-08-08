@@ -52,10 +52,23 @@ void    Server::set_name(std::string name)
 
 Server::Server(const Server &src)
 {
-    if (this != &src)
-    {
-        *this = src;
-    }
+    // if (this != &src)
+    // {
+    //     *this = src;
+    // }
+	_name = src._name;
+	_listen_port = src._listen_port;
+	_listen_host = src._listen_host;
+	_allowed_methods = src._allowed_methods;
+	_index = src._index;
+	_upload_path = src._upload_path;
+	_error_pages = src._error_pages;
+	_redirections = src._redirections;
+	_root = src._root;
+	_location = src._location;
+	_cgi = src._cgi;
+	_client_max_body_size = src._client_max_body_size;
+	_autoindex = src._autoindex;
 }
 
 void    Server::set_upload_path(std::string upload_path)

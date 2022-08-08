@@ -15,10 +15,19 @@ Location::~Location() {}
 // copy constructor
 Location::Location(const Location &obj)
 {
-    if (this != &obj)
-    {
-        *this = obj;
-    }
+    // if (this != &obj)
+    // {
+    //     *this = obj;
+    // }
+	_cgi = obj._cgi;
+	_name = obj._name;
+	_locations_path = obj._locations_path;
+	_allow_methods = obj._allow_methods;
+	_root = obj._root;
+	_client_max_body_size = obj._client_max_body_size;
+	_index = obj._index;
+	_autoindex = obj._autoindex;
+	_upload_path = obj._upload_path;
 }
 
 /*
