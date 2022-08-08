@@ -309,8 +309,8 @@ void validateErrorPageDirectiveAttr(std::string attr, int index) {
 			int integer = to_int(attr);
 			if (integer < 0)
 				throw std::string("http response codes are positive integers");
-			if (integer >= 500 || integer < 400)
-				throw std::string("client error http response codes are in the range [400 - 499], got") + attr;
+			if (integer >= 600 || integer < 400)
+				throw std::string("client error http response codes are in the range [400 - 599], got ") + attr;
 			break;
 		}
 		case 1: {

@@ -3,6 +3,8 @@
 #include <sstream>
 #include <iomanip>
 #include "utils.hpp"
+#include "print.hpp"
+#include "error.hpp"
 #include "throwed.hpp"
 #include <algorithm>
 #include <fcntl.h>
@@ -238,9 +240,11 @@ std::pair<char *, size_t> getFileContentsCstring(std::string path) {
 	if (fd == -1 || fsize == (size_t)-1) {
 		return nullpair;
 	}
-	char *ret = new char[fsize];
+	// PRINT_LINE_VALUE(fsize);
+	char *ret = new char[fsize + 1];
+	ret[fsize] = 0;
 	if (read(fd, ret, fsize) != fsize) {
-		delete ret;
+		delete[] ret;
 		return nullpair;
 	}
 	nullpair.first = ret;

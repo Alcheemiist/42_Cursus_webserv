@@ -40,7 +40,7 @@ int main(int argc, char const* argv[])
         return -1;
     }
 	std::string req = 
-	"GET / HTTP/1.1\r\n"
+	"GET /py.py HTTP/1.1\r\n"
 	"\r\n"
 ;
     write(sock, req.c_str(), req.length());
