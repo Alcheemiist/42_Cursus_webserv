@@ -109,6 +109,8 @@ Response  response(Request *request, ParseConfig *config, int index_server, std:
     return response;
 }
 
+std::string capitalize(std::string status);
+
 std::string Response::setStatus(Request *request, Server server)
 {
     std::string code_redirection;
@@ -122,48 +124,48 @@ std::string Response::setStatus(Request *request, Server server)
 	{
 		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked")
         {
-			this->status = " 501 NOT IMPLEMENTED\r\n";
+			this->status = capitalize(" 501 NOT IMPLEMENTED\r\n");
             return get_error_page(501, server);
         }
 		else if (!request->get_transfer_encoding().size() && request->getcontent_length() <= 0 &&  request->getMethod() == "POST")
         {
-            this->status = " 400 BAD REQUEST\r\n";
+            this->status = capitalize(" 400 BAD REQUEST\r\n");
             return get_error_page(400 , server);
         }
 		else if (!url_is_formated(request->geturl()))
         {
-            this->status = " 400 BAD REQUEST\r\n";
+            this->status = capitalize(" 400 BAD REQUEST\r\n");
             return get_error_page(400 , server);
         }
         else if (request->geturl().length() > MAX_URL_LENGTH)
 		{
-        	this->status = " 414 REQUEST-URI TOO LARGE\r\n";
+        	this->status = capitalize(" 414 REQUEST-URI TOO LARGE\r\n");
             return get_error_page(414, server);
         }
         else if (max_body_size != (size_t)-1 && request->get_body_length() != (size_t)-1 && request->get_body_length() > max_body_size)
         {
-        	this->status = " 413 REQUEST ENTITY TOO LARGE\r\n";
+        	this->status = capitalize(" 413 REQUEST ENTITY TOO LARGE\r\n");
             return get_error_page(413, server);
         }
     }
     if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
     {
-        this->status = " 405 METHOD NOT ALLOWED\r\n";
+        this->status = capitalize(" 405 METHOD NOT ALLOWED\r\n");
         return get_error_page(405, server);
     }
     else if (!get_redirection().empty())
     {
-        this->status = code_redirection;
+        this->status = capitalize(code_redirection);
         return get_error_page(std::atoi(code_redirection.c_str()), server);
     }
     else if (!file_exist(get_location()) && request->getMethod() != "POST")
     {
-        this->status = " 404 NOT FOUND\r\n";
+        this->status = capitalize(" 404 NOT FOUND\r\n");
         return get_error_page(404, server);
     }
-    else if (request->getMethod() == "POST" && file_exist(get_upload_path()))
+    else if (request->getMethod() == "POST" && !file_exist(get_upload_path()))
     {
-        this->status = " 404 NOT FOUND\r\n";
+        this->status = capitalize(" 404 NOT FOUND\r\n");
         return get_error_page(404, server);
     }
     return "";

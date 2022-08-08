@@ -43,8 +43,13 @@ int main(int ac, char **av, char **ep)
 	(void)ep;
     ParseConfig Config;
 
-    if (ac == 1)
+    if (ac == 1) {
         std::cout << red << " Default Webserve Configuration  " << def << std::endl;
+	}
+	else if (ac != 2) {
+        std::cout << red << " Wrong Number of arguments  " << def << std::endl;
+		return (1);
+	}
     try 
     {
         if (setup_signals() != 0)
