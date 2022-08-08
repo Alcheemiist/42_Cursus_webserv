@@ -69,10 +69,10 @@ all:	$(NAME)
 
 
 %.o: %.cpp $(HDR)
-	c++ -g $(FLAGS) -c -o $@ $<
+	c++ -g $(FLAGS) $(FS) -c -o $@ $<
 
 $(NAME) : $(OBJ)
-	c++  -g $(OBJ) -o $(NAME) $(FLAGS)
+	c++  -g $(OBJ) -o $(NAME) $(FLAGS) $(FS)
 
 clean:
 	@rm -rf $(NAME)

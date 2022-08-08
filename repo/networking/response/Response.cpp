@@ -18,11 +18,11 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     // std::string s;
     std::string path = request->getPath();
     
-    if (request->isCgiRequest())
-    {
-        // CGI EXECUTION
-        std::cout << "CGI RESPONSE" << std::endl;
-    }
+	if (request->getRequestStatus() != 0) { // request error
+		response.setStatus(std::string(" ") + to_string(request->getRequestStatus()) + " " + request->getStatusMessage() + "\r\n");
+		response.setpath(get_error_page(request->getRequestStatus() , config->get_server_vect()[index_server]));
+        return response;
+	}
 
     if (!isValidURLPath(path)) {
         response.setStatus(" 400 BAD REQUEST\r\n");
@@ -568,10 +568,14 @@ void        Response::setVersion(std::string version) { this->version = version;
 void        Response::setStatus(std::string status) {
     size_t len = 0;
     for (std::string::iterator it = status.begin(); it != status.end(); it++) {
-        std::string word = status.substr(len, min(len + 3, status.length()));
+		*it = std::tolower(*it);
+	}
+    for (std::string::iterator it = status.begin(); it != status.end(); it++) {
+        std::string word = status.substr(len, 3);
         if (word.length() == 3) {
-            if (!std::isalpha(word[0]) && std::isalpha(word[1]) && std::isalpha(word[2]))
+            if (!std::isalpha(word[0]) && std::isalpha(word[1]) && std::isalpha(word[2])) {
                 status[len + 1] = std::toupper((char)status[len + 1]);
+			}
         }
         len++;
     }

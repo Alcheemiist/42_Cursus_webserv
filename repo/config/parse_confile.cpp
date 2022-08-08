@@ -370,7 +370,15 @@ std::string ParseConfig::get_lines(int i) const
     return (_lines[i]);
 }
 
+char **ParseConfig::getEnv() {
+	return env;
+}
+
 //--------setters-------------
+
+void ParseConfig::setEnv(char **_env) {
+	env = _env;
+}
 
 void ParseConfig::set_server_vect(std::vector<Server> servers) {
 	_servers = servers;

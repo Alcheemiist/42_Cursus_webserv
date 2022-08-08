@@ -20,7 +20,7 @@ class ParseConfig
         std::vector<std::string> _lines;
         std::vector<std::string> _words;
         std::vector<Server> _servers;
-
+		char **env;
     public:
         ParseConfig():_lines(), _words(), _servers(){};
         ~ParseConfig(){};
@@ -41,8 +41,10 @@ class ParseConfig
         int                 parsing_conf(int ac, char **av, std::vector<std::string> lines);
         int                 basic_error(std::string , char const *, std::string);
         unsigned int        fill_index(std::vector<std::string>, unsigned int);
+		void				setEnv(char **_env);
+		char				**getEnv();
 };
-int parse_main(int argc, char **argv, ParseConfig &conf);
+int parse_main(int argc, char **argv, char **ep, ParseConfig &conf);
 
 
 #endif
