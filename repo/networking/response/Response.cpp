@@ -24,12 +24,6 @@ Response  response(Request *request, ParseConfig *config, int index_server)
         return response;
 	}
 
-    if (request->isCgiRequest())
-    {
-        // CGI EXECUTION
-        std::cout << "CGI RESPONSE" << std::endl;
-    }
-
     if (!isValidURLPath(path)) {
         response.setStatus(" 400 BAD REQUEST\r\n");
         response.setpath(get_error_page(400 , config->get_server_vect()[index_server]));
@@ -38,6 +32,11 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     request->set_path(URLdecode(URLremoveQueryParams(path)));
 	println("url decoded path: ", request->getPath());
     response.setStatus("");
+
+    if (request->isCgiRequest(request, config, index_server, &response)) {
+		return response;
+    }
+
     s = response.setStatus(request, config->get_server_vect()[index_server]);
     if (status_code_error(response.get_status()) && request->getMethod() != "POST")
         ERRORresponse(request, &response, config, index_server);
@@ -625,10 +624,14 @@ void Response::setVersion(std::string version) { this->version = version; };
 void  Response::setStatus(std::string status) {
     size_t len = 0;
     for (std::string::iterator it = status.begin(); it != status.end(); it++) {
-        std::string word = status.substr(len, min(len + 3, status.length()));
+		*it = std::tolower(*it);
+	}
+    for (std::string::iterator it = status.begin(); it != status.end(); it++) {
+        std::string word = status.substr(len, 3);
         if (word.length() == 3) {
-            if (!std::isalpha(word[0]) && std::isalpha(word[1]) && std::isalpha(word[2]))
+            if (!std::isalpha(word[0]) && std::isalpha(word[1]) && std::isalpha(word[2])) {
                 status[len + 1] = std::toupper((char)status[len + 1]);
+			}
         }
         len++;
     }
