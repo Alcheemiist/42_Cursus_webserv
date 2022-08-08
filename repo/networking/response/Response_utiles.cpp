@@ -340,7 +340,7 @@ bool check_auto_index(std::string url, Server server)
 	return auto_index;
 }
 
-int get_max_body_size(std::string url, Server server)
+size_t get_max_body_size(std::string url, Server server)
 {
 	std::vector<Location> location = server.get_location();
 	std::vector<Location>::const_iterator it_loc = location.begin();
