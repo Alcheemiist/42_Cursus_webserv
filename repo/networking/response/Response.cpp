@@ -18,12 +18,6 @@ Response  response(Request *request, ParseConfig *config, int index_server)
     std::string s;
     std::string path = request->getPath();
     
-	if (request->getRequestStatus() != 0) { // request error
-		response.setStatus(std::string(" ") + to_string(request->getRequestStatus()) + " " + request->getStatusMessage() + "\r\n");
-		response.setpath(get_error_page(request->getRequestStatus() , config->get_server_vect()[index_server]));
-        return response;
-	}
-
     if (request->isCgiRequest())
     {
         // CGI EXECUTION
@@ -32,7 +26,7 @@ Response  response(Request *request, ParseConfig *config, int index_server)
 
     if (!isValidURLPath(path)) {
         response.setStatus(" 400 BAD REQUEST\r\n");
-        response.setpath(get_error_page(400 , config->get_server_vect()[index_server]));
+        s = get_error_page(400 , config->get_server_vect()[index_server]);
         return response;
     }
     request->set_path(URLdecode(URLremoveQueryParams(path)));
@@ -228,6 +222,39 @@ void	Response::init_redirection(std::string url, Server server, std::string &sta
 			}
 		}
 	}
+	// PRINT_LINE_VALUE(this->redirection_path);
+	// if (redirection_path_matched)
+    // {
+    //     if (path_absol.length() > 0)
+    //         this->redirection_path = path_absol;
+    //     else
+    //         this->redirection_path = url.replace(0, _redirection_path.size(), _redirection_path);
+    // }
+    // else
+    //     this->redirection_path = "";
+
+		// if (redirection_str.back() != '/')
+		// 		redirection_str += "/";
+	// 	if (url.substr(0, redirection_str.size()) == redirection_str) {
+	// 		if (str_matched(redirection_str, _redirection_path) > redirection_path_matched) {
+    //             println("it02 = ", it[0][2]);
+    //             if (std::isdigit(it[0][2][0])) {
+    //                 statusLine = get_status_code(to_int(it[0][2]));
+    //             }
+    //             else if (it[0][2] == "temporary") {
+    //                 statusLine = get_status_code(307);
+    //             }
+    //             else {
+    //                 statusLine = get_status_code(308);
+    //             }
+    //             println("status = ", statusLine);
+    //             _redirection_path = (*it)[1];
+	// 			redirection_path_matched = str_matched(redirection_str, _redirection_path);
+    //             if (std::strncmp(_redirection_path.c_str(), "http", 4) == 0)
+    //                 path_absol = _redirection_path;
+
+	// 		}
+	// 	}
 }
 
 void Response::setContentType(std:: string s)
@@ -322,7 +349,7 @@ std::string Response::getHeader()
         res.append(std::to_string(tt));
         res.append("\r\n");
     }
-    res.append((!is_cgi) ? "Server: alchemist\r\n":"Server: alchemist_CGI\r\n");
+    res.append((is_cgi) ? "server: alchemist\r\n":"server: alchemist_CGI\r\n");
     res.append("\r\n");
     setHeader(res);
     //
