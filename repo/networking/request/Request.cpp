@@ -65,7 +65,7 @@ std::string to_Lower_case(std::string str)
     return str;
 }
 
-Request::Request(char *buffer, size_t bytes, int fd) :	_method(""),
+Request::Request(char *buffer, size_t bytes, int fd, size_t cl) :	_method(""),
 														_path(""),
 														_version(""),
 														_host(""),
@@ -73,7 +73,7 @@ Request::Request(char *buffer, size_t bytes, int fd) :	_method(""),
 														_accept(""),
 														_accept_encoding(""),
 														 _content_type(""),
-														_content_length(0),
+														_content_length(cl),
 														_headers(std::map<std::string,
 														std::string>()),
 														bodyFileName(""),
@@ -126,26 +126,27 @@ Request::Request(char *buffer, size_t bytes, int fd) :	_method(""),
 			if (line.find(':') != (size_t)-1)
             {
 				header.first = line.substr(0, line.find(':'));
+				header.first = to_Lower_case(header.first);
 				header.second = line.substr(line.find(':') + 2, line.length());
                 //
-                if (header.first == "Host")
+				this->_headers.insert(std::pair<std::string, std::string>( header.first , header.second));
+                if (header.first == "host")
                     this->_host = header.second;
-                else if (header.first == "Connection")
+                else if (header.first == "connection")
                     this->_connection = header.second;
-                else if (header.first == "Accept")
+                else if (header.first == "accept")
                     this->_accept = header.second;
-                else if (header.first == "Accept-Encoding")
+                else if (header.first == "accept-encoding")
                     this->_accept_encoding = header.second;
-                else if (header.first == "Accept-Language")
+                else if (header.first == "accept-language")
                     this->_accept_language = header.second;
-                else if (header.first == "Content-Length")
+                else if (header.first == "content-length")
                     this->_content_length = std::stoi(header.second);
-                else if (header.first == "Content-Type")
+                else if (header.first == "content-type")
                     this->_content_type = header.second;
-                else if (header.first == "Transfer-Encoding")
+                else if (header.first == "transfer-encoding")
                     this->transfer_encoding = header.second;
-                else if (header.first == "Referer")
-                    this->_headers.insert(std::pair<std::string, std::string>( to_Lower_case(header.first) , header.second));
+                // else if (header.first == "referer")
 			}
             else 
             {
@@ -277,40 +278,60 @@ bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Resp
 						std::ifstream resFile;
 						resFile.open(cgiResponseFileName.c_str(), std::ios::in);
 						struct stat sb;
-						if (!resFile.is_open() || !(stat(cgiResponseFileName.c_str(), &sb) == 0 && S_ISREG(sb.st_mode))) {
+						if (!(!resFile.is_open() || !(stat(cgiResponseFileName.c_str(), &sb) == 0 && S_ISREG(sb.st_mode)))) {
+							close(fd);
+							std::pair<char *, size_t> dataplussize = getFileContentsCstring(cgiResponseFileName);
+							// PRINT_LINE_VALUE(dataplussize.first);
+							if (dataplussize.first) {
+								size_t contentLength;
+								char *crlf2 = strstr(dataplussize.first, "\r\n\r\n"); 
+								if (crlf2) {
+									contentLength = dataplussize.second - (crlf2 + 4 - dataplussize.first);
+								}
+								else {
+									crlf2 = strstr(dataplussize.first, "\r\n");
+									contentLength = dataplussize.second - (crlf2 + 2 - dataplussize.first);
+								}
+								Request mockReq(dataplussize.first, dataplussize.second, 0, contentLength);
+								delete dataplussize.first;
+								std::map<std::string, std::string> headers = mockReq.getHeaders();
+								// PRINT_LINE_VALUE("testtestt");
+								// ITERATE(SELF(std::map<std::string,std::string>), headers, ittt) {
+								// 	PRINT_LINE_VALUE(ittt->first);
+								// 	PRINT_LINE_VALUE(ittt->second);
+								// }
+								// PRINT_LINE_VALUE(dataplussize.first);
+								if (headers.find("status") != headers.end()) {
+									std::string statusCode = headers["status"];
+									if (statusCode.front() != ' ') {
+										statusCode = ' ' + statusCode;
+									}
+									while (!std::isalnum(statusCode.back())) {
+										statusCode = statusCode.substr(0, statusCode.length() - 1);
+									}
+									res->setStatus(statusCode + "\r\n");
+									res->setpath(mockReq.getBodyFileName());
+								} else {
+									res->setStatus(" 200 OK\r\n");
+									res->setpath(mockReq.getBodyFileName());
+								}
+								res->set_autoindex(true);
+							} else {
+								PRINT_LINE_VALUE("testtestt");
+								res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
+								res->setpath(get_error_page(500, serv));
+							}
+						} else {
+							PRINT_LINE_VALUE("testtestt");
 							res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
 							res->setpath(get_error_page(500, serv));
 						}
-						else {
-							std::pair<char *, size_t> dataplussize = getFileContentsCstring(cgiResponseFileName);
-							if (dataplussize.first) {
-								std::pair<char *, size_t> mockReqRaw;
-								mockReqRaw = strjoin("GET / HTTP/1.1", )
-								Request mockReq(dataplussize.first, dataplussize.second, 0);
-								mockReq.getHeaders();
-								mockReq.getBodyFileName();
-							}
-							// if (fileExtension == ".php") {
-							// 	char status[sizeof("Status:")];
-							// 	if (resFile.readsome(status, sizeof(status)) == sizeof(status) && status == std::string("Status:")) {
-							// 		char code[100];
-							// 		resFile.readsome(code, sizeof(code));
-							// 		std::string codeString = code;
-							// 		if (codeString.find("\r\n") != (size_t)-1) {
-							// 			codeString = codeString.substr(0, codeString.find("\r\n") + 2);
-							// 			if (codeString.front() != ' ') {
-							// 				codeString = ' ' + codeString;
-							// 			}
-							// 			res->setStatus(codeString);
-							// 			res
-							// 		}
-							// 	}
-							// 	else {
-									
-							// 	}
-							// }
-						}
-					} catch (...) {
+					} catch (const char *err) {
+						PRINT_LINE_VALUE(err);
+						res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
+						res->setpath(get_error_page(500, serv));
+					} catch (int err) {
+						PRINT_LINE_VALUE(err);
 						res->setStatus(" 500 INTERNAL SERVER ERROR\r\n");
 						res->setpath(get_error_page(500, serv));
 					}

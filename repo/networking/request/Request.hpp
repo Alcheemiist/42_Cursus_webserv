@@ -44,7 +44,7 @@ private:
 public:
     Request() : _method(""), _path(""), _version(""), _host(""), _connection(""), _accept(""), _accept_encoding(""),  _content_type(""), _content_length(-1), _headers(std::map<std::string, std::string>()),
                 bodyFileName(""), client_fd(-1), _fdBodyFile(-1), _is_complete(false), requestStatus(0), status_message(""), bodyFileSize(0), is_formated(false), transfer_encoding(""), _port(0), bodyBytesWritten(0) {};
-    Request(char *buffer, size_t bytes, int fd);
+    Request(char *buffer, size_t bytes, int fd, size_t cl = 0);
     ~Request(){};
     // void isCgiRequest(std::string path) { is_cgi_request = extensionCgi(path);}
     bool isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res);
