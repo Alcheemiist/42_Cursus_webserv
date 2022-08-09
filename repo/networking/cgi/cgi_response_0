@@ -1,0 +1,80 @@
+POST / HTTP/1.1
+X-Powered-By: Python2
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body>
+<h1>hello world!!</h1>
+
+08/09/2022, 01:02:55
+<p>ORIGINAL_XDG_CURRENT_DESKTOP=undefined</p>
+<p>VSCODE_GIT_IPC_HANDLE=/var/folders/zz/zyxvpxvq6csfxvn_n00006pc0001nl/T/vscode-git-0651e03be4.sock</p>
+<p>USER=isaadi</p>
+<p>REDIRECT_STATUS=200</p>
+<p>SERVER_PROTOCOL=HTTP/1.1</p>
+<p>SERVER_SOFTWARE=webserv</p>
+<p>SCRIPT_NAME=py.py</p>
+<p>SHELL=/bin/bash</p>
+<p>REQUEST_METHOD=GET</p>
+<p>LOGNAME=isaadi</p>
+<p>PATH_INFO=/post/py.py</p>
+<p>XPC_SERVICE_NAME=0</p>
+<p>PATH=/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/Library/Python/3.9/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/Users/isaadi/.brew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/munki:/Users/isaadi/Desktop/scripts:/Users/isaadi/.scripts</p>
+<p>QUERY_STRING=</p>
+<p>HOME=/Users/isaadi</p>
+<p>TERM_PROGRAM=vscode</p>
+<p>LANG=en_US.UTF-8</p>
+<p>TERM=xterm-256color</p>
+<p>Apple_PubSub_Socket_Render=/private/tmp/com.apple.launchd.s1XFaWW5Oh/Render</p>
+<p>HTTP_CONNECTION=keep-alive</p>
+<p>HTTP_SEC_FETCH_DEST=document</p>
+<p>HTTP_SEC_CH_UA_PLATFORM="macOS"</p>
+<p>REMOTE_ADDR=0.0.0.0</p>
+<p>SHLVL=3</p>
+<p>SECURITYSESSIONID=186a8</p>
+<p>XPC_FLAGS=0x0</p>
+<p>GIT_ASKPASS=/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh</p>
+<p>PATH_TRANSLATED=http://127.0.0.1:8081/post/py.py</p>
+<p>SERVER_PORT=8081</p>
+<p>MallocNanoZone=0</p>
+<p>HTTP_SEC_CH_UA_MOBILE=?0</p>
+<p>VERSIONER_PYTHON_PREFER_32_BIT=no</p>
+<p>SSH_AUTH_SOCK=/private/tmp/com.apple.launchd.fndhTarOYv/Listeners</p>
+<p>SCRIPT_FILENAME=py.py</p>
+<p>HTTP_SEC_FETCH_MODE=navigate</p>
+<p>HTTP_USER_AGENT=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36</p>
+<p>HTTP_HOST=127.0.0.1:8081</p>
+<p>TERM_PROGRAM_VERSION=1.69.1</p>
+<p>HTTP_SEC_FETCH_SITE=none</p>
+<p>HTTP_UPGRADE_INSECURE_REQUESTS=1</p>
+<p>VSCODE_GIT_ASKPASS_EXTRA_ARGS=--ms-enable-electron-run-as-node</p>
+<p>HTTP_CACHE_CONTROL=max-age=0</p>
+<p>_=./webserv</p>
+<p>TMPDIR=/var/folders/zz/zyxvpxvq6csfxvn_n00006pc0001nl/T/</p>
+<p>HTTP_ACCEPT=text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9</p>
+<p>SERVER_NAME=127.0.0.1</p>
+<p>GATEWAY_INTERFACE=CGI/1.1</p>
+<p>VERSIONER_PYTHON_VERSION=2.7</p>
+<p>HTTP_ACCEPT_LANGUAGE=en-US,en;q=0.9</p>
+<p>REMOTE_IDENT=</p>
+<p>VSCODE_GIT_ASKPASS_NODE=/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper.app/Contents/MacOS/Code Helper</p>
+<p>__CF_USER_TEXT_ENCODING=0x6B3:0x0:0x0</p>
+<p>PWD=/Users/isaadi/Desktop/cursus/webserv/webservo/repo</p>
+<p>HTTP_SEC_CH_UA=".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103"</p>
+<p>HTTP_SEC_FETCH_USER=?1</p>
+<p>COLORTERM=truecolor</p>
+<p>VSCODE_GIT_ASKPASS_MAIN=/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js</p>
+<p>REMOTE_HOST=0.0.0.0</p>
+<p>HTTP_ACCEPT_ENCODING=gzip, deflate, br</p>
+<p>COMMAND_MODE=unix2003</p>
+
+</body>
+</html>
+

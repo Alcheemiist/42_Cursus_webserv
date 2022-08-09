@@ -14,7 +14,7 @@ int main(int argc, char const* argv[])
     int sock = 0, valread, client_fd;
     struct sockaddr_in serv_addr;
     // char* hello = "Hello from client";
-    char buffer[1024] = { 0 };
+    char buffer[5] = { 0 };
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("\n Socket creation error \n");
         return -1;
@@ -40,13 +40,16 @@ int main(int argc, char const* argv[])
         return -1;
     }
 	std::string req = 
-	"GET /py.py HTTP/1.1\r\n"
+	"GET / HTTP/1.1\r\n"
 	"\r\n"
 ;
     write(sock, req.c_str(), req.length());
+	// close(client_fd);
+	// exit(0);
 	std::string res;
 	do {
-		valread = read(sock, buffer, 1024);
+		sleep(1);
+		valread = read(sock, buffer, 5);
 		write(1, buffer, valread);
 		res += buffer;
 	} while (valread && valread + 1);

@@ -51,7 +51,7 @@ public:
    
     // void isCgiRequest(std::string path) { is_cgi_request = extensionCgi(path);}
     bool isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res, std::string query);
-    int get_body_length(){  return getFileSize(bodyFileName.c_str());  }
+    size_t get_body_length(){  return getFileSize(bodyFileName.c_str());  }
     std::string getMethod() const { return _method; };
     std::string getPath() const { return _path; };
     std::string getVersion() const { return _version; };

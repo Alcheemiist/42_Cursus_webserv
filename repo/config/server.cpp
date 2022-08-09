@@ -336,6 +336,11 @@ std::string    Server::get_name(unsigned int i) const
 	return "OUT OF BOUND INDEX";
 }
 
+std::vector<std::string>   Server::get_name() const
+{
+	return _name;
+}
+
 std::string    Server::get_upload_path() const
 {
     return _upload_path;

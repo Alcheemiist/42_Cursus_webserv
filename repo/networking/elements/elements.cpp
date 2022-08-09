@@ -57,7 +57,7 @@ void LaunchServer(ParseConfig *config)
     t_socket _socket_server[nServers];
     //
     fd_set working_rd_set, working_wr_set;
-    fd_set backup_rd_set, backup_wr_set, backup_er_set;
+    fd_set backup_rd_set, backup_wr_set;
     //
     int *serv_response = new int[MAX_CLIENTS];
     bool *first = new bool[MAX_CLIENTS];
@@ -148,7 +148,7 @@ void LaunchServer(ParseConfig *config)
                     int fd = clients[i].server_fd;
                     char buffer[_BUFFER_SIZE + 1];
                     //
-                    if ((bytes = read(fd, buffer, _BUFFER_SIZE)) < 0) // while nothing is readed move on to the next client
+                    if ((bytes = read(fd, buffer, _BUFFER_SIZE)) <= 0) // while nothing is readed move on to the next client
                         continue;
                     buffer[bytes] = '\0';
                     //
@@ -181,21 +181,22 @@ void LaunchServer(ParseConfig *config)
                         responses.insert(std::pair<int, Response>(i,response(&requests.find(clients[i].server_fd)->second, config, clients[i].index_server, ports))); // create a response object
                         // get the headers to be sent first // BUFFER_SIZE 
                         std::string header = responses[i].getHeader();
+						
                         // show headers 
                         responses[i].show();
                         // send the headers to the client 
-                        if ((size_send = write(requests.find(clients[i].server_fd)->first, header.c_str() , header.size())) < 0)
+                        if ((size_send = write(requests.find(clients[i].server_fd)->first, header.c_str() , header.size())) <= 0)
                             continue; // if error, move on to the next client
                         _send_size[i] = size_send; // save the size that been sent to the client
                         serv_response[i]++; // move to the next step                           
                     }
-                    if (serv_response[i] == 4) 
+                    else if (serv_response[i] == 4) 
                     {
                         // check if path exist and response and it wasn't been readed and sended all of it yet
                         if (responses[i].getpath().size() > 0  && !responses[i].get_finish())
                         {
                             std::vector<char> buffer = responses[i].get_buffer(); // get the buffer from path to be sent
-                            if((size_send = write(requests.find(clients[i].server_fd)->first, buffer.data(), buffer.size())) < 0 ) // send the buffer to the client
+                            if((size_send = write(requests.find(clients[i].server_fd)->first, buffer.data(), buffer.size())) <= 0 ) // send the buffer to the client
                                 continue; // if error, move on to the next client
                             _send_size[i] += size_send; // save the size that been sent to the client
                         }

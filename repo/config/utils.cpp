@@ -120,13 +120,37 @@ std::string URLgetQueryParams(std::string url) {
 	return "";
 }
 
+std::vector<std::string> split(const std::string &s, char delim);
+
 bool isValidURLPath(std::string url) {
 	for (std::string::iterator it = url.begin(); it != url.end(); it++) {
 		if (std::iscntrl(*it)) {
 			return false;
 		}
 	}
-	return !throwed<std::string>(URLdecode, url);
+	if (throwed<std::string>(URLdecode, url)) {
+		return false;
+	}
+	url = URLremoveQueryParams(url);
+	url = url.substr(1, url.length());
+	std::vector<std::string> directories = split(url, '/');
+	for (std::vector<std::string>::iterator it = directories.begin(); it != directories.end();) {
+		if (*it == "..") {
+			if (it == directories.begin()) {
+				return false;
+			}
+			else {
+				directories.erase(it - 1, it + 1);
+				it = directories.begin();
+			}
+		}
+		else {
+			if (it != directories.end()) {
+				it++;
+			}
+		}
+	}
+	return true;
 }
 
 
@@ -243,7 +267,7 @@ std::pair<char *, size_t> getFileContentsCstring(std::string path) {
 	// PRINT_LINE_VALUE(fsize);
 	char *ret = new char[fsize + 1];
 	ret[fsize] = 0;
-	if (read(fd, ret, fsize) != fsize) {
+	if ((size_t)read(fd, ret, fsize) != fsize) {
 		delete[] ret;
 		return nullpair;
 	}

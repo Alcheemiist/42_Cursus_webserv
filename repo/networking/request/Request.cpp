@@ -150,6 +150,7 @@ Request::Request(char *buffer, size_t bytes, int fd, size_t cl) :	_method(""),
 			}
             else 
             {
+				PRINT_LINE_VALUE(line);
                 this->_isGoodRequest = this->is_formated = false;
                 this->status_message =  "400 Bad Request\r\n";
                 this->_path = "./errorsPages/400.html"; 
@@ -321,12 +322,29 @@ bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Resp
 									contentLength = dataplussize.second - (crlf2 + 4 - dataplussize.first);
 								}
 								else {
-									crlf2 = strstr(dataplussize.first, "\r\n");
-									contentLength = dataplussize.second - (crlf2 + 2 - dataplussize.first);
+									res->setStatus(" 502 BAD GATEWAY\r\n");
+									res->setpath(get_error_page(502, serv));
+									return true;
 								}
 								Request mockReq(dataplussize.first, dataplussize.second, 0, contentLength);
 								delete dataplussize.first;
+								if (mockReq.getRequestStatus() != 0) { // request error
+									res->setStatus(std::string(" ") + to_string(mockReq.getRequestStatus()) + " " + mockReq.getStatusMessage() + "\r\n");
+									res->setpath(get_error_page(mockReq.getRequestStatus(), serv));
+									return true;
+								}
 								std::map<std::string, std::string> headers = mockReq.getHeaders();
+								std::vector<std::pair<std::string, std::string> > resHeaders;
+								ITERATE(SELF(std::map<std::string, std::string>), headers, hIt) {
+									// PRINT_LINE_VALUE(hIt->first);
+									// PRINT_LINE_VALUE(hIt->second);
+									std::string value = hIt->second;
+									while (std::iswspace(value.back())) {
+										value = value.substr(0, value.length() - 1);
+									}
+									resHeaders.push_back(std::make_pair(hIt->first, value));
+								}
+								res->setCgiHeaders(resHeaders);
 								if (headers.find("status") != headers.end()) {
 									std::string statusCode = headers["status"];
 									if (statusCode.front() != ' ') {

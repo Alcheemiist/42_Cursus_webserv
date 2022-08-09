@@ -6,7 +6,7 @@
 
 std::vector<std::string> split_url(std::string str);
 
-bool url_is_formated(std::string url);
+// bool url_is_formated(std::string url);
 
 bool get_matched_location_for_request_uri(std::string url, Server server);
 
@@ -39,7 +39,7 @@ bool have_write_access_on_folder(std::string path);
 bool location_support_upload(std::string url);
 bool upload_post(Request *request, Response *response, std::string upload_path);
 bool Location_have_cgi(std::string url);
-std::pair<std::string, std::string> _cgi_ret(std::string url);
+// std::pair<std::string, std::string> _cgi_ret(std::string url);
 bool check_auto_index(std::string url, Server server);
 bool location_for_upload(bool location_for_upload(std::string url, Server server));
 size_t get_max_body_size(std::string url, Server server);
