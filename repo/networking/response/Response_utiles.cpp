@@ -18,16 +18,16 @@ std::vector<std::string> split_url(std::string url) {
 
 int str_matched(std::string str1, std::string str2)
 {
-	int i = 0;
+	size_t i = 0;
 	for (i = 0; i < str1.length() || i < str2.length() ||
 			str1[i] != str2[i] ; i++);
 	return i;
 }
 
-bool url_is_formated(std::string url)
-{
-	return (true);
-}
+// bool url_is_formated(std::string url)
+// {
+// 	return (true);
+// }
 
 bool file_exist(std::string path)
 {
@@ -83,7 +83,7 @@ bool	method_is_allowed(std::string method, std::string url ,Server server)
 	std::vector<Location>::const_iterator it_loc = location.begin();
 	std::string location_path = "";
 	std::string location_str;
-	int location_path_matched = 0;
+	// int location_path_matched = 0;
 	Location location_matched;
 	int allowed_method = 0;
 
@@ -239,6 +239,7 @@ bool location_support_upload(std::string url)
 
 bool upload_post(Request *request, Response *response, std::string upload_path)
 {
+	(void)upload_path;
 	std::string file_name_out = request->getPath();
 	std::string folder_out = response->get_upload_path();
 	for(std::string::reverse_iterator it = file_name_out.rbegin(); it != file_name_out.rend(); ++it)
@@ -293,24 +294,24 @@ bool Location_have_cgi(std::string url)
 	return (false);
 }
 
-std::pair<std::string, std::string> _cgi_ret(std::string url)
-{
-	std::pair<std::string, std::string> ret;
-	ret.first = "";
-	ret.second = "";
-	return (ret);
-}
+// std::pair<std::string, std::string> _cgi_ret(std::string url)
+// {
+// 	std::pair<std::string, std::string> ret;
+// 	ret.first = "";
+// 	ret.second = "";
+// 	return (ret);
+// }
 
-bool check_path_hierarchy(std::string root, std::string path)
-{
-	char actualpath_root [PATH_MAX+1];
-	char actualpath_req [PATH_MAX+1];
-	char* _root = realpath(root.c_str(), actualpath_root);
-	char* _path = realpath(path.c_str(), actualpath_root);
-	if (!(_root && _path))
-		return (false);
-	return (std::strncmp(actualpath_root, actualpath_root, strlen(actualpath_root)) == 0);
-}
+// bool check_path_hierarchy(std::string root, std::string path)
+// {
+// 	char actualpath_root [PATH_MAX+1];
+// 	char actualpath_req [PATH_MAX+1];
+// 	char* _root = realpath(root.c_str(), actualpath_root);
+// 	char* _path = realpath(path.c_str(), actualpath_root);
+// 	if (!(_root && _path))
+// 		return (false);
+// 	return (std::strncmp(actualpath_root, actualpath_root, strlen(actualpath_root)) == 0);
+// }
 
 bool check_auto_index(std::string url, Server server)
 {

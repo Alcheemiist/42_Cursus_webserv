@@ -38,6 +38,8 @@ typedef std::string str;
 #define SERVER_PROTOCOL_ENV "SERVER_PROTOCOL"
 #define SERVER_SOFTWARE_ENV "SERVER_SOFTWARE"
 #define REDIRECT_STATUS_ENV "REDIRECT_STATUS"
+#define COOKIE_ENV "SET-COOKIE"
+#define COOKIE_HEADER "cookie"
 
 const char *ft_strchr(const char *s, char c) {
 	while (*s) {
@@ -80,6 +82,18 @@ if (hit != headers.end()) exec_block }
 if (hit != headers.end()) { env[header ## _ENV] = hit->second; } }
 
 static size_t fileCount;
+
+std::string transformHeader(std::string str) {
+	ITERATE(std::string, str, it) {
+		if (*it == '-') {
+			*it = '_';
+		}
+		else {
+			*it = std::toupper(*it);
+		}
+	}
+	return str;
+}
 
 std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Server &serv, char **oenv, std::string requestedFile, std::string query) {
 	(void)cgiPath;
@@ -150,6 +164,10 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 	env[SERVER_SOFTWARE_ENV] = "webserv";
 	// GATEWAY_INTERFACE
 	env[GATEWAY_INTERFACE_ENV] = "CGI/1.1";
+	// rest of the headers
+	CONST_ITERATE(HeaderMap, headers, hit) {
+		env["HTTP_" + transformHeader(hit->first)] = hit->second;
+	}
 	int bFd = 0;
 	if (env[REQUEST_METHOD_ENV] == "POST") {
 		std::string bodyFname = req.getBodyFileName();
@@ -190,10 +208,10 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 		}
 		std::string statusLine = "POST / HTTP/1.1\r\n";
 		std::string scriptName = env[SCRIPT_NAME_ENV];
-		if (scriptName.substr(scriptName.find('.'), scriptName.length()) != ".php") {
-			statusLine += "\r\n";
-		}
-		if (write(1, statusLine.c_str(), statusLine.length()) != statusLine.length()) {
+		// if (scriptName.substr(scriptName.find('.'), scriptName.length()) != ".php") {
+		// 	statusLine += "\r\n";
+		// }
+		if ((size_t)write(1, statusLine.c_str(), statusLine.length()) != statusLine.length()) {
 			ERROR_LINE_VALUE("here");
 			// exit(errno + 255 - 102);
 		}

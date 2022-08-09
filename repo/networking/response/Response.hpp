@@ -38,11 +38,12 @@ class Response
         // 
         bool is_cgi;
 		bool is_autoindex;
-
+		std::vector<std::pair<std::string, std::string> > resHeaders;
     public:
         Response() : version("HTTP/1.1"), status(""), header(""), body(""), response(""), contentType(""),
-        body_file_size(0),  is_complete(false), body_file_path(""), maxBufferLenght(0), is_autoindex(false) {};
+        body_file_size(0),  is_complete(false), body_file_path(""), maxBufferLenght(0), is_autoindex(false), resHeaders(std::vector<std::pair<std::string, std::string> >()) {};
 
+		void setCgiHeaders(std::vector<std::pair<std::string, std::string> > );
         void setVersion(std::string version);
         void setStatus(std::string status);
         void setHeader(char *_header);

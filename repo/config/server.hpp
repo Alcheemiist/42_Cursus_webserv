@@ -53,6 +53,7 @@ public:
     void set_client_max_body_size(long long int client_max_body_size);
     void set_autoindex(bool autoindex);
     std::string get_name(unsigned int) const;
+    std::vector<std::string> get_name() const;
     std::string get_listen_host() const;
     unsigned int fill_listen(std::vector<std::string> words, unsigned int i);
     int get_listen_port() const;

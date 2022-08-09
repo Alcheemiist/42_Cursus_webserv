@@ -14,7 +14,7 @@ bool isDuplicate(std::vector<int> ports, int port)
 {
     int compteur = 0;
 
-    for (int i = 0; i < ports.size(); i++)
+    for (size_t i = 0; i < ports.size(); i++)
     {
         if (ports[i] == port)
             compteur++;
@@ -23,6 +23,29 @@ bool isDuplicate(std::vector<int> ports, int port)
     }
     return false;
 
+}
+
+void getServerIndexByServerName(int *index_server, Request *request, ParseConfig *config, std::vector<Server> &servers) {
+	std::string hostname = request->getHost().substr(0, request->getHost().find(':'));
+	// std::cout << "-->Hostname: " << hostname << std::endl;
+
+	for (size_t i = 0; i < servers.size(); i++) {
+		// std::cout << "x = " << config->get_server_vect()[i].get_name(0) << std::endl;
+		if (servers[i].get_listen_port() == servers[*index_server].get_listen_port()) {
+			std::vector<std::string> names = config->get_server_vect()[i].get_name();
+			for (size_t j = 0; j < names.size(); j++) {
+
+				while (std::iswspace(hostname.back())) {
+					hostname = hostname.substr(0, hostname.length() - 1);
+				}
+				if (strcmp(names[j].c_str(), hostname.c_str()) == 0) {
+					*index_server = i; // switch index to the specific server
+					return;
+				}
+			}
+		}
+	}
+	// check if the choosen server have a friend shared port with other servers
 }
 
 Response  response(Request *request, ParseConfig *config, int index_server, std::vector<int> ports)
@@ -34,29 +57,7 @@ Response  response(Request *request, ParseConfig *config, int index_server, std:
     bool flag = isDuplicate(ports, servers[index_server].get_listen_port());
     if (servers.size() >= 2 && flag)
     {
-        std::string hostname = request->getHost().substr(0, request->getHost().find(':'));
-        // std::cout << "-->Hostname: " << hostname << std::endl;
-        for (int i = 0; i < servers.size(); i++)
-        {
-            if (servers[i].get_listen_port() == servers[index_server].get_listen_port())
-            {
-                if (strcmp(config->get_server_vect()[i].get_name(0).c_str() , hostname.c_str()) == 0)
-                {
-                    index_server = i; // switch index to the specific server
-                    break;
-                }
-            }
-        }
-        // check if the choosen server have a friend shared port with other servers 
-        std::cout << "---------------------------------------" << std::endl;
-        std::cout << "my request HOST : " << request->getHost() << std::endl;
-        std::cout << "my servers size : " << servers.size() << std::endl;
-        std::cout << "---------------------------------------" << std::endl;
-        std::cout << "choseen server name : " << config->get_server_vect()[index_server].get_name(0) << std::endl;
-        std::cout << "choseen server root : " << config->get_server_vect()[index_server].get_root() << std::endl;
-        std::cout << "choseen server port : " << config->get_server_vect()[index_server].get_listen_port() << std::endl;
-        std::cout << "choseen server host : " << config->get_server_vect()[index_server].get_listen_host() << std::endl;
-        std::cout << "---------------------------------------" << std::endl;
+        getServerIndexByServerName(&index_server, request, config, servers);
     }
 
     std::string header_str = "";
@@ -72,7 +73,7 @@ Response  response(Request *request, ParseConfig *config, int index_server, std:
         return response;
 	}
 
-    if (!isValidURLPath(path)) {
+    if (!isValidURLPath(path) || (request->getHeaders().find("host") == request->getHeaders().end())) {
         response.setStatus(" 400 BAD REQUEST\r\n");
         response.setpath(get_error_page(400 , config->get_server_vect()[index_server]));
         return response;
@@ -132,14 +133,14 @@ std::string Response::setStatus(Request *request, Server server)
             this->status = capitalize(" 400 BAD REQUEST\r\n");
             return get_error_page(400 , server);
         }
-		else if (!url_is_formated(request->geturl()))
-        {
-            this->status = capitalize(" 400 BAD REQUEST\r\n");
-            return get_error_page(400 , server);
-        }
+		// else if (!url_is_formated(request->geturl()))
+        // {
+        //     this->status = capitalize(" 400 BAD REQUEST\r\n");
+        //     return get_error_page(400 , server);
+        // }
         else if (request->geturl().length() > MAX_URL_LENGTH)
 		{
-        	this->status = capitalize(" 414 REQUEST-URI TOO LARGE\r\n");
+        	this->status = capitalize(" 414 URI TOO LONG\r\n");
             return get_error_page(414, server);
         }
         else if (max_body_size != (size_t)-1 && request->get_body_length() != (size_t)-1 && request->get_body_length() > max_body_size)
@@ -241,7 +242,7 @@ void	Response::init_redirection(std::string url, Server server, std::string &sta
 	std::vector<std::vector<std::string> > red = server.get_redirections();
 	std::string redirection_str;
 	std::string _redirection_path = "";
-	int redirection_path_matched = 0;
+	// int redirection_path_matched = 0;
     std::string path_absol = "";
 
 	for(std::vector<std::vector<std::string> >::iterator it = red.begin(); it != red.end(); ++it) {
@@ -372,6 +373,10 @@ std::vector<char> Response::get_buffer()
     return buffer;
 };
 
+void Response::setCgiHeaders(std::vector<std::pair<std::string, std::string> > __headers__) {
+	resHeaders = __headers__;
+}
+
 std::string Response::getHeader() 
 {
     std::string res;
@@ -403,6 +408,13 @@ std::string Response::getHeader()
         res.append("\r\n");
     }
     res.append((is_cgi) ? "server: alchemist\r\n":"server: alchemist_CGI\r\n");
+	
+	ITERATE(SELF(std::vector<std::pair<std::string, std::string> >), resHeaders, it) {
+		res.append(it->first);
+		res.append(": ");
+		res.append(it->second);
+		res.append("\r\n");
+	}
     res.append("\r\n");
     setHeader(res);
     //
@@ -494,7 +506,7 @@ std::string  POSTresponse(Request *request, Response *response, ParseConfig *con
         else
         {
 			body_f = get_error_page(500, config->get_server_vect()[index_server]);
-			response->setStatus(" 500 Internal Error\r\n");
+			response->setStatus(" 500 Internal Server Error\r\n");
 		}
 		body_f = get_error_page(403, config->get_server_vect()[index_server]);
     }
@@ -514,7 +526,7 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
     std::string body_f = "empty";
     if(!response->get_status().empty())
         return body_f;
-	PRINT_LINE_VALUE(response->get_location());
+	// PRINT_LINE_VALUE(response->get_location());
     if(requested_file_in_root(response->get_location()))
     {
         if (is_file(response->get_location()))

@@ -7,7 +7,9 @@ now = datetime.now()
 
 current_time = now.strftime("%m/%d/%Y, %H:%M:%S")
 
-print("""
+print("""X-Powered-By: Python2\r
+Content-Type: text/html\r
+\r
 <!DOCTYPE html>
 <html lang="en">
 <head>
