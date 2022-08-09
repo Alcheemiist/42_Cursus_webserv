@@ -89,6 +89,8 @@ Request::Request(char *buffer, size_t bytes, int fd, size_t cl) :	_method(""),
     int         offset = 0;
     bool        is_first = true;
 
+	is_formated = false;
+
     while (std::getline(ss, line))
     {
         std::cout << B_blue << line << B_def << std::endl;
@@ -150,11 +152,12 @@ Request::Request(char *buffer, size_t bytes, int fd, size_t cl) :	_method(""),
 			}
             else 
             {
-				PRINT_LINE_VALUE(line);
-                this->_isGoodRequest = this->is_formated = false;
-                this->status_message =  "400 Bad Request\r\n";
-                this->_path = "./errorsPages/400.html"; 
-                std::cout << "bad request" << std::endl;
+				// PRINT_LINE_VALUE(line);
+                // this->_isGoodRequest = this->is_formated = false;
+                // this->status_message =  "400 Bad Request\r\n";
+                // this->_path = "./errorsPages/400.html"; 
+                // std::cout << "bad request" << std::endl;
+				badRequest();
             }
             // std::cout << B_green <<"--->" << header.first << "/" << header.second << B_def << std::endl;
         }

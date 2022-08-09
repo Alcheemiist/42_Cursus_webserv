@@ -350,7 +350,7 @@ size_t get_max_body_size(std::string url, Server server)
 	int location_path_matched = 0;
 	Location location_matched;
 	int max_body_size = -1;
-	bool was_matched;
+	bool was_matched = false;
 
 	for (; it_loc != location.end(); it_loc++)
 	{

@@ -118,9 +118,11 @@ std::string Response::setStatus(Request *request, Server server)
     // std::string code_status_file;
 
     size_t max_body_size = get_max_body_size(request->getPath(), server);
+	// PRINT_LINE_VALUE(max_body_size);
     this->init_location(request->geturl(),server);
     this->init_redirection(request->geturl(), server, code_redirection);
     init_location_for_upload(request->geturl(), server);
+	// PRINT_LINE_VALUE(!request->get_is_formated());
 	if (!request->get_is_formated())
 	{
 		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked")
@@ -143,10 +145,14 @@ std::string Response::setStatus(Request *request, Server server)
         	this->status = capitalize(" 414 URI TOO LONG\r\n");
             return get_error_page(414, server);
         }
-        else if (max_body_size != (size_t)-1 && request->get_body_length() != (size_t)-1 && request->get_body_length() > max_body_size)
+        else 
         {
-        	this->status = capitalize(" 413 REQUEST ENTITY TOO LARGE\r\n");
-            return get_error_page(413, server);
+			// PRINT_LINE_VALUE(max_body_size);
+			// PRINT_LINE_VALUE(request->get_body_length());
+			if (max_body_size != (size_t)-1 && request->get_body_length() != (size_t)-1 && request->get_body_length() > max_body_size) {
+				this->status = capitalize(" 413 REQUEST ENTITY TOO LARGE\r\n");
+				return get_error_page(413, server);
+			}
         }
     }
     if (!method_is_allowed(request->getMethod(), request->geturl(),  server))
