@@ -29,6 +29,7 @@ forms, including the uploading of files.
 
 ## Todo List:
     - clean all the code and make it more readable.
+    - add a documentation.
     - make it more efficient. ( networking, CGI(php, python), Upload, session and cokiees ...) 
     - make it more secure. (Config file, ...)
     - ...
