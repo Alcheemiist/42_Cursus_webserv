@@ -33,7 +33,6 @@ private:
     int requestStatus;
     std::string status_message;
     ssize_t bodyFileSize;
-    // attributes to reviewed
     bool        is_formated;
     std::string transfer_encoding;
     int         _port;
@@ -49,7 +48,6 @@ public:
 
     std::string getHost() {return _host;};
    
-    // void isCgiRequest(std::string path) { is_cgi_request = extensionCgi(path);}
     bool isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Response *res, std::string query);
     size_t get_body_length(){  return getFileSize(bodyFileName.c_str());  }
     std::string getMethod() const { return _method; };
@@ -64,7 +62,6 @@ public:
     int getcontent_length() const { return _content_length; };
     int get_port() const { return _port; };
     void parse(char *buffer);
-    //char *readFile(const char *fileName);
     void checkRequest();
     void badRequest() { requestStatus = 400; status_message = "Bad Request";_isGoodRequest = false; };
     void httpVersionNotSupported() { requestStatus = 505; status_message = "HTTP Version Not Supported";_isGoodRequest = false; };
@@ -72,7 +69,6 @@ public:
 	std::string getStatusMessage() const { return status_message; };
     bool isGoodrequest() { return (true); };
     void show();
-    // Here to add methods to be reviewed
     bool get_is_formated() { return is_formated; }
     std::string get_transfer_encoding() { return transfer_encoding; }
     std::string geturl() const { return _path; };
@@ -82,7 +78,6 @@ public:
     
 };
 
-//char *readFile(const char *fileName);
 long readRequest(int new_socket, Request *request);
 std::vector<std::string> split(const std::string &s, char delim);
 std::string to_Lower_case(std::string str);

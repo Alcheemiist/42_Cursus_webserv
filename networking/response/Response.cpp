@@ -27,10 +27,7 @@ bool isDuplicate(std::vector<int> ports, int port)
 
 void getServerIndexByServerName(int *index_server, Request *request, ParseConfig *config, std::vector<Server> &servers) {
 	std::string hostname = request->getHost().substr(0, request->getHost().find(':'));
-	// std::cout << "-->Hostname: " << hostname << std::endl;
-
 	for (size_t i = 0; i < servers.size(); i++) {
-		// std::cout << "x = " << config->get_server_vect()[i].get_name(0) << std::endl;
 		if (servers[i].get_listen_port() == servers[*index_server].get_listen_port()) {
 			std::vector<std::string> names = config->get_server_vect()[i].get_name();
 			for (size_t j = 0; j < names.size(); j++) {
@@ -63,9 +60,7 @@ Response  response(Request *request, ParseConfig *config, int index_server, std:
     std::string header_str = "";
     Response response;
     response.setpath("empty");
-    // std::string s;
     std::string path = request->getPath();
-    
 
 	if (request->getRequestStatus() != 0) { // request error
 		response.setStatus(std::string(" ") + to_string(request->getRequestStatus()) + " " + request->getStatusMessage() + "\r\n");
@@ -102,7 +97,6 @@ Response  response(Request *request, ParseConfig *config, int index_server, std:
     else
         response.setContentType(response.get_location());
     std::cout << header_str << std::endl;
-    // response.setpath(s);
     std::cout << "body_path : " << response.getpath() << std::endl;
     std::cout << "body_path : " << response.getpath() << std::endl;
 
@@ -118,11 +112,9 @@ std::string Response::setStatus(Request *request, Server server)
     // std::string code_status_file;
 
     size_t max_body_size = get_max_body_size(request->getPath(), server);
-	// PRINT_LINE_VALUE(max_body_size);
     this->init_location(request->geturl(),server);
     this->init_redirection(request->geturl(), server, code_redirection);
     init_location_for_upload(request->geturl(), server);
-	// PRINT_LINE_VALUE(!request->get_is_formated());
 	if (!request->get_is_formated())
 	{
 		if (request->get_transfer_encoding().size() > 0 && request->get_transfer_encoding() != "chunked")
@@ -135,11 +127,7 @@ std::string Response::setStatus(Request *request, Server server)
             this->status = capitalize(" 400 BAD REQUEST\r\n");
             return get_error_page(400 , server);
         }
-		// else if (!url_is_formated(request->geturl()))
-        // {
-        //     this->status = capitalize(" 400 BAD REQUEST\r\n");
-        //     return get_error_page(400 , server);
-        // }
+
         else if (request->geturl().length() > MAX_URL_LENGTH)
 		{
         	this->status = capitalize(" 414 URI TOO LONG\r\n");
@@ -147,8 +135,6 @@ std::string Response::setStatus(Request *request, Server server)
         }
         else 
         {
-			// PRINT_LINE_VALUE(max_body_size);
-			// PRINT_LINE_VALUE(request->get_body_length());
 			if (max_body_size != (size_t)-1 && request->get_body_length() != (size_t)-1 && request->get_body_length() > max_body_size) {
 				this->status = capitalize(" 413 REQUEST ENTITY TOO LARGE\r\n");
 				return get_error_page(413, server);
@@ -185,7 +171,6 @@ void Response::init_location(std::string url, Server server)
 	std::string location_path = "";
 	std::string location_str;
 	int location_path_matched = 0;
-	// Location location_matched;
 	this->requested_path = "";
 
 	for (; it_loc != location.end(); it_loc++)
@@ -199,10 +184,8 @@ void Response::init_location(std::string url, Server server)
 			if (str_matched(location_str, location_path) > location_path_matched)
 			{
 				url_copy = url.substr(location_str.size());
-				// PRINT_LINE_VALUE(url_copy);
 				location_path = location_str;
 				location_path_matched = str_matched(location_str, location_path);
-				// location_matched = *it_loc;
 				this->requested_path = remove_duplicate_slash(it_loc->get_root() + "/" + url_copy);
 			}
 		}
@@ -248,7 +231,6 @@ void	Response::init_redirection(std::string url, Server server, std::string &sta
 	std::vector<std::vector<std::string> > red = server.get_redirections();
 	std::string redirection_str;
 	std::string _redirection_path = "";
-	// int redirection_path_matched = 0;
     std::string path_absol = "";
 
 	for(std::vector<std::vector<std::string> >::iterator it = red.begin(); it != red.end(); ++it) {
@@ -281,39 +263,6 @@ void	Response::init_redirection(std::string url, Server server, std::string &sta
 			}
 		}
 	}
-	// PRINT_LINE_VALUE(this->redirection_path);
-	// if (redirection_path_matched)
-    // {
-    //     if (path_absol.length() > 0)
-    //         this->redirection_path = path_absol;
-    //     else
-    //         this->redirection_path = url.replace(0, _redirection_path.size(), _redirection_path);
-    // }
-    // else
-    //     this->redirection_path = "";
-
-		// if (redirection_str.back() != '/')
-		// 		redirection_str += "/";
-	// 	if (url.substr(0, redirection_str.size()) == redirection_str) {
-	// 		if (str_matched(redirection_str, _redirection_path) > redirection_path_matched) {
-    //             println("it02 = ", it[0][2]);
-    //             if (std::isdigit(it[0][2][0])) {
-    //                 statusLine = get_status_code(to_int(it[0][2]));
-    //             }
-    //             else if (it[0][2] == "temporary") {
-    //                 statusLine = get_status_code(307);
-    //             }
-    //             else {
-    //                 statusLine = get_status_code(308);
-    //             }
-    //             println("status = ", statusLine);
-    //             _redirection_path = (*it)[1];
-	// 			redirection_path_matched = str_matched(redirection_str, _redirection_path);
-    //             if (std::strncmp(_redirection_path.c_str(), "http", 4) == 0)
-    //                 path_absol = _redirection_path;
-
-	// 		}
-	// 	}
 }
 
 void Response::setContentType(std:: string s)
@@ -387,11 +336,6 @@ std::string Response::getHeader()
 {
     std::string res;
     
-    is_cgi = false;
-    if (is_cgi)
-    {
-        // TODO: check if path is set and headedrs exist
-    }; 
     // status line
     res.append(version);
     res.append(status);
@@ -426,14 +370,6 @@ std::string Response::getHeader()
     //
     return res;
 };
-
-// std::string ERRORresponse(Request *request, Response *response, ParseConfig *config, int server_index)
-// {
-//     std::string body_f = "";
-//     body_f = get_error_page(std::atoi(response->get_status().c_str()),  config->get_server_vect()[server_index]);
-//     response->setpath(body_f);
-//     return body_f;
-// }
 
 std::string DELETEresponse(Request *request, Response *response, ParseConfig *config,  int index_server)
 {
@@ -532,7 +468,6 @@ std::string  GETresponse(Request *request, Response *response, ParseConfig *conf
     std::string body_f = "empty";
     if(!response->get_status().empty())
         return body_f;
-	// PRINT_LINE_VALUE(response->get_location());
     if(requested_file_in_root(response->get_location()))
     {
         if (is_file(response->get_location()))
@@ -705,7 +640,6 @@ void        Response::init_location_for_upload(std::string url, Server server)
     }
 }
 void        Response::show() {
-	// std::cout << red << "Header : SOF-{" << def << this->header << red << "}-EOF" << def << std::endl;
 }
 std::string Response::get_upload_path() { return this->upload_path; };
 void        Response::setpath (std::string path){ this->body_file_path = path; }

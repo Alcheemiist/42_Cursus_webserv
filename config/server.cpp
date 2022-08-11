@@ -25,8 +25,6 @@ Server::Server():
 {
 
 }
-    // _location(),
-    // _cgi()
 std::string server_names[] = {"listen","root","allow_methods", "upload_path", "index", "error_page", "autoindex", "redirection"};
 
 //-------------destructor--------------
@@ -52,10 +50,6 @@ void    Server::set_name(std::string name)
 
 Server::Server(const Server &src)
 {
-    // if (this != &src)
-    // {
-    //     *this = src;
-    // }
 	_name = src._name;
 	_listen_port = src._listen_port;
 	_listen_host = src._listen_host;
@@ -154,51 +148,6 @@ void    Server::set_listen(std::string listen)
 		}
 		_listen_port = to_int(listen.substr(listen.find(':') + 1, listen.length()));
 	}
-    // if (!_listen_host.empty() || _listen_port != -1)
-    // {
-    //     std::cout << "Error: listen already set" << std::endl;
-    //     exit(1);
-    // }
-    // std::size_t found=listen.find(':');
-    // if (found != std::string::npos)
-    // {
-    //     if (found == 0 && (listen.size() - found != 1))
-    //     {
-    //         std::string tmp;
-    //         _listen_host = "0.0.0.0";
-    //         tmp = listen.substr(1, listen.size());
-    //         if (is_number(tmp))
-    //             _listen_port = std::stoi(tmp);
-    //         else
-    //         {
-    //             std::cout << "Error: port should be a number" << std::endl;
-    //             exit(1);
-    //         }
-    //     }
-    //     else if (found == 0 && (listen.size() - found == 1))
-    //     {
-    //         _listen_host = "0.0.0.0" ;
-    //         _listen_port = 80;
-    //     }
-    //     else
-    //     {
-    //         // check_host(listen.substr(0, found));
-    //         _listen_host = listen.substr(0, found);
-    //         std::string tmp;
-    //         _listen_host = listen.substr(0, found);
-    //         tmp = listen.substr(found+1, listen.size());
-    //         if (is_number(tmp))
-    //             _listen_port = std::stoi(tmp);
-    //         else
-    //             std::cout << "Error: port should be a number" << std::endl;
-    //     }
-    // }
-    // else
-    // {
-    //     // check_host(listen);
-    //     _listen_host = listen;
-    //     _listen_port = 80;
-    // }
 }
 
 void    Server::set_allowed_methods_vect(std::vector<std::string> allowed_methods)

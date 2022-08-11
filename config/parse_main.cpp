@@ -57,18 +57,15 @@ void skipComment(std::string::iterator &ch) {
 			skippedComment += *ch;
 			ch++;
 		}
-		// PRINT_LINE_VALUE(skippedComment);
 	}
 }
 
 
 void recursivelyParseCfg(Component &currentContext,
 						Component &root,
-						// std::string currentContextName,
 						std::string::iterator &ch,
 						std::string::iterator it_begin,
 						char end) {
-	// currentContext.setName(currentContextName);
 	currentContext.setIsContext(true);
 	if (*ch == end && *ch) {
 		ch++;
@@ -108,15 +105,12 @@ void recursivelyParseCfg(Component &currentContext,
 					throw std::string("Context and directive names can only be in the regex format [a-zA-Z_-]+");
 				}
 				skipWhiteSpace(ch, end);
-				// PRINT_LINE_VALUE("here");
 				if (!reachedEnd(ch, end)) {
 					Component child;
 					child.setName(componentName);
-					// PRINT_LINE_VALUE(currentContext.depth());
 					child.setDepth(currentContext.depth() + 1);
 					child.setCol(col);
 					child.setLine(line);
-					// PRINT_LINE_VALUE(child.depth());
 					if (*ch == ';' || *ch == '}' || *ch == '#') {
 						if (*ch == ';') {
 							ch = bkp;
@@ -127,7 +121,6 @@ void recursivelyParseCfg(Component &currentContext,
 						}
 						PRINT_LINE_VALUE("here");
 						throw std::string("Unexpected character");
-						// return 1;
 					}
 					while (*ch != ';' && *ch != '{' && !reachedEnd(ch, end)) {
 						std::string attr = "";
@@ -137,52 +130,32 @@ void recursivelyParseCfg(Component &currentContext,
 						}
 						if (reachedEnd(ch, end)) {
 							throw std::string(end ? "Unexpected end of scope" : "Unexpected end of file");
-							// return 1;
 						}
 						child.appendAttr(attr);
 						skipWhiteSpace(ch, end);
 					}
 					if (*ch == '{') {
 						ch++;
-						// PRINT_LINE_VALUE(currentContext.name());
-						// PRINT_LINE_VALUE(child.name());
 						child.setParentName(currentContext.name());
 						recursivelyParseCfg(child, root, ch, it_begin, '}');
 						currentContext.appendChild(child);
-						// PRINT_LINE_VALUE(child.depth());
 					}
 					else if (*ch == ';') {
 						ch++;
 						child.setParentName(currentContext.name());
 						currentContext.appendChild(child);
-						// PRINT_LINE_VALUE(child.depth());
 					}
 					else {
 						throw std::string(std::string("") + "Expected start of a context or end of a directive, got \"" + *ch + "\"");
-						// return 1;
 					}
 				}
-				// else {
-					// throw std::string(end ? "Unexpected end of scope" : "Unexpected end of file");
-					// return 1;
-				// }
 			}
 			else {
-				// PRINT_LINE_VALUE("here");
-				// PRINT_LINE_VALUE(*ch);
-				// PRINT_LINE_VALUE(end == '\0');
-				// PRINT_LINE_VALUE(end);
-				// PRINT_LINE_VALUE(currentContext.name());
-				// PRINT_LINE_VALUE(reachedEnd(ch, end));
-				// PRINT_LINE_VALUE(*ch == end || *ch == '\0');
 				throw std::string("Unexpected character");
 			}
 		}
 		if (&root != &currentContext && !*ch) {
-			// println(__FILE__, ":", __LINE__);
-			// println(*ch);
 			throw std::string("Unexpected end of file");
-			// return 1;
 		}
 		if (*ch == end && *ch) {
 			ch++;
@@ -724,7 +697,6 @@ void startServer(int port) {
 	int opt = 1;
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
 		errorln("setsockopt failed");
-		// perror("");
 		exit(1);
 	}
 	struct sockaddr_in address;
@@ -784,7 +756,6 @@ void printComponentRecursively(Component &current, std::string cfg, int tabs = 0
 	}
 	error(RESET);
 	if (current.parentName() != PARENT_GLOBAL_CONTEXT) {
-		// error(current.line(), ":", current.col(), ' ', current.depth(), ' ');
 		error(current.isContext() ? BABY_PINK : BABY_BLUE);
 		error(current.name(), ' ');
 		error(RESET);
@@ -801,14 +772,6 @@ void printComponentRecursively(Component &current, std::string cfg, int tabs = 0
 			if (current.children().size()) {
 				errorln("");
 			}
-			// if (current.children().size() == 0) {
-			// 	error(FAINT_GRAY);
-			// 	for (int i = 0; i < tabs; i++) {
-			// 		error("→   ");
-			// 	}
-			// 	error(RESET);
-			// 	error('\n');
-			// }
 		}
 		int complen = current.children().size();
 		for (int i = 0; i < complen; i++) {

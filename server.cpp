@@ -16,7 +16,6 @@ void handle_signal_action(int sig_number)
     else if (sig_number == SIGPIPE)
     {
         std::cout << red << " { SIGPIPE was catched! }" << def << std::endl;
-        // shutdown_properlyy(EXIT_SUCCESS);
     }
 }
 
