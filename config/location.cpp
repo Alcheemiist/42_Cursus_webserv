@@ -15,10 +15,6 @@ Location::~Location() {}
 // copy constructor
 Location::Location(const Location &obj)
 {
-    // if (this != &obj)
-    // {
-    //     *this = obj;
-    // }
 	_cgi = obj._cgi;
 	_name = obj._name;
 	_locations_path = obj._locations_path;
@@ -187,7 +183,6 @@ std::string Location::get_methods(unsigned int i) const
 
 void Location::set_client_max_body_size(long long int client_max_body_size)
 {
-    // std::cout << "inside location 55" << client_max_body_size << std::endl;
     _client_max_body_size = client_max_body_size;
 }
 

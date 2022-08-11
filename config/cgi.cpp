@@ -1,14 +1,9 @@
 
 #include "cgi.hpp"
 
-Cgi::Cgi() : _name(""), _cgi_path(""), _allow_methods(std::vector<std::string>())
-{
-}
+Cgi::Cgi() : _name(""), _cgi_path(""), _allow_methods(std::vector<std::string>()) { }
 
-Cgi::~Cgi()
-{
-}
-
+Cgi::~Cgi() { }
 
 void Cgi::set_cgi_path(std::string cgi_path)
 {
@@ -21,14 +16,10 @@ void Cgi::set_cgi_path(std::string cgi_path)
     }
 }
 
-void Cgi::set_cgi_methods_vect(std::vector<std::string> methods)
-{
-    _allow_methods = methods;
-}
+void Cgi::set_cgi_methods_vect(std::vector<std::string> methods){ _allow_methods = methods; }
 
 void Cgi::set_cgi_methods(std::string methods)
 {
-    // std::cout << methods << std::endl;
     if (methods == "POST" || methods == "GET" || methods == "DELETE")
         this->_allow_methods.push_back(methods);
     else
@@ -50,30 +41,15 @@ void    Cgi::set_cgi_name(std::string name)
     
 }
 
-std::string Cgi::get_cgi_methods(int i) const
-{
-    return this->_allow_methods[i];
-}
+std::string Cgi::get_cgi_methods(int i) const {  return this->_allow_methods[i]; }
 
-std::vector<std::string> Cgi::get_cgi_methods() const
-{
-    return this->_allow_methods;
-}
+std::vector<std::string> Cgi::get_cgi_methods() const { return this->_allow_methods; }
 
-std::string Cgi::get_cgi_name() const
-{
-    return this->_name;
-}
+std::string Cgi::get_cgi_name() const { return this->_name; }
 
-std::string Cgi::get_cgi_path() const
-{
-    return this->_cgi_path;
-}
+std::string Cgi::get_cgi_path() const { return this->_cgi_path; }
 
-unsigned int Cgi::get_cgi_methods_size()
-{
-    return this->_allow_methods.size();
-}
+unsigned int Cgi::get_cgi_methods_size() {  return this->_allow_methods.size(); }
 
 /*
     operator

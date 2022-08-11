@@ -185,7 +185,6 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 	fileCount++;
 
 	int resFd = open(ret.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	// errorln("resfd = ", resFd, ", WRITE RET = ", write(resFd, "test", 4), ", errno = ", errno);
 	struct stat sb;
 	if (resFd == -1 || !(stat(ret.c_str(), &sb) == 0 && S_ISREG(sb.st_mode))) {
 		throw CGI_ERROR_RES_BODY;
@@ -199,23 +198,16 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 	}
 	else if (!pid) {
 		if (dup2(bFd, 0) < 0) {
-			// exit(errno + 255 - 102);
 			ERROR_LINE_VALUE("here");
 		}
 		if (dup2(resFd, 1) < 0) {
 			ERROR_LINE_VALUE("here");
-			// exit(errno + 255 - 102);
 		}
 		std::string statusLine = "POST / HTTP/1.1\r\n";
 		std::string scriptName = env[SCRIPT_NAME_ENV];
-		// if (scriptName.substr(scriptName.find('.'), scriptName.length()) != ".php") {
-		// 	statusLine += "\r\n";
-		// }
 		if ((size_t)write(1, statusLine.c_str(), statusLine.length()) != statusLine.length()) {
 			ERROR_LINE_VALUE("here");
-			// exit(errno + 255 - 102);
 		}
-		// ERROR_LINE_VALUE("here");
 		char *av[3];
 		std::string av0 = cgiPath;
 		av[0] = strdup(av0.c_str());
@@ -232,18 +224,11 @@ std::string formulateResponseFromCGI(const Request &req, std::string cgiPath, Se
 		std::string cdhere = requestedFile.substr(0, requestedFile.find_last_of("/"));
 		chdir(cdhere.c_str());
 		execve(cgiPath.c_str(), av, ep);
-		// ERROR_LINE_VALUE("here");
-		// perror("test");
 		exit(1);
 	}
 	else {
 		int processReturn;
 		wait(&processReturn);
-		// int exitStatus = WEXITSTATUS(processReturn);
-		// if (exitStatus > (255 - 102)) {
-		// 	PRINT_LINE_VALUE(exitStatus);
-		// 	throw (exitStatus - (255 - 102));
-		// }
 	}
 	return ret;
 }

@@ -24,11 +24,6 @@ int str_matched(std::string str1, std::string str2)
 	return i;
 }
 
-// bool url_is_formated(std::string url)
-// {
-// 	return (true);
-// }
-
 bool file_exist(std::string path)
 {
 	struct stat st;
@@ -83,7 +78,6 @@ bool	method_is_allowed(std::string method, std::string url ,Server server)
 	std::vector<Location>::const_iterator it_loc = location.begin();
 	std::string location_path = "";
 	std::string location_str;
-	// int location_path_matched = 0;
 	Location location_matched;
 	int allowed_method = 0;
 
@@ -174,7 +168,6 @@ bool remove_all_folder_content(std::string path)
 				std::cout << "ent->d_name : " << ent->d_name << std::endl;
 				if (is_file(file_path))
 				{
-					// if (acce)
 					if (remove(file_path.c_str()) != 0)
 					{
 						ret = false;
@@ -293,25 +286,6 @@ bool Location_have_cgi(std::string url)
 		return (true);
 	return (false);
 }
-
-// std::pair<std::string, std::string> _cgi_ret(std::string url)
-// {
-// 	std::pair<std::string, std::string> ret;
-// 	ret.first = "";
-// 	ret.second = "";
-// 	return (ret);
-// }
-
-// bool check_path_hierarchy(std::string root, std::string path)
-// {
-// 	char actualpath_root [PATH_MAX+1];
-// 	char actualpath_req [PATH_MAX+1];
-// 	char* _root = realpath(root.c_str(), actualpath_root);
-// 	char* _path = realpath(path.c_str(), actualpath_root);
-// 	if (!(_root && _path))
-// 		return (false);
-// 	return (std::strncmp(actualpath_root, actualpath_root, strlen(actualpath_root)) == 0);
-// }
 
 bool check_auto_index(std::string url, Server server)
 {

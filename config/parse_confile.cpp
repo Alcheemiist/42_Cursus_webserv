@@ -162,18 +162,14 @@ void ParseConfig::check_host_server_names_error()
 
 void ParseConfig::start_parsing()
 {
-    // std::cout << "Hello" << std::endl;
     split_by_space();
     if (_words.size() == 0)
     {
         std::cout << "Error: File Not Well Formated(no word)" << std::endl;
         exit(1);
     }
-    // std::cout << "BYE" << std::endl;
     accolade_error();
-    // std::cout << "THREE" << std::endl;
     syntax_error();
-    // std::cout << "FOUR" << std::endl;
     for (unsigned int i = 0; i < _words.size(); i++)
     {
         if (_words[i] == "server" && ((i + 1) < _words.size()))

@@ -23,14 +23,12 @@ ParsingError::ParsingError(std::string _error, std::string programName, std::str
 				error += "    ";
 			else
 				error += *it;
-			// col += *it == '\t' ? 3 : 0;
 			it++;
 		}
 		error += '\n';
 		it = tmp;
 		int i = 1;
 		while (it != fContent.end() && *it != '\n' && i < col) {
-		// for (int i = 1; i < col; i++) {
 			error += *it == '\t' ? "    " : " ";
 			it++;
 			i++;

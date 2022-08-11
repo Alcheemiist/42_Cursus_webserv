@@ -152,11 +152,6 @@ Request::Request(char *buffer, size_t bytes, int fd, size_t cl) :	_method(""),
 			}
             else 
             {
-				// PRINT_LINE_VALUE(line);
-                // this->_isGoodRequest = this->is_formated = false;
-                // this->status_message =  "400 Bad Request\r\n";
-                // this->_path = "./errorsPages/400.html"; 
-                // std::cout << "bad request" << std::endl;
 				badRequest();
             }
             // std::cout << B_green <<"--->" << header.first << "/" << header.second << B_def << std::endl;
@@ -339,8 +334,6 @@ bool Request::isCgiRequest(Request *req, ParseConfig *conf, int serv_index, Resp
 								std::map<std::string, std::string> headers = mockReq.getHeaders();
 								std::vector<std::pair<std::string, std::string> > resHeaders;
 								ITERATE(SELF(std::map<std::string, std::string>), headers, hIt) {
-									// PRINT_LINE_VALUE(hIt->first);
-									// PRINT_LINE_VALUE(hIt->second);
 									std::string value = hIt->second;
 									while (std::iswspace(value.back())) {
 										value = value.substr(0, value.length() - 1);
