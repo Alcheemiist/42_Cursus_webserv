@@ -3,7 +3,7 @@
 
 ## Description(Preambule):
 
-<This project is about writing my own HTTP server.
+<This project is about -- writing my own HTTP server.
 HTTP is one of the most used protocols on the internet.
 Knowing its arcane will be useful, even if you won’t be working on a website/>
 
