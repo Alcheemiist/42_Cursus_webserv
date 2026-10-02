@@ -1,41 +1,66 @@
-# 42_Cursus_Project 
-# Project name : Webserv 
+# Webserv — an HTTP/1.1 server in C++98
 
-## Description(Preambule):
+A non-blocking HTTP server written from scratch in C++98, with nginx-style configuration, CGI, file uploads and multiple virtual servers. It was built as a team project at 1337 (42 Network) with [@sickl8](https://github.com/sickl8), [@Chegashi](https://github.com/Chegashi) and [@nassimabb](https://github.com/nassimabb).
 
-<This project is about -- writing my own HTTP server.
-HTTP is one of the most used protocols on the internet.
-Knowing its arcane will be useful, even if you won’t be working on a website/>
+## Features
 
-- The Hypertext Transfer Protocol (HTTP) is an application protocol for distributed,
-collaborative, hypermedia information systems.
-- HTTP is the foundation of data communication for the World Wide Web, where hypertext documents include hyperlinks to other resources that the user can easily access.
-- For example, by a mouse click or by tapping the screen in a web browser.
-HTTP was developed to facilitate hypertext and the World Wide Web.
-The primary function of a web server is to store, process, and deliver web pages to
-clients. The communication between client and server takes place using the Hypertext
-Transfer Protocol (HTTP).
-- Pages delivered are most frequently HTML documents, which may include images,
-style sheets, and scripts in addition to the text content.
-Multiple web servers may be used for a high-traffic website.
-- A user agent, commonly a web browser or web crawler, initiates communication by
-requesting a specific resource using HTTP and the server responds with the content of
-that resource or an error message if unable to do so. The resource is typically a real file
-on the server’s secondary storage, but this is not necessarily the case and depends on how
-the webserver is implemented.
-- While the primary function is to serve content, full implementation of HTTP also
-includes ways of receiving content from clients. This feature is used for submitting web
-forms, including the uploading of files.
+- **Single-threaded I/O multiplexing** with `select()` across all listening and client sockets. Nothing blocks.
+- **Methods:** `GET`, `POST` (including file upload) and `DELETE`.
+- **nginx-style config:** several `server` blocks, `listen`, `server_names`, `root`, `index`, `autoindex`, `allow_methods`, `client_max_body_size`, `upload_path`, `return` redirects, and per-`location` overrides.
+- **CGI** for `.php` and `.py` scripts, configurable per location.
+- **Custom error pages** for 301, 400, 403, 404, 405, 413, 414, 500 and 501.
+- **Config parser** with separate lexical, parsing and logical error reporting (`config/`).
 
-## Todo List:
-    - clean all the code and make it more readable.
-    - add a documentation.
-    - make it more efficient. ( networking, CGI(php, python), Upload, session and cokiees ...) 
-    - make it more secure. (Config file, ...)
-    - ...
+## Architecture
 
-## Installation:
--  ....
+```mermaid
+graph LR
+    CFG[config file] --> P[Lexer → Parser → Validator]
+    P --> S[Server contexts]
+    S --> L[select loop]
+    L --> RQ[Request parser]
+    RQ --> R{Route}
+    R -->|static| F[File / autoindex]
+    R -->|.php / .py| CGI[CGI handler]
+    R -->|POST| UP[Upload]
+    F & CGI & UP --> RS[Response builder]
+    RS --> L
+```
 
-## Usage:
--   ./webserv [configuration_file]
+| Folder | Responsibility |
+|---|---|
+| `config/` | Tokenizer, parser and validation of the nginx-like config |
+| `networking/elements/` | Socket setup and the `select()` event loop |
+| `networking/request/` | HTTP request parsing (headers, chunked body) |
+| `networking/response/` | Status codes, headers, static files, autoindex |
+| `networking/cgi/` | CGI environment and process handling |
+
+## Run it
+
+```bash
+git clone https://github.com/Alcheemiist/42_Cursus_webserv.git
+cd 42_Cursus_webserv
+make
+./webserv test.conf        # then open http://localhost
+```
+
+Example config:
+
+```nginx
+http {
+    server {
+        listen 0.0.0.0:8081;
+        root ./www;
+        allow_methods GET POST;
+        location /post {
+            upload_path ./www/upload;
+            client_max_body_size 214009;
+            cgi .py { cgi_path /usr/bin/python3; allow_methods GET POST; }
+        }
+    }
+}
+```
+
+---
+
+Built by [Elmahdi Elaazmi](https://elaazmielmahdi.com) and team · 1337 / 42 Network core curriculum.
